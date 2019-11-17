@@ -1,39 +1,4 @@
-interface ArrayConstructor {
-    from<T, U>(arrayLike: ArrayLike<T>, mapfn: (v: T, k: number) => U, thisArg?: any): Array<U>;
-    from<T>(arrayLike: ArrayLike<T>): Array<T>;
-}
-interface Array<T> {
-    fill(value: T, start?: number, end?: number): this;
-}
-interface String {
-    startsWith(searchString: string, position?: number): boolean;
-    endsWith(searchString: string, endPosition?: number): boolean;
-}
 interface Object {
-    /**
-     * 获取属性描述
-     */
-    getPropertyDescriptor(property: string): PropertyDescriptor;
-    /**
-     * 浅拷贝当前对象
-     * * 注意: 仅浅拷贝属性, 继承原型链和方法等均会丢失
-     */
-    shallowClone(): Object;
-    /**
-     * 浅拷贝所有属性
-     * * 注意: 仅浅拷贝属性, 继承原型链和方法等均会丢失
-     */
-    shallowCloneTo(target: Object): void;
-    /**
-     * 深拷贝当前对象
-     * * 注意: 仅深拷贝属性, 继承原型链和方法等均会丢失
-     */
-    deepClone(): Object;
-    /**
-     * 深拷贝所有属性
-     * * 注意: 仅深拷贝属性, 继承原型链和方法等均会丢失
-     */
-    deepCloneTo(target: Object): void;
     /**
      * 清除所有属性
      */
@@ -70,10 +35,6 @@ interface ArrayConstructor {
 }
 interface Array<T> {
     /**
-     * 判断是否包含指定数据
-     */
-    contains(...args: T[]): boolean;
-    /**
      * 添加唯一数据
      */
     pushUnique(...args: T[]): number;
@@ -98,18 +59,6 @@ interface Date {
     format(template: string): string;
 }
 declare type globalEvent = Event;
-declare namespace dou {
-    let hashCount: number;
-    /**
-     * 带有 Hash 码的对象
-     * @author wizardc
-     */
-    abstract class HashObject {
-        private _hashCode;
-        constructor();
-        readonly hashCode: number;
-    }
-}
 declare namespace dou {
     /**
      * 心跳计时器基类
@@ -168,7 +117,7 @@ declare namespace dou {
      * 事件发送器
      * @author wizardc
      */
-    class EventDispatcher extends HashObject implements IEventDispatcher {
+    class EventDispatcher implements IEventDispatcher {
         private $map;
         constructor();
         on(type: string, listener: Function, thisObj?: any): void;
@@ -185,7 +134,7 @@ declare namespace dou {
      * 事件类
      * @author wizardc
      */
-    class Event extends HashObject implements ICacheable {
+    class Event implements ICacheable {
         static OPEN: string;
         static CHANGE: string;
         static COMPLETE: string;
@@ -789,36 +738,6 @@ declare namespace dou {
         private div;
         clear(): void;
         toString(): string;
-    }
-}
-declare namespace dou {
-    /**
-     * 提供泛型哈希表的支持
-     * 如果 key 使用继承 dou.HashObject 的对象, 则使用 hashCode 作为其键值, 否则使用 toString() 的返回作为键值
-     * @author wizardc
-     */
-    class Dictionary<TKey, TValue> {
-        private _map;
-        private _keyMap;
-        private _size;
-        constructor(map?: {
-            [k: string]: TValue;
-        });
-        readonly size: number;
-        private getKey;
-        add(key: TKey, value: TValue): void;
-        has(key: TKey): boolean;
-        get(key: TKey): TValue;
-        forEach(callbackfn: (item: TValue, key: TKey, dictionary: Dictionary<TKey, TValue>) => void, thisArg?: any): void;
-        remove(key: TKey): boolean;
-        clear(): void;
-        toString(): string;
-        keyOf(): {
-            [k: string]: TKey;
-        };
-        valueOf(): {
-            [k: string]: TValue;
-        };
     }
 }
 declare namespace dou {
