@@ -62,6 +62,14 @@
   ],
   /* 注: 如果有继承关系的, 父类必须排在子类前面 */
   "files": [
+    "src/core/View2D.ts",
+
+    "src/display/DisplayObject.ts",
+    "src/display/DisplayObjectContainer.ts",
+    "src/display/BufferContainer.ts",
+
+    "src/event/Event2D.ts",
+
     "src/Engine.ts"
   ]
 }
