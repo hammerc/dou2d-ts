@@ -60,13 +60,21 @@
   ],
   /* 注: 如果有继承关系的, 父类必须排在子类前面 */
   "files": [
+    "src/core/Ticker.ts",
     "src/core/View2D.ts",
 
     "src/display/DisplayObject.ts",
     "src/display/DisplayObjectContainer.ts",
     "src/display/BufferContainer.ts",
+    "src/display/Stage.ts",
 
     "src/event/Event2D.ts",
+
+    "src/geom/Matrix.ts",
+    "src/geom/Point.ts",
+    "src/geom/Rectangle.ts",
+
+    "src/utils/MathUtil.ts",
 
     "src/Engine.ts"
   ]
