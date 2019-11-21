@@ -24,7 +24,7 @@ class Main {
     private async start(originPath: string, targetPath: string): Promise<void> {
         let list = FileUtil.getAllFile(originPath, "glsl", true);
         let shaderCode: string[] = [];
-        shaderCode.push("namespace dou3d {");
+        shaderCode.push("namespace dou2d {");
         shaderCode.push("    /**");
         shaderCode.push("     * 着色器库");
         shaderCode.push("     * @author GLSLPacker");
@@ -33,7 +33,8 @@ class Main {
         for (let filePath of list) {
             let name = path.basename(filePath, ".glsl");
             let code = await this.processCode(filePath);
-            code = code.replace(/[(\r\n)\r\n]/g, "\\r");
+            code = code.replace(/(\r\n)/g, "\\n");
+            code = code.replace(/[\r\n]/g, "\\n");
             shaderCode.push("        export const " + name + " = `" + code + "`;");
         }
         shaderCode.push("    }");

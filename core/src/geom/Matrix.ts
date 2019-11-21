@@ -150,12 +150,12 @@ namespace dou2d {
                 matrixA = this;
             }
             let a = matrixB.a * matrixA.a;
-            let b = 0.0;
-            let c = 0.0;
+            let b = 0;
+            let c = 0;
             let d = matrixB.d * matrixA.d;
             let tx = matrixB.tx * matrixA.a + matrixA.tx;
             let ty = matrixB.ty * matrixA.d + matrixA.ty;
-            if (matrixB.b !== 0.0 || matrixB.c !== 0.0 || matrixA.b !== 0.0 || matrixA.c !== 0.0) {
+            if (matrixB.b !== 0 || matrixB.c !== 0 || matrixA.b !== 0 || matrixA.c !== 0) {
                 a += matrixB.b * matrixA.c;
                 d += matrixB.c * matrixA.b;
                 b += matrixB.a * matrixA.b + matrixB.b * matrixA.d;

@@ -3,7 +3,7 @@ namespace dou2d {
      * 
      * @author wizardc
      */
-    export class View2D {
+    export class RenderBuffer {
 
     }
 }
