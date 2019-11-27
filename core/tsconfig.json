@@ -60,24 +60,32 @@
   ],
   /* 注: 如果有继承关系的, 父类必须排在子类前面 */
   "files": [
+    "src/core/define.ts",
     "src/core/Ticker.ts",
 
     "src/display/DisplayObject.ts",
     "src/display/DisplayObjectContainer.ts",
     "src/display/BufferContainer.ts",
     "src/display/Stage.ts",
+    "src/display/BitmapData.ts",
+    "src/display/Bitmap.ts",
 
-    "src/enum/AttributeType.ts",
-    "src/enum/UniformType.ts",
+    "src/enum/DrawableType.ts",
 
     "src/event/Event2D.ts",
+
+    "src/filters/Filter.ts",
+    "src/filters/ColorMatrixFilter.ts",
+    "src/filters/BlurFilter.ts",
 
     "src/geom/Matrix.ts",
     "src/geom/Point.ts",
     "src/geom/Rectangle.ts",
 
     "src/rendering/RenderBuffer.ts",
+    "src/rendering/RenderTarget.ts",
     "src/rendering/RenderContext.ts",
+    "src/rendering/IDrawData.ts",
     "src/rendering/DrawCommand.ts",
     "src/rendering/VertexData.ts",
 
@@ -87,6 +95,9 @@
     "src/shader/Uniform.ts",
 
     "src/utils/MathUtil.ts",
+    "src/utils/HtmlUtil.ts",
+    "src/utils/WebGLUtil.ts",
+    "src/utils/Base64Util.ts",
 
     "src/Engine.ts"
   ]
