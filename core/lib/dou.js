@@ -1729,6 +1729,7 @@ var dou;
             this._creator = creator;
             this._maxCount = maxCount;
             this._list = [];
+            this._map = new Map();
         }
         get size() {
             return this._list.length;
@@ -1738,7 +1739,8 @@ var dou;
                 obj.onRecycle();
             }
             if (this._list.length < this._maxCount) {
-                if (this._list.indexOf(obj) == -1) {
+                if (!this._map.has(obj)) {
+                    this._map.set(obj, true);
                     this._list.push(obj);
                 }
             }
@@ -1750,6 +1752,7 @@ var dou;
             }
             else {
                 obj = this._list.pop();
+                this._map.delete(obj);
                 if (typeof obj.onReuse === "function") {
                     obj.onReuse();
                 }
@@ -1758,6 +1761,7 @@ var dou;
         }
         clear() {
             this._list.length = 0;
+            this._map.clear();
         }
     }
     dou.ObjectPool = ObjectPool;

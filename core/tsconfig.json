@@ -61,26 +61,58 @@
   /* 注: 如果有继承关系的, 父类必须排在子类前面 */
   "files": [
     "src/core/define.ts",
+    "src/core/globalVar.ts",
     "src/core/Ticker.ts",
 
     "src/display/DisplayObject.ts",
     "src/display/DisplayObjectContainer.ts",
+    "src/display/Shape.ts",
+    "src/display/Sprite.ts",
     "src/display/BufferContainer.ts",
     "src/display/Stage.ts",
     "src/display/BitmapData.ts",
     "src/display/Bitmap.ts",
+    "src/display/Graphics.ts",
+    "src/display/Texture.ts",
+    "src/display/SpriteSheet.ts",
+    "src/display/RenderTexture.ts",
 
     "src/enum/DrawableType.ts",
+    "src/enum/RenderMode.ts",
+    "src/enum/RenderNodeType.ts",
+    "src/enum/BitmapFillMode.ts",
+    "src/enum/PathType.ts",
+    "src/enum/PathCommand.ts",
+    "src/enum/CapsStyle.ts",
+    "src/enum/OrientationMode.ts",
+    "src/enum/GradientType.ts",
+    "src/enum/BlendMode.ts",
+    "src/enum/StageScaleMode.ts",
 
     "src/event/Event2D.ts",
 
     "src/filters/Filter.ts",
     "src/filters/ColorMatrixFilter.ts",
     "src/filters/BlurFilter.ts",
+    "src/filters/CustomFilter.ts",
+    "src/filters/GlowFilter.ts",
+    "src/filters/DropShadowFilter.ts",
 
     "src/geom/Matrix.ts",
     "src/geom/Point.ts",
     "src/geom/Rectangle.ts",
+
+    "src/rendering/nodes/RenderNode.ts",
+    "src/rendering/nodes/NormalBitmapNode.ts",
+    "src/rendering/nodes/BitmapNode.ts",
+    "src/rendering/nodes/TextNode.ts",
+    "src/rendering/nodes/GraphicsNode.ts",
+    "src/rendering/nodes/GroupNode.ts",
+
+    "src/rendering/paths/Path2D.ts",
+    "src/rendering/paths/FillPath.ts",
+    "src/rendering/paths/StrokePath.ts",
+    "src/rendering/paths/GradientFillPath.ts",
 
     "src/rendering/RenderBuffer.ts",
     "src/rendering/RenderTarget.ts",
@@ -88,6 +120,11 @@
     "src/rendering/IDrawData.ts",
     "src/rendering/DrawCommand.ts",
     "src/rendering/VertexData.ts",
+    "src/rendering/DisplayList.ts",
+
+    "src/screen/IScreenAdapter.ts",
+    "src/screen/StageDisplaySize.ts",
+    "src/screen/DefaultScreenAdapter.ts",
 
     "src/shader/ShaderLib.ts",
     "src/shader/Program.ts",

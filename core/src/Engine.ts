@@ -1,6 +1,7 @@
 namespace dou2d {
     export let canvas: HTMLCanvasElement;
     export let ticker: Ticker;
+    export let screenAdapter: IScreenAdapter;
 
     /**
      * 引擎类, 用来启动 2D 引擎
@@ -23,6 +24,8 @@ namespace dou2d {
                 document.body.appendChild(canvas);
             }
             this._canvas = dou2d.canvas = canvas;
+
+            screenAdapter = new DefaultScreenAdapter();
 
             ticker = new Ticker(this);
             this.startTicker();

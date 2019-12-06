@@ -61,5 +61,30 @@ namespace dou2d {
         export function toDegrees(radians: number): number {
             return radians * 180 / Math.PI;
         }
+
+        /**
+         * 格式化弧线角度的值
+         */
+        export function clampAngle(value: number): number {
+            value %= Math.PI * 2;
+            if (value < 0) {
+                value += Math.PI * 2;
+            }
+            return value;
+        }
+
+        /**
+         * 格式化旋转角度的值
+         */
+        export function clampRotation(value: number): number {
+            value %= 360;
+            if (value > 180) {
+                value -= 360;
+            }
+            else if (value < -180) {
+                value += 360;
+            }
+            return value;
+        }
     }
 }

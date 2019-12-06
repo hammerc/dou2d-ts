@@ -644,6 +644,7 @@ declare namespace dou {
         private _creator;
         private _maxCount;
         private _list;
+        private _map;
         constructor(creator: Creator<T>, maxCount?: number);
         readonly size: number;
         join(obj: T): void;
