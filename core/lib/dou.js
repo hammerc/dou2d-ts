@@ -312,7 +312,7 @@ var dou;
                 list.length = currentIndex;
             }
             event.$setTarget(null);
-            return !event.$isDefaultPrevented;
+            return !event.$isDefaultPrevented();
         }
         dispatch(type, data, cancelable) {
             let event = dou.recyclable(dou.Event);
