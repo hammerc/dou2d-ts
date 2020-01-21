@@ -244,16 +244,16 @@ var dou;
      */
     class EventDispatcher {
         constructor() {
-            this.$map = {};
+            this._eventMap = {};
         }
         on(type, listener, thisObj) {
-            this.$addEvent(type, listener, thisObj, false);
+            this.addEventListener(type, listener, thisObj, false);
         }
         once(type, listener, thisObj) {
-            this.$addEvent(type, listener, thisObj, true);
+            this.addEventListener(type, listener, thisObj, true);
         }
-        $addEvent(type, listener, thisObj, once) {
-            let map = this.$map;
+        addEventListener(type, listener, thisObj, once) {
+            let map = this._eventMap;
             if (!map.hasOwnProperty(type)) {
                 map[type] = [];
             }
@@ -272,10 +272,10 @@ var dou;
             return true;
         }
         has(type) {
-            return this.$map.hasOwnProperty(type) && this.$map[type].length > 0;
+            return this._eventMap.hasOwnProperty(type) && this._eventMap[type].length > 0;
         }
         dispatchEvent(event) {
-            let map = this.$map;
+            let map = this._eventMap;
             if (!map.hasOwnProperty(event.type)) {
                 return true;
             }
@@ -322,7 +322,7 @@ var dou;
             return result;
         }
         off(type, listener, thisObj) {
-            let map = this.$map;
+            let map = this._eventMap;
             if (map.hasOwnProperty(type)) {
                 let list = map[event.type];
                 for (let i = 0, len = list.length; i < len; i++) {

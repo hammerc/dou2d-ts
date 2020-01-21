@@ -118,11 +118,11 @@ declare namespace dou {
      * @author wizardc
      */
     class EventDispatcher implements IEventDispatcher {
-        private $map;
+        private _eventMap;
         constructor();
         on(type: string, listener: Function, thisObj?: any): void;
         once(type: string, listener: Function, thisObj?: any): void;
-        private $addEvent;
+        protected addEventListener(type: string, listener: Function, thisObj: any, once: boolean): boolean;
         has(type: string): boolean;
         dispatchEvent(event: Event): boolean;
         dispatch(type: string, data?: any, cancelable?: boolean): boolean;
