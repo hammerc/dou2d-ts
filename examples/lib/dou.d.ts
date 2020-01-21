@@ -150,12 +150,12 @@ declare namespace dou {
         readonly data: any;
         readonly cancelable: boolean;
         readonly target: IEventDispatcher;
-        setTarget(target: IEventDispatcher): void;
+        $setTarget(target: IEventDispatcher): void;
         /**
          * 如果可以取消事件的默认行为, 则取消该行为
          */
         preventDefault(): void;
-        isDefaultPrevented(): boolean;
+        $isDefaultPrevented(): boolean;
         onRecycle(): void;
     }
 }

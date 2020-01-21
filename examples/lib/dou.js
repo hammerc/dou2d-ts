@@ -283,7 +283,7 @@ var dou;
             if (list.length == 0) {
                 return true;
             }
-            event.setTarget(this);
+            event.$setTarget(this);
             let currentIndex = 0;
             for (var i = 0, len = list.length; i < len; i++) {
                 let bin = list[i];
@@ -311,8 +311,8 @@ var dou;
                 }
                 list.length = currentIndex;
             }
-            event.setTarget(null);
-            return !event.isDefaultPrevented;
+            event.$setTarget(null);
+            return !event.$isDefaultPrevented;
         }
         dispatch(type, data, cancelable) {
             let event = dou.recyclable(dou.Event);
@@ -370,7 +370,7 @@ var dou;
         get target() {
             return this._target;
         }
-        setTarget(target) {
+        $setTarget(target) {
             this._target = target;
         }
         /**
@@ -381,7 +381,7 @@ var dou;
                 this._isDefaultPrevented = true;
             }
         }
-        isDefaultPrevented() {
+        $isDefaultPrevented() {
             return this._isDefaultPrevented;
         }
         onRecycle() {
