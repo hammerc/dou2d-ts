@@ -61,8 +61,18 @@
   /* 注: 如果有继承关系的, 父类必须排在子类前面 */
   "files": [
     "src/core/define.ts",
+    "src/core/extend.ts",
     "src/core/globalVar.ts",
+
+    "src/geom/Matrix.ts",
+    "src/geom/Point.ts",
+    "src/geom/Rectangle.ts",
+
     "src/core/Ticker.ts",
+    "src/core/TouchHandler.ts",
+    "src/core/Player.ts",
+
+    "src/debug/Stat.ts",
 
     "src/display/DisplayObject.ts",
     "src/display/DisplayObjectContainer.ts",
@@ -84,6 +94,7 @@
     "src/enum/PathType.ts",
     "src/enum/PathCommand.ts",
     "src/enum/CapsStyle.ts",
+    "src/enum/JointStyle.ts",
     "src/enum/OrientationMode.ts",
     "src/enum/GradientType.ts",
     "src/enum/BlendMode.ts",
@@ -97,10 +108,6 @@
     "src/filters/CustomFilter.ts",
     "src/filters/GlowFilter.ts",
     "src/filters/DropShadowFilter.ts",
-
-    "src/geom/Matrix.ts",
-    "src/geom/Point.ts",
-    "src/geom/Rectangle.ts",
 
     "src/rendering/nodes/RenderNode.ts",
     "src/rendering/nodes/NormalBitmapNode.ts",
@@ -121,6 +128,8 @@
     "src/rendering/DrawCommand.ts",
     "src/rendering/VertexData.ts",
     "src/rendering/DisplayList.ts",
+    "src/rendering/CanvasRenderer.ts",
+    "src/rendering/Renderer.ts",
 
     "src/screen/IScreenAdapter.ts",
     "src/screen/StageDisplaySize.ts",
@@ -131,10 +140,16 @@
     "src/shader/Attribute.ts",
     "src/shader/Uniform.ts",
 
+    "src/text/input/HtmlText.ts",
+    "src/text/input/Input.ts",
+
     "src/utils/MathUtil.ts",
     "src/utils/HtmlUtil.ts",
     "src/utils/WebGLUtil.ts",
     "src/utils/Base64Util.ts",
+    "src/utils/Implementation.ts",
+    "src/utils/Capabilities.ts",
+    "src/utils/toColorString.ts",
 
     "src/Engine.ts"
   ]

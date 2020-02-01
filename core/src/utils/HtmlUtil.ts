@@ -4,6 +4,8 @@ namespace dou2d {
      * @author wizardc
      */
     export namespace HtmlUtil {
+        let currentPrefix: string;
+
         export function createCanvas(width?: number, height?: number): HTMLCanvasElement {
             let canvas = document.createElement("canvas");
             if (!isNaN(width)) {
@@ -29,7 +31,8 @@ namespace dou2d {
                         break;
                     }
                 }
-            } catch (e) {
+            }
+            catch (e) {
             }
             if (!gl) {
                 console.log("Nonsupport WebGL!");
@@ -63,6 +66,42 @@ namespace dou2d {
          */
         export function measureTextWith(context: CanvasRenderingContext2D, text: string): number {
             return context.measureText(text).width;
+        }
+
+        /**
+         * 获取样式属性的名称, 兼容多个浏览器
+         */
+        export function getStyleName(name: string, element?: any): string {
+            let header = "";
+            if (element) {
+                header = getPrefix(name, element);
+            }
+            else {
+                if (!currentPrefix) {
+                    let tempStyle = document.createElement("div").style;
+                    currentPrefix = getPrefix("transform", tempStyle);
+                }
+                header = currentPrefix;
+            }
+            if (header == "") {
+                return name;
+            }
+            return header + name.charAt(0).toUpperCase() + name.substring(1, name.length);
+        }
+
+        function getPrefix(name: string, element: any): string {
+            if (name in element) {
+                return "";
+            }
+            name = name.charAt(0).toUpperCase() + name.substring(1, name.length);
+            let transArr: string[] = ["webkit", "ms", "Moz", "O"];
+            for (let i = 0; i < transArr.length; i++) {
+                let tempStyle = transArr[i] + name;
+                if (tempStyle in element) {
+                    return transArr[i];
+                }
+            }
+            return "";
         }
     }
 }

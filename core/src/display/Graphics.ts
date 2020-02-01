@@ -1,170 +1,154 @@
 namespace dou2d {
     /**
-     * 
+     * 绘制矢量形状类
      * @author wizardc
      */
     export class Graphics {
-        /**
-         * @private
-         */
-        $renderNode: GraphicsNode;
+        private _renderNode: GraphicsNode;
+        private _targetDisplay: DisplayObject;
 
         /**
-         * 绑定到的目标显示对象
+         * 当前移动到的坐标 x
          */
-        public $targetDisplay: DisplayObject;
-
-        $targetIsSprite: boolean;
+        private _lastX: number = 0;
 
         /**
-         * 当前移动到的坐标X
+         * 当前移动到的坐标 y
          */
-        private lastX: number = 0;
-
-        /**
-         * 当前移动到的坐标Y
-         */
-        private lastY: number = 0;
+        private _lastY: number = 0;
 
         /**
          * 当前正在绘制的填充
          */
-        private fillPath: Path2D = null;
+        private _fillPath: Path2D;
 
         /**
          * 当前正在绘制的线条
          */
-        private strokePath: StrokePath = null;
+        private _strokePath: StrokePath;
 
         /**
          * 线条的左上方宽度
          */
-        private topLeftStrokeWidth = 0;
+        private _topLeftStrokeWidth = 0;
 
         /**
          * 线条的右下方宽度
          */
-        private bottomRightStrokeWidth = 0;
+        private _bottomRightStrokeWidth = 0;
 
         public constructor() {
-            this.$renderNode = new GraphicsNode();
+            this._renderNode = new GraphicsNode();
         }
 
         /**
          * 设置绑定到的目标显示对象
          */
-        $setTarget(target: DisplayObject): void {
-            if (this.$targetDisplay) {
-                this.$targetDisplay.$renderNode = null;
+        public $setTarget(target: DisplayObject): void {
+            if (this._targetDisplay) {
+                this._targetDisplay.$renderNode = null;
             }
-            target.$renderNode = this.$renderNode;
-            this.$targetDisplay = target;
-            this.$targetIsSprite = target instanceof Sprite;
+            target.$renderNode = this._renderNode;
+            this._targetDisplay = target;
         }
 
         /**
-         * 对1像素和3像素特殊处理，向右下角偏移0.5像素，以显示清晰锐利的线条。
+         * 对 1 像素和 3 像素特殊处理, 向右下角偏移 0.5 像素, 以显示清晰锐利的线条
          */
         private setStrokeWidth(width: number) {
             switch (width) {
                 case 1:
-                    this.topLeftStrokeWidth = 0;
-                    this.bottomRightStrokeWidth = 1;
+                    this._topLeftStrokeWidth = 0;
+                    this._bottomRightStrokeWidth = 1;
                     break;
                 case 3:
-                    this.topLeftStrokeWidth = 1;
-                    this.bottomRightStrokeWidth = 2;
+                    this._topLeftStrokeWidth = 1;
+                    this._bottomRightStrokeWidth = 2;
                     break;
                 default:
                     let half = Math.ceil(width * 0.5) | 0;
-                    this.topLeftStrokeWidth = half;
-                    this.bottomRightStrokeWidth = half;
+                    this._topLeftStrokeWidth = half;
+                    this._bottomRightStrokeWidth = half;
                     break;
             }
         }
 
         /**
-         * 指定一种简单的单一颜色填充，在绘制时该填充将在随后对其他 Graphics 方法（如 lineTo() 或 drawCircle()）的调用中使用。
-         * 调用 clear() 方法会清除填充。
-         * @param color 填充的颜色
-         * @param alpha 填充的 Alpha 值
+         * 设定单一颜色填充, 调用 clear 方法会清除填充
          */
         public beginFill(color: number, alpha: number = 1): void {
             color = +color || 0;
             alpha = +alpha || 0;
-            this.fillPath = this.$renderNode.beginFill(color, alpha, this.strokePath);
-            if (this.$renderNode.drawData.length > 1) {
-                this.fillPath.moveTo(this.lastX, this.lastY);
+            this._fillPath = this._renderNode.beginFill(color, alpha, this._strokePath);
+            if (this._renderNode.drawData.length > 1) {
+                this._fillPath.moveTo(this._lastX, this._lastY);
             }
         }
 
         /**
-         * 指定一种渐变填充，用于随后调用对象的其他 Graphics 方法（如 lineTo() 或 drawCircle()）。
-         * 调用 clear() 方法会清除填充。
-         * @param type 用于指定要使用哪种渐变类型的 GradientType 类的值：GradientType.LINEAR 或 GradientType.RADIAL。
-         * @param colors 渐变中使用的 RGB 十六进制颜色值的数组（例如，红色为 0xFF0000，蓝色为 0x0000FF，等等）。对于每种颜色，请在 alphas 和 ratios 参数中指定对应值。
-         * @param alphas colors 数组中对应颜色的 alpha 值数组。
-         * @param ratios 颜色分布比率的数组。有效值为 0 到 255。
-         * @param matrix 一个由 egret.Matrix 类定义的转换矩阵。egret.Matrix 类包括 createGradientBox() 方法，通过该方法可以方便地设置矩阵，以便与 beginGradientFill() 方法一起使用
+         * 设定渐变填充, 调用 clear 方法会清除填充
+         * @param type 渐变类型
+         * @param colors 渐变中使用的颜色值的数组, 对于每种颜色请在 alphas 和 ratios 参数中指定对应值
+         * @param alphas colors 数组中对应颜色的 alpha 值
+         * @param ratios 颜色分布比率的数组, 有效值为 0 到 255
+         * @param matrix 转换矩阵, Matrix 类包括 createGradientBox 方法, 通过该方法可以方便地设置矩阵, 以便与 beginGradientFill 方法一起使用
          */
-        public beginGradientFill(type: string, colors: number[], alphas: number[], ratios: number[], matrix: Matrix = null): void {
-            this.fillPath = this.$renderNode.beginGradientFill(type, colors, alphas, ratios, matrix, this.strokePath);
-            if (this.$renderNode.drawData.length > 1) {
-                this.fillPath.moveTo(this.lastX, this.lastY);
+        public beginGradientFill(type: GradientType, colors: number[], alphas: number[], ratios: number[], matrix: Matrix = null): void {
+            this._fillPath = this._renderNode.beginGradientFill(type, colors, alphas, ratios, matrix, this._strokePath);
+            if (this._renderNode.drawData.length > 1) {
+                this._fillPath.moveTo(this._lastX, this._lastY);
             }
         }
 
         /**
-         * 对从上一次调用 beginFill()方法之后添加的直线和曲线应用填充。
+         * 对从上一次调用 beginFill 方法之后添加的直线和曲线应用填充
          */
         public endFill(): void {
-            this.fillPath = null;
+            this._fillPath = null;
         }
 
         /**
-         * 指定一种线条样式以用于随后对 lineTo() 或 drawCircle() 等 Graphics 方法的调用。
-         * @param thickness 一个整数，以点为单位表示线条的粗细，有效值为 0 到 255。如果未指定数字，或者未定义该参数，则不绘制线条。如果传递的值小于 0，则默认值为 0。值 0 表示极细的粗细；最大粗细为 255。如果传递的值大于 255，则默认值为 255。
-         * @param color 线条的十六进制颜色值（例如，红色为 0xFF0000，蓝色为 0x0000FF 等）。如果未指明值，则默认值为 0x000000（黑色）。可选。
-         * @param alpha 表示线条颜色的 Alpha 值的数字；有效值为 0 到 1。如果未指明值，则默认值为 1（纯色）。如果值小于 0，则默认值为 0。如果值大于 1，则默认值为 1。
-         * @param pixelHinting 布尔型值，指定是否提示笔触采用完整像素。它同时影响曲线锚点的位置以及线条笔触大小本身。在 pixelHinting 设置为 true 的情况下，线条宽度会调整到完整像素宽度。在 pixelHinting 设置为 false 的情况下，对于曲线和直线可能会出现脱节。
-         * @param scaleMode 用于指定要使用的比例模式
+         * 指定线条样式
+         * @param thickness 以点为单位表示线条的粗细, 有效值为 0 到 255, 如果未指定数字，或者未定义该参数，则不绘制线条
+         * @param color 线条的颜色值, 默认值为黑色
+         * @param alpha 线条透明度
          * @param caps 用于指定线条末端处端点类型的 CapsStyle 类的值。默认值：CapsStyle.ROUND
          * @param joints 指定用于拐角的连接外观的类型。默认值：JointStyle.ROUND
-         * @param miterLimit 用于表示剪切斜接的极限值的数字。
-         * @param lineDash 设置虚线样式。
+         * @param miterLimit 用于表示剪切斜接的极限值的数字
+         * @param lineDash 设置虚线样式
          */
-        public lineStyle(thickness: number = NaN, color: number = 0, alpha: number = 1.0, pixelHinting: boolean = false, scaleMode: string = "normal", caps: string = null, joints: string = null, miterLimit: number = 3, lineDash?: number[]): void {
+        public lineStyle(thickness: number = NaN, color: number = 0, alpha: number = 1, caps: CapsStyle = CapsStyle.round, joints: JointStyle = JointStyle.round, miterLimit: number = 3, lineDash?: number[]): void {
             thickness = +thickness || 0;
             color = +color || 0;
             alpha = +alpha || 0;
             miterLimit = +miterLimit || 0;
             if (thickness <= 0) {
-                this.strokePath = null;
+                this._strokePath = null;
                 this.setStrokeWidth(0);
             }
             else {
                 this.setStrokeWidth(thickness);
-                this.strokePath = this.$renderNode.lineStyle(thickness, color, alpha, caps, joints, miterLimit, lineDash);
-                if (this.$renderNode.drawData.length > 1) {
-                    this.strokePath.moveTo(this.lastX, this.lastY);
+                this._strokePath = this._renderNode.lineStyle(thickness, color, alpha, caps, joints, miterLimit, lineDash);
+                if (this._renderNode.drawData.length > 1) {
+                    this._strokePath.moveTo(this._lastX, this._lastY);
                 }
             }
         }
 
         /**
          * 绘制一个矩形
-         * @param x 圆心相对于父显示对象注册点的 x 位置（以像素为单位）。
-         * @param y 相对于父显示对象注册点的圆心的 y 位置（以像素为单位）。
-         * @param width 矩形的宽度（以像素为单位）。
-         * @param height 矩形的高度（以像素为单位）。
+         * @param x 圆心相对于父显示对象注册点的 x 位置
+         * @param y 相对于父显示对象注册点的圆心的 y 位置
+         * @param width 矩形的宽度
+         * @param height 矩形的高度
          */
         public drawRect(x: number, y: number, width: number, height: number): void {
             x = +x || 0;
             y = +y || 0;
             width = +width || 0;
             height = +height || 0;
-            let fillPath = this.fillPath;
-            let strokePath = this.strokePath;
+            let fillPath = this._fillPath;
+            let strokePath = this._strokePath;
             fillPath && fillPath.drawRect(x, y, width, height);
             strokePath && strokePath.drawRect(x, y, width, height);
             this.extendBoundsByPoint(x + width, y + height);
@@ -173,13 +157,13 @@ namespace dou2d {
         }
 
         /**
-         * 绘制一个圆角矩形。
-         * @param x 圆心相对于父显示对象注册点的 x 位置（以像素为单位）。
-         * @param y 相对于父显示对象注册点的圆心的 y 位置（以像素为单位）。
-         * @param width 矩形的宽度（以像素为单位）。
-         * @param height 矩形的高度（以像素为单位）。
-         * @param ellipseWidth 用于绘制圆角的椭圆的宽度（以像素为单位）。
-         * @param ellipseHeight 用于绘制圆角的椭圆的高度（以像素为单位）。 （可选）如果未指定值，则默认值与为 ellipseWidth 参数提供的值相匹配。
+         * 绘制一个圆角矩形
+         * @param x 圆心相对于父显示对象注册点的 x 位置
+         * @param y 相对于父显示对象注册点的圆心的 y 位置
+         * @param width 矩形的宽度
+         * @param height 矩形的高度
+         * @param ellipseWidth 用于绘制圆角的椭圆的宽度
+         * @param ellipseHeight 用于绘制圆角的椭圆的高度, 。 （可选）如果未指定值，则默认值与为 ellipseWidth 参数提供的值相匹配。
          */
         public drawRoundRect(x: number, y: number, width: number, height: number, ellipseWidth: number, ellipseHeight?: number): void {
             x = +x || 0;
@@ -188,8 +172,8 @@ namespace dou2d {
             height = +height || 0;
             ellipseWidth = +ellipseWidth || 0;
             ellipseHeight = +ellipseHeight || 0;
-            let fillPath = this.fillPath;
-            let strokePath = this.strokePath;
+            let fillPath = this._fillPath;
+            let strokePath = this._strokePath;
             fillPath && fillPath.drawRoundRect(x, y, width, height, ellipseWidth, ellipseHeight);
             strokePath && strokePath.drawRoundRect(x, y, width, height, ellipseWidth, ellipseHeight);
             let radiusX = (ellipseWidth * 0.5) | 0;
@@ -213,8 +197,8 @@ namespace dou2d {
             x = +x || 0;
             y = +y || 0;
             radius = +radius || 0;
-            let fillPath = this.fillPath;
-            let strokePath = this.strokePath;
+            let fillPath = this._fillPath;
+            let strokePath = this._strokePath;
             fillPath && fillPath.drawCircle(x, y, radius);
             strokePath && strokePath.drawCircle(x, y, radius);
             //-1 +2 解决WebGL裁切问题
@@ -236,8 +220,8 @@ namespace dou2d {
             y = +y || 0;
             width = +width || 0;
             height = +height || 0;
-            let fillPath = this.fillPath;
-            let strokePath = this.strokePath;
+            let fillPath = this._fillPath;
+            let strokePath = this._strokePath;
             fillPath && fillPath.drawEllipse(x, y, width, height);
             strokePath && strokePath.drawEllipse(x, y, width, height);
             //-1 +2 解决WebGL裁切问题
@@ -255,13 +239,13 @@ namespace dou2d {
         public moveTo(x: number, y: number): void {
             x = +x || 0;
             y = +y || 0;
-            let fillPath = this.fillPath;
-            let strokePath = this.strokePath;
+            let fillPath = this._fillPath;
+            let strokePath = this._strokePath;
             fillPath && fillPath.moveTo(x, y);
             strokePath && strokePath.moveTo(x, y);
             this.includeLastPosition = false;
-            this.lastX = x;
-            this.lastY = y;
+            this._lastX = x;
+            this._lastY = y;
             this.dirty();
         }
 
@@ -273,8 +257,8 @@ namespace dou2d {
         public lineTo(x: number, y: number): void {
             x = +x || 0;
             y = +y || 0;
-            let fillPath = this.fillPath;
-            let strokePath = this.strokePath;
+            let fillPath = this._fillPath;
+            let strokePath = this._strokePath;
             fillPath && fillPath.lineTo(x, y);
             strokePath && strokePath.lineTo(x, y);
             this.updatePosition(x, y);
@@ -295,12 +279,12 @@ namespace dou2d {
             controlY = +controlY || 0;
             anchorX = +anchorX || 0;
             anchorY = +anchorY || 0;
-            let fillPath = this.fillPath;
-            let strokePath = this.strokePath;
+            let fillPath = this._fillPath;
+            let strokePath = this._strokePath;
             fillPath && fillPath.curveTo(controlX, controlY, anchorX, anchorY);
             strokePath && strokePath.curveTo(controlX, controlY, anchorX, anchorY);
-            let lastX = this.lastX || 0;
-            let lastY = this.lastY || 0;
+            let lastX = this._lastX || 0;
+            let lastY = this._lastY || 0;
             let bezierPoints = createBezierPoints([lastX, lastY, controlX, controlY, anchorX, anchorY], 50);
             for (let i = 0; i < bezierPoints.length; i++) {
                 let point = bezierPoints[i];
@@ -328,12 +312,12 @@ namespace dou2d {
             controlY2 = +controlY2 || 0;
             anchorX = +anchorX || 0;
             anchorY = +anchorY || 0;
-            let fillPath = this.fillPath;
-            let strokePath = this.strokePath;
+            let fillPath = this._fillPath;
+            let strokePath = this._strokePath;
             fillPath && fillPath.cubicCurveTo(controlX1, controlY1, controlX2, controlY2, anchorX, anchorY);
             strokePath && strokePath.cubicCurveTo(controlX1, controlY1, controlX2, controlY2, anchorX, anchorY);
-            let lastX = this.lastX || 0;
-            let lastY = this.lastY || 0;
+            let lastX = this._lastX || 0;
+            let lastY = this._lastY || 0;
             let bezierPoints = createBezierPoints([lastX, lastY, controlX1, controlY1, controlX2, controlY2, anchorX, anchorY], 50);
             for (let i = 0; i < bezierPoints.length; i++) {
                 let point = bezierPoints[i];
@@ -366,16 +350,16 @@ namespace dou2d {
             anticlockwise = !!anticlockwise;
             startAngle = clampAngle(startAngle);
             endAngle = clampAngle(endAngle);
-            let fillPath = this.fillPath;
-            let strokePath = this.strokePath;
+            let fillPath = this._fillPath;
+            let strokePath = this._strokePath;
             if (fillPath) {
-                fillPath.$lastX = this.lastX;
-                fillPath.$lastY = this.lastY;
+                fillPath.$lastX = this._lastX;
+                fillPath.$lastY = this._lastY;
                 fillPath.drawArc(x, y, radius, startAngle, endAngle, anticlockwise);
             }
             if (strokePath) {
-                strokePath.$lastX = this.lastX;
-                strokePath.$lastY = this.lastY;
+                strokePath.$lastX = this._lastX;
+                strokePath.$lastY = this._lastY;
                 strokePath.drawArc(x, y, radius, startAngle, endAngle, anticlockwise);
             }
             if (anticlockwise) {
@@ -392,10 +376,10 @@ namespace dou2d {
 
         private dirty(): void {
             let self = this;
-            self.$renderNode.dirtyRender = true;
-            const target = self.$targetDisplay;
+            self._renderNode.dirtyRender = true;
+            const target = self._targetDisplay;
             target.$cacheDirty = true;
-            let p = target.$parent;
+            let p = target._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
@@ -458,7 +442,7 @@ namespace dou2d {
          * 清除绘制到此 Graphics 对象的图形，并重置填充和线条样式设置。
          */
         public clear(): void {
-            this.$renderNode.clear();
+            this._renderNode.clear();
             this.updatePosition(0, 0);
             this.minX = Infinity;
             this.minY = Infinity;
@@ -478,19 +462,19 @@ namespace dou2d {
         }
 
         private extendBoundsByX(x: number): void {
-            this.minX = Math.min(this.minX, x - this.topLeftStrokeWidth);
-            this.maxX = Math.max(this.maxX, x + this.bottomRightStrokeWidth);
+            this.minX = Math.min(this.minX, x - this._topLeftStrokeWidth);
+            this.maxX = Math.max(this.maxX, x + this._bottomRightStrokeWidth);
             this.updateNodeBounds();
         }
 
         private extendBoundsByY(y: number): void {
-            this.minY = Math.min(this.minY, y - this.topLeftStrokeWidth);
-            this.maxY = Math.max(this.maxY, y + this.bottomRightStrokeWidth);
+            this.minY = Math.min(this.minY, y - this._topLeftStrokeWidth);
+            this.maxY = Math.max(this.maxY, y + this._bottomRightStrokeWidth);
             this.updateNodeBounds();
         }
 
         private updateNodeBounds(): void {
-            let node = this.$renderNode;
+            let node = this._renderNode;
             node.x = this.minX;
             node.y = this.minY;
             node.width = Math.ceil(this.maxX - this.minX);
@@ -507,11 +491,11 @@ namespace dou2d {
          */
         private updatePosition(x: number, y: number): void {
             if (!this.includeLastPosition) {
-                this.extendBoundsByPoint(this.lastX, this.lastY);
+                this.extendBoundsByPoint(this._lastX, this._lastY);
                 this.includeLastPosition = true;
             }
-            this.lastX = x;
-            this.lastY = y;
+            this._lastX = x;
+            this._lastY = y;
             this.extendBoundsByPoint(x, y);
         }
 
@@ -525,13 +509,13 @@ namespace dou2d {
         }
 
         $hitTest(stageX: number, stageY: number): DisplayObject {
-            let target = this.$targetDisplay;
+            let target = this._targetDisplay;
             let m = target.$getInvertedConcatenatedMatrix();
             let localX = m.a * stageX + m.c * stageY + m.tx;
             let localY = m.b * stageX + m.d * stageY + m.ty;
             let buffer = sys.canvasHitTestBuffer;
             buffer.resize(3, 3);
-            let node = this.$renderNode;
+            let node = this._renderNode;
             let matrix = Matrix.create();
             matrix.identity();
             matrix.translate(1 - localX, 1 - localY);
@@ -550,8 +534,8 @@ namespace dou2d {
         }
 
         public $onRemoveFromStage(): void {
-            if (this.$renderNode) {
-                this.$renderNode.clean();
+            if (this._renderNode) {
+                this._renderNode.clean();
             }
         }
     }

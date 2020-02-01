@@ -1,4 +1,11 @@
 namespace dou2d {
+    export let enterFrameCallBackList: DisplayObject[] = [];
+    export let enterFrameOnceCallBackList: DisplayObject[] = [];
+    export let renderCallBackList: DisplayObject[] = [];
+    export let renderOnceCallBackList: DisplayObject[] = [];
+
+    let tempRect: Rectangle = new Rectangle();
+
     /**
      * 显示对象
      * @author wizardc
@@ -9,323 +16,230 @@ namespace dou2d {
          */
         public static defaultTouchEnabled: boolean = false;
 
-        public static $enterFrameCallBackList: DisplayObject[] = [];
+        public $useTranslate: boolean = false;
+        public $displayList: DisplayList;
+        public $cacheDirty: boolean = false;
 
-        public static $renderCallBackList: DisplayObject[] = [];
+        public $maskedObject: DisplayObject;
+        public $mask: DisplayObject;
+        public $maskRect: Rectangle;
 
-        /**
-         * 是否添加到舞台上，防止重复发送 removed_from_stage 消息
-         */
-        protected $hasAddToStage: boolean;
+        public $renderNode: RenderNode;
+        public $renderDirty: boolean = false;
+        public $renderMode: RenderMode;
 
-        /**
-         * 能够含有子项的类将子项列表存储在这个属性里。
-         */
-        protected $children: DisplayObject[] = null;
+        public $tintRGB: number = 0;
 
-        protected $name: string = "";
+        public $sortDirty: boolean = false;
+        public $lastSortedIndex: number = 0;
 
-        protected $parent: DisplayObjectContainer = null;
-
-        protected $stage: Stage = null;
-
-        /**
-         * 这个对象在显示列表中的嵌套深度，舞台为1，它的子项为2，子项的子项为3，以此类推。当对象不在显示列表中时此属性值为0.
-         */
-        protected $nestLevel: number = 0;
-
-        protected $useTranslate: boolean = false;
-
-        protected $matrix: Matrix = new Matrix();
-
-        protected $matrixDirty: boolean = false;
-
-        protected $concatenatedMatrix: Matrix;
-
-        protected $invertedConcatenatedMatrix: Matrix;
-
-        protected $x: number = 0;
-
-        protected $y: number = 0;
-
-        protected $scaleX: number = 1;
-
-        protected $scaleY: number = 1;
-
-        protected $rotation: number = 0;
-
-        protected $skewX: number = 0;
-        protected $skewXdeg: number = 0;
-
-        protected $skewY: number = 0;
-        protected $skewYdeg: number = 0;
-
-        protected $explicitWidth: number = NaN;
-
-        protected $explicitHeight: number = NaN;
-
-        protected $anchorOffsetX: number = 0;
-
-        protected $anchorOffsetY: number = 0;
-
-        protected $visible: boolean = true;
+        protected _children: DisplayObject[];
+        protected _parent: DisplayObjectContainer;
+        protected _stage: Stage;
 
         /**
-         * cacheAsBitmap创建的缓存位图节点。
+         * 这个对象在显示列表中的嵌套深度, 舞台为 1, 它的子项为 2, 子项的子项为 3, 以此类推, 当对象不在显示列表中时此属性值为 0
          */
-        protected $displayList: DisplayList = null;
+        protected _nestLevel: number = 0;
 
-        protected $cacheAsBitmap: boolean = false;
+        protected _name: string = "";
 
-        protected $cacheDirty: boolean = false;
+        protected _matrix: Matrix;
+        protected _matrixDirty: boolean = false;
 
-        protected $alpha: number = 1;
+        protected _concatenatedMatrix: Matrix;
+        protected _invertedConcatenatedMatrix: Matrix;
 
-        protected $touchEnabled: boolean = DisplayObject.defaultTouchEnabled;
+        protected _x: number = 0;
+        protected _y: number = 0;
 
-        protected $scrollRect: Rectangle = null;
+        protected _scaleX: number = 1;
+        protected _scaleY: number = 1;
 
-        protected $blendMode: number = 0;
+        protected _rotation: number = 0;
 
-        /**
-         * 被遮罩的对象
-         */
-        protected $maskedObject: DisplayObject = null;
+        protected _skewX: number = 0;
+        protected _skewXdeg: number = 0;
+        protected _skewY: number = 0;
+        protected _skewYdeg: number = 0;
 
-        protected $mask: DisplayObject = null;
+        protected _explicitWidth: number = NaN;
+        protected _explicitHeight: number = NaN;
 
-        protected $maskRect: Rectangle = null;
+        protected _anchorOffsetX: number = 0;
+        protected _anchorOffsetY: number = 0;
 
-        protected $filters: Array<Filter | CustomFilter>;
-
-        protected $parentDisplayList: DisplayList = null;
-
-        /**
-         * 渲染节点,不为空表示自身有绘制到屏幕的内容
-         */
-        protected $renderNode: RenderNode = null;
-
-        protected $renderDirty: boolean = false;
-
-        protected $renderMode: RenderMode = null;
-
+        protected _visible: boolean = true;
+        protected _alpha: number = 1;
         protected _tint: number = 0;
 
-        protected $tintRGB: number = 0;
+        protected _blendMode: BlendMode = BlendMode.normal;
 
-        protected $sortDirty: boolean = false;
+        protected _scrollRect: Rectangle;
+
+        protected _filters: (Filter | CustomFilter)[];
+
+        protected _cacheAsBitmap: boolean = false;
+
+        protected _touchEnabled: boolean = DisplayObject.defaultTouchEnabled;
 
         protected _zIndex: number = 0;
-
-        protected $lastSortedIndex: number = 0;
-
-        /**
-         * 允许对象使用 zIndex 排序
-         */
-        public sortableChildren: boolean = false;
+        protected _sortableChildren: boolean = false;
 
         public constructor() {
             super();
-            //默认都是纯白
-            this.tint = 0xFFFFFF;
+            this._matrix = new Matrix();
+            this.tint = 0xffffff;
         }
 
         /**
-         * 表示 DisplayObject 的实例名称。
-         * 通过调用父显示对象容器的 getChildByName() 方法，可以在父显示对象容器的子列表中标识该对象。
-         */
-        public get name(): string {
-            return this.$name;
-        }
-
-        public set name(value: string) {
-            this.$name = value;
-        }
-
-        /**
-         * 表示包含此显示对象的 DisplayObjectContainer 对象。
-         * 使用 parent 属性可以指定高于显示列表层次结构中当前显示对象的显示对象的相对路径。
+         * 父容器
          */
         public get parent(): DisplayObjectContainer {
-            return this.$parent;
+            return this._parent;
         }
 
         /**
          * 设置父级显示对象
          */
-        $setParent(parent: DisplayObjectContainer): void {
-            this.$parent = parent;
+        public $setParent(parent: DisplayObjectContainer): void {
+            this._parent = parent;
         }
 
         /**
-         * 显示对象添加到舞台
-         */
-        $onAddToStage(stage: Stage, nestLevel: number): void {
-            let self = this;
-            self.$stage = stage;
-            self.$nestLevel = nestLevel;
-            self.$hasAddToStage = true;
-            Sprite.$EVENT_ADD_TO_STAGE_LIST.push(self);
-        }
-
-        /**
-         * 显示对象从舞台移除
-         */
-        $onRemoveFromStage(): void {
-            let self = this;
-            self.$nestLevel = 0;
-            Sprite.$EVENT_REMOVE_FROM_STAGE_LIST.push(self);
-        }
-
-        protected $updateUseTransform(): void {
-            let self = this;
-            if (self.$scaleX == 1 && self.$scaleY == 1 && self.$skewX == 0 && self.$skewY == 0) {
-                self.$useTranslate = false;
-            }
-            else {
-                self.$useTranslate = true;
-            }
-        }
-
-        /**
-         * 显示对象的舞台。
-         * 例如，您可以创建多个显示对象并加载到显示列表中，每个显示对象的 stage 属性是指向相同的 Stage 对象。<br/>
-         * 如果显示对象未添加到显示列表，则其 stage 属性会设置为 null。
+         * 舞台
          */
         public get stage(): Stage {
-            return this.$stage;
+            return this._stage;
         }
 
         /**
-         * 一个 Matrix 对象，其中包含更改显示对象的缩放、旋转和平移的值。<br/>
-         * 注意：要改变一个显示对象矩阵的值，您必引用整个矩阵对象，然后将它重新赋值给显示对象的 matrix 属性。
-         * @example 以下代码改变了显示对象矩阵的tx属性值：
-         * <pre>
-         *     let myMatrix:Matrix = myDisplayObject.matrix;
-         *     myMatrix.tx += 10;
-         *     myDisplayObject.matrix = myMatrix;
-         * </pre>
+         * 名称
          */
+        public set name(value: string) {
+            this._name = value;
+        }
+        public get name(): string {
+            return this._name;
+        }
+
+        /**
+         * 当前显示对象的矩阵
+         * * 当前值是对象时, 修改当前值的属性之后, 需要重新赋值才会生效
+         */
+        public set matrix(value: Matrix) {
+            this.$setMatrix(value);
+        }
         public get matrix(): Matrix {
             return this.$getMatrix().clone();
         }
 
         /**
-         * 获取矩阵
-         */
-        $getMatrix(): Matrix {
-            let self = this;
-            if (self.$matrixDirty) {
-                self.$matrixDirty = false;
-                self.$matrix.updateScaleAndRotation(self.$scaleX, self.$scaleY, self.$skewX, self.$skewY);
-            }
-            self.$matrix.tx = self.$x;
-            self.$matrix.ty = self.$y;
-            return self.$matrix;
-        }
-
-        public set matrix(value: Matrix) {
-            this.$setMatrix(value);
-        }
-
-        /**
          * 设置矩阵
          */
-        $setMatrix(matrix: Matrix, needUpdateProperties: boolean = true): void {
-            let self = this;
-            let m = self.$matrix;
+        public $setMatrix(matrix: Matrix, needUpdateProperties: boolean = true): void {
+            let m = this._matrix;
             m.a = matrix.a;
             m.b = matrix.b;
             m.c = matrix.c;
             m.d = matrix.d;
-            self.$x = matrix.tx;
-            self.$y = matrix.ty;
-            self.$matrixDirty = false;
+            this._x = matrix.tx;
+            this._y = matrix.ty;
+            this._matrixDirty = false;
             if (m.a == 1 && m.b == 0 && m.c == 0 && m.d == 1) {
-                self.$useTranslate = false;
+                this.$useTranslate = false;
             }
             else {
-                self.$useTranslate = true;
+                this.$useTranslate = true;
             }
             if (needUpdateProperties) {
-                self.$scaleX = m.scaleX;
-                self.$scaleY = m.scaleY;
-                self.$skewX = matrix.skewX;
-                self.$skewY = matrix.skewY;
-                self.$skewXdeg = clampRotation(self.$skewX * 180 / Math.PI);
-                self.$skewYdeg = clampRotation(self.$skewY * 180 / Math.PI);
-                self.$rotation = clampRotation(self.$skewY * 180 / Math.PI);
+                this._scaleX = m.scaleX;
+                this._scaleY = m.scaleY;
+                this._skewX = matrix.skewX;
+                this._skewY = matrix.skewY;
+                this._skewXdeg = MathUtil.clampRotation(this._skewX * 180 / Math.PI);
+                this._skewYdeg = MathUtil.clampRotation(this._skewY * 180 / Math.PI);
+                this._rotation = MathUtil.clampRotation(this._skewY * 180 / Math.PI);
             }
         }
 
         /**
-         * 获得这个显示对象以及它所有父级对象的连接矩阵。
+         * 获取矩阵
          */
-        $getConcatenatedMatrix(): Matrix {
-            let self = this;
-            let matrix = self.$concatenatedMatrix;
-            if (!matrix) {
-                matrix = self.$concatenatedMatrix = new Matrix();
+        public $getMatrix(): Matrix {
+            if (this._matrixDirty) {
+                this._matrixDirty = false;
+                this._matrix.updateScaleAndRotation(this._scaleX, this._scaleY, this._skewX, this._skewY);
             }
-            if (self.$parent) {
-                self.$parent.$getConcatenatedMatrix().premultiply(self.$getMatrix(), matrix);
+            this._matrix.tx = this._x;
+            this._matrix.ty = this._y;
+            return this._matrix;
+        }
+
+        /**
+         * 获得这个显示对象以及它所有父级对象的连接矩阵
+         */
+        public $getConcatenatedMatrix(): Matrix {
+            let matrix = this._concatenatedMatrix;
+            if (!matrix) {
+                matrix = this._concatenatedMatrix = new Matrix();
+            }
+            if (this._parent) {
+                this._parent.$getConcatenatedMatrix().premultiply(this.$getMatrix(), matrix);
             }
             else {
-                matrix.copy(self.$getMatrix());
+                matrix.copy(this.$getMatrix());
             }
-            let offsetX = self.$anchorOffsetX;
-            let offsetY = self.$anchorOffsetY;
-            let rect = self.$scrollRect;
+            let offsetX = this._anchorOffsetX;
+            let offsetY = this._anchorOffsetY;
+            let rect = this._scrollRect;
             if (rect) {
-                matrix.premultiply($TempMatrix.set(1, 0, 0, 1, -rect.x - offsetX, -rect.y - offsetY), matrix);
+                let temp = dou.recyclable(Matrix);
+                temp.set(1, 0, 0, 1, -rect.x - offsetX, -rect.y - offsetY);
+                matrix.premultiply(temp, matrix);
+                temp.recycle();
             }
             else if (offsetX != 0 || offsetY != 0) {
-                matrix.premultiply($TempMatrix.set(1, 0, 0, 1, -offsetX, -offsetY), matrix);
+                let temp = dou.recyclable(Matrix);
+                temp.set(1, 0, 0, 1, -offsetX, -offsetY);
+                matrix.premultiply(temp, matrix);
+                temp.recycle();
             }
-            return self.$concatenatedMatrix;
+            return this._concatenatedMatrix;
         }
 
         /**
          * 获取链接矩阵
          */
-        $getInvertedConcatenatedMatrix(): Matrix {
-            let self = this;
-            if (!self.$invertedConcatenatedMatrix) {
-                self.$invertedConcatenatedMatrix = new Matrix();
+        public $getInvertedConcatenatedMatrix(): Matrix {
+            if (!this._invertedConcatenatedMatrix) {
+                this._invertedConcatenatedMatrix = new Matrix();
             }
-            self.$getConcatenatedMatrix().$invertInto(self.$invertedConcatenatedMatrix);
-            return self.$invertedConcatenatedMatrix;
+            this.$getConcatenatedMatrix().inverse(this._invertedConcatenatedMatrix);
+            return this._invertedConcatenatedMatrix;
         }
 
         /**
-         * 表示 DisplayObject 实例相对于父级 DisplayObjectContainer 本地坐标的 x 坐标。<br/>
-         * 如果该对象位于具有变形的 DisplayObjectContainer 内，则它也位于包含 DisplayObjectContainer 的本地坐标系中。
-         * 因此，对于逆时针旋转 90 度的 DisplayObjectContainer，该 DisplayObjectContainer 的子级将继承逆时针旋转 90 度的坐标系。
+         * x 轴坐标
          */
+        public set x(value: number) {
+            this.$setX(value);
+        }
         public get x(): number {
             return this.$getX();
         }
 
-        $getX(): number {
-            return this.$x;
-        }
-
-        public set x(value: number) {
-            this.$setX(value);
-        }
-
-        $setX(value: number): boolean {
-            let self = this;
-            if (self.$x == value) {
+        public $setX(value: number): boolean {
+            if (this._x == value) {
                 return false;
             }
-            self.$x = value;
-            let p = self.$parent;
+            this._x = value;
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
@@ -333,35 +247,31 @@ namespace dou2d {
             return true;
         }
 
+        public $getX(): number {
+            return this._x;
+        }
+
         /**
-         * 表示 DisplayObject 实例相对于父级 DisplayObjectContainer 本地坐标的 y 坐标。<br/>
-         * 如果该对象位于具有变形的 DisplayObjectContainer 内，则它也位于包含 DisplayObjectContainer 的本地坐标系中。
-         * 因此，对于逆时针旋转 90 度的 DisplayObjectContainer，该 DisplayObjectContainer 的子级将继承逆时针旋转 90 度的坐标系。
+         * y 轴坐标
          */
+        public set y(value: number) {
+            this.$setY(value);
+        }
         public get y(): number {
             return this.$getY();
         }
 
-        $getY(): number {
-            return this.$y;
-        }
-
-        public set y(value: number) {
-            this.$setY(value);
-        }
-
-        $setY(value: number): boolean {
-            let self = this;
-            if (self.$y == value) {
+        public $setY(value: number): boolean {
+            if (this._y == value) {
                 return false;
             }
-            self.$y = value;
-            let p = self.$parent;
+            this._y = value;
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
@@ -369,260 +279,228 @@ namespace dou2d {
             return true;
         }
 
+        public $getY(): number {
+            return this._y;
+        }
+
         /**
-         * 表示从注册点开始应用的对象的水平缩放比例（百分比）。<br/>
-         * 1.0 等于 100% 缩放。
+         * 水平缩放值
          */
+        public set scaleX(value: number) {
+            this.$setScaleX(value);
+        }
         public get scaleX(): number {
             return this.$getScaleX();
         }
 
-        public set scaleX(value: number) {
-            this.$setScaleX(value);
-        }
-
-        $getScaleX(): number {
-            return this.$scaleX;
-        }
-
-        /**
-         * 设置水平缩放值
-         */
-        $setScaleX(value: number): void {
-            let self = this;
-            if (self.$scaleX == value) {
+        public $setScaleX(value: number): void {
+            if (this._scaleX == value) {
                 return;
             }
-            self.$scaleX = value;
-            self.$matrixDirty = true;
-
-            self.$updateUseTransform();
-            let p = self.$parent;
+            this._scaleX = value;
+            this._matrixDirty = true;
+            this.updateUseTransform();
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
+        public $getScaleX(): number {
+            return this._scaleX;
+        }
+
         /**
-         * 表示从对象注册点开始应用的对象的垂直缩放比例（百分比）。1.0 是 100% 缩放。
+         * 垂直缩放值
          */
+        public set scaleY(value: number) {
+            this.$setScaleY(value);
+        }
         public get scaleY(): number {
             return this.$getScaleY();
         }
 
-        public set scaleY(value: number) {
-            this.$setScaleY(value);
-        }
-
-        $getScaleY(): number {
-            return this.$scaleY;
-        }
-
-        /**
-         * 设置垂直缩放值
-         */
-        $setScaleY(value: number): void {
-            let self = this;
-            if (self.$scaleY == value) {
+        public $setScaleY(value: number): void {
+            if (this._scaleY == value) {
                 return;
             }
-            self.$scaleY = value;
-            self.$matrixDirty = true;
-
-            self.$updateUseTransform();
-            let p = self.$parent;
+            this._scaleY = value;
+            this._matrixDirty = true;
+            this.updateUseTransform();
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
+        public $getScaleY(): number {
+            return this._scaleY;
+        }
+
         /**
-         * 表示 DisplayObject 实例距其原始方向的旋转程度，以度为单位。
-         * 从 0 到 180 的值表示顺时针方向旋转；从 0 到 -180 的值表示逆时针方向旋转。对于此范围之外的值，可以通过加上或
-         * 减去 360 获得该范围内的值。例如，myDisplayObject.rotation = 450语句与 myDisplayObject.rotation = 90 是相同的。
+         * 旋转值
          */
+        public set rotation(value: number) {
+            this.$setRotation(value);
+        }
         public get rotation(): number {
             return this.$getRotation();
         }
 
-        $getRotation(): number {
-            return this.$rotation;
-        }
-
-        public set rotation(value: number) {
-            this.$setRotation(value);
-        }
-
-        $setRotation(value: number): void {
-            value = clampRotation(value);
-            let self = this;
-            if (value == self.$rotation) {
+        public $setRotation(value: number): void {
+            value = MathUtil.clampRotation(value);
+            if (value == this._rotation) {
                 return;
             }
-            let delta = value - self.$rotation;
+            let delta = value - this._rotation;
             let angle = delta / 180 * Math.PI;
-            self.$skewX += angle;
-            self.$skewY += angle;
-            self.$rotation = value;
-            self.$matrixDirty = true;
-
-            self.$updateUseTransform();
-            let p = self.$parent;
+            this._skewX += angle;
+            this._skewY += angle;
+            this._rotation = value;
+            this._matrixDirty = true;
+            this.updateUseTransform();
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
-        /**
-         * 表示DisplayObject的x方向斜切
-         */
-        public get skewX(): number {
-            return this.$skewXdeg;
+        public $getRotation(): number {
+            return this._rotation;
         }
 
+        /**
+         * 水平方向斜切
+         */
         public set skewX(value: number) {
             this.$setSkewX(value);
         }
+        public get skewX(): number {
+            return this.$getSkewX();
+        }
 
-        $setSkewX(value: number): void {
-            let self = this;
-            if (value == self.$skewXdeg) {
+        public $setSkewX(value: number): void {
+            if (value == this._skewXdeg) {
                 return;
             }
-            self.$skewXdeg = value;
-
-            value = clampRotation(value);
+            this._skewXdeg = value;
+            value = MathUtil.clampRotation(value);
             value = value / 180 * Math.PI;
-
-            self.$skewX = value;
-            self.$matrixDirty = true;
-
-            self.$updateUseTransform();
-            let p = self.$parent;
+            this._skewX = value;
+            this._matrixDirty = true;
+            this.updateUseTransform();
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
-        /**
-         * 表示DisplayObject的y方向斜切
-         */
-        public get skewY(): number {
-            return this.$skewYdeg;
+        public $getSkewX(): number {
+            return this._skewXdeg;
         }
 
+        /**
+         * 垂直方向斜切
+         */
         public set skewY(value: number) {
             this.$setSkewY(value);
         }
+        public get skewY(): number {
+            return this.$getSkewY();
+        }
 
-        $setSkewY(value: number): void {
-            let self = this;
-            if (value == self.$skewYdeg) {
+        public $setSkewY(value: number): void {
+            if (value == this._skewYdeg) {
                 return;
             }
-            self.$skewYdeg = value;
-
-            value = clampRotation(value);
-            value = (value + self.$rotation) / 180 * Math.PI;
-
-            self.$skewY = value;
-            self.$matrixDirty = true;
-
-            self.$updateUseTransform();
-            let p = self.$parent;
+            this._skewYdeg = value;
+            value = MathUtil.clampRotation(value);
+            value = (value + this._rotation) / 180 * Math.PI;
+            this._skewY = value;
+            this._matrixDirty = true;
+            this.updateUseTransform();
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
+        public $getSkewY(): number {
+            return this._skewYdeg;
+        }
+
         /**
-         * 表示显示对象的宽度，以像素为单位。宽度是根据显示对象内容的范围来计算的。
+         * 宽度
          */
+        public set width(value: number) {
+            this.$setWidth(value);
+        }
         public get width(): number {
             return this.$getWidth();
         }
 
-        /**
-         * 获取显示宽度
-         */
-        $getWidth(): number {
-            let self = this;
-            return isNaN(self.$explicitWidth) ? self.$getOriginalBounds().width : self.$explicitWidth;
-        }
-
-        public set width(value: number) {
-            this.$setWidth(value);
-        }
-
-        /**
-         * 设置显示宽度
-         */
-        $setWidth(value: number): void {
+        public $setWidth(value: number): void {
             value = isNaN(value) ? NaN : value;
-            if (this.$explicitWidth == value) {
+            if (this._explicitWidth == value) {
                 return;
             }
-            this.$explicitWidth = value;
+            this._explicitWidth = value;
+        }
+
+        public $getWidth(): number {
+            return isNaN(this._explicitWidth) ? this.$getOriginalBounds().width : this._explicitWidth;
         }
 
         /**
-         * 表示显示对象的高度，以像素为单位。高度是根据显示对象内容的范围来计算的。
+         * 高度
          */
+        public set height(value: number) {
+            this.$setHeight(value);
+        }
         public get height(): number {
             return this.$getHeight();
         }
 
-        /**
-         * 获取显示高度
-         */
-        $getHeight(): number {
-            let self = this;
-            return isNaN(self.$explicitHeight) ? self.$getOriginalBounds().height : self.$explicitHeight;
-        }
-
-        public set height(value: number) {
-            this.$setHeight(value);
-        }
-
-        /**
-         * 设置显示高度
-         */
-        $setHeight(value: number): void {
+        public $setHeight(value: number): void {
             value = isNaN(value) ? NaN : value;
-            if (this.$explicitHeight == value) {
+            if (this._explicitHeight == value) {
                 return;
             }
-            this.$explicitHeight = value;
+            this._explicitHeight = value;
+        }
+
+        public $getHeight(): number {
+            return isNaN(this._explicitHeight) ? this.$getOriginalBounds().height : this._explicitHeight;
         }
 
         /**
@@ -640,371 +518,304 @@ namespace dou2d {
         }
 
         /**
-         * 表示从对象绝对锚点X。
+         * x 轴锚点
          */
-        public get anchorOffsetX(): number {
-            return this.$anchorOffsetX;
-        }
-
         public set anchorOffsetX(value: number) {
             this.$setAnchorOffsetX(value);
         }
+        public get anchorOffsetX(): number {
+            return this.$getAnchorOffsetX();
+        }
 
-        $setAnchorOffsetX(value: number): void {
-            let self = this;
-            if (self.$anchorOffsetX == value) {
+        public $setAnchorOffsetX(value: number): void {
+            if (this._anchorOffsetX == value) {
                 return;
             }
-            self.$anchorOffsetX = value;
-            let p = self.$parent;
+            this._anchorOffsetX = value;
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
-        /**
-         * 表示从对象绝对锚点Y。
-         */
-        public get anchorOffsetY(): number {
-            return this.$anchorOffsetY;
+        public $getAnchorOffsetX(): number {
+            return this._anchorOffsetX;
         }
 
+        /**
+         * y 轴锚点
+         */
         public set anchorOffsetY(value: number) {
             this.$setAnchorOffsetY(value);
         }
+        public get anchorOffsetY(): number {
+            return this.$getAnchorOffsetY();
+        }
 
-        $setAnchorOffsetY(value: number): void {
-            let self = this;
-            if (self.$anchorOffsetY == value) {
+        public $setAnchorOffsetY(value: number): void {
+            if (this._anchorOffsetY == value) {
                 return;
             }
-            self.$anchorOffsetY = value;
-            let p = self.$parent;
+            this._anchorOffsetY = value;
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
-        /**
-         * 显示对象是否可见。不可见的显示对象将被禁用。例如，如果实例的 visible 为 false，则无法接受触摸或用户交互操作。
-         */
-        public get visible(): boolean {
-            return this.$visible;
+        public $getAnchorOffsetY(): number {
+            return this._anchorOffsetY;
         }
 
+        /**
+         * 是否可见
+         */
         public set visible(value: boolean) {
             this.$setVisible(value);
         }
+        public get visible(): boolean {
+            return this.$getVisible();
+        }
 
-        $setVisible(value: boolean): void {
-            let self = this;
-            if (self.$visible == value) {
+        public $setVisible(value: boolean): void {
+            if (this._visible == value) {
                 return;
             }
-            self.$visible = value;
-            self.$updateRenderMode();
-            let p = self.$parent;
+            this._visible = value;
+            this.$updateRenderMode();
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
-        /**
-         * 如果设置为 true，则 Egret 运行时将缓存显示对象的内部位图表示形式。此缓存可以提高包含复杂矢量内容的显示对象的性能。
-         * 将 cacheAsBitmap 属性设置为 true 后，呈现并不更改，但是，显示对象将自动执行像素贴紧。执行速度可能会大大加快，
-         * 具体取决于显示对象内容的复杂性。最好将 cacheAsBitmap 属性与主要具有静态内容且不频繁缩放或旋转的显示对象一起使用。<br/>
-         * 注意：在内存超过上限的情况下，即使将 cacheAsBitmap 属性设置为 true，显示对象也不使用位图缓存。
-         */
-        public get cacheAsBitmap(): boolean {
-            return this.$cacheAsBitmap;
-        }
-
-        public set cacheAsBitmap(value: boolean) {
-            let self = this;
-            self.$cacheAsBitmap = value;
-            self.$setHasDisplayList(value);
-        }
-
-        public $setHasDisplayList(value: boolean): void {
-            let self = this;
-            let hasDisplayList = !!self.$displayList;
-            if (hasDisplayList == value) {
-                return;
-            }
-            if (value) {
-                let displayList = DisplayList.create(self);
-                if (displayList) {
-                    self.$displayList = displayList;
-                    self.$cacheDirty = true;
-                }
-            }
-            else {
-                self.$displayList = null;
-            }
-        }
-
-        $cacheDirtyUp(): void {
-            let p = this.$parent;
-            if (p && !p.$cacheDirty) {
-                p.$cacheDirty = true;
-                p.$cacheDirtyUp();
-            }
+        public $getVisible(): boolean {
+            return this._visible;
         }
 
         /**
-         * 表示指定对象的 Alpha 透明度值。
-         * 有效值为 0（完全透明）到 1（完全不透明）。alpha 设置为 0 的显示对象是可触摸的，即使它们不可见。
+         * 透明度
          */
-        public get alpha(): number {
-            return this.$alpha;
-        }
-
         public set alpha(value: number) {
             this.$setAlpha(value);
         }
+        public get alpha(): number {
+            return this.$getAlpha();
+        }
 
-        $setAlpha(value: number): void {
-            let self = this;
-            if (self.$alpha == value) {
+        public $setAlpha(value: number): void {
+            if (this._alpha == value) {
                 return;
             }
-            self.$alpha = value;
-
-            self.$updateRenderMode();
-            let p = self.$parent;
+            this._alpha = value;
+            this.$updateRenderMode();
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
-        /**
-         * 指定此对象是否接收触摸或其他用户输入。默认值为 false，这表示默认情况下，显示列表上的任何 DisplayObject 实例都不会接收触摸事件或
-         * 其他用户输入事件。如果将 touchEnabled 设置为 false，则实例将不接收任何触摸事件（或其他用户输入事件）。显示列表上的该实例的任
-         * 何子级都不会受到影响。要更改显示列表上对象的所有子级的 touchEnabled 行为，请使用 DisplayObjectContainer.touchChildren。
-         */
-        public get touchEnabled(): boolean {
-            return this.$getTouchEnabled();
-        }
-
-        public set touchEnabled(value: boolean) {
-            this.$setTouchEnabled(value);
-        }
-
-        $getTouchEnabled(): boolean {
-            return this.$touchEnabled;
-        }
-
-        $setTouchEnabled(value: boolean): void {
-            this.$touchEnabled = !!value;
+        public $getAlpha(): number {
+            return this._alpha;
         }
 
         /**
-         * 显示对象的滚动矩形范围。显示对象被裁切为矩形定义的大小，当您更改 scrollRect 对象的 x 和 y 属性时，它会在矩形内滚动。
-         * 滚动的显示对象始终以整像素为增量进行滚动。您可以通过设置 scrollRect Rectangle 对象的 x 属性来左右滚动对象， 还可以通过设置
-         * scrollRect 对象的 y 属性来上下滚动对象。如果显示对象旋转了 90 度，并且您左右滚动它，则实际上显示对象会上下滚动。<br/>
-         *
-         * 注意：要改变一个显示对象 scrollRect 属性的值，您必引用整个 scrollRect 对象，然后将它重新赋值给显示对象的 scrollRect 属性。
-         * @example 以下代码改变了显示对象 scrollRect 的 x 属性值：
-         * <pre>
-         *     let myRectangle:Rectangle = myDisplayObject.scrollRect;
-         *     myRectangle.x += 10;
-         *     myDisplayObject.scrollRect = myRectangle;//设置完scrollRect的x、y、width、height值之后，一定要对myDisplayObject重新赋值scrollRect，不然会出问题。
-         * </pre>
+         * 给当前对象设置填充色
          */
-        public get scrollRect(): Rectangle {
-            return this.$scrollRect;
+        public set tint(value) {
+            this._tint = value;
+            this.$tintRGB = (value >> 16) + (value & 0xff00) + ((value & 0xff) << 16);
+        }
+        public get tint(): number {
+            return this._tint;
         }
 
+        /**
+         * 混合模式
+         */
+        public set blendMode(value: BlendMode) {
+            this.$setBlendMode(value);
+        }
+        public get blendMode(): BlendMode {
+            return this.$getBlendMode();
+        }
+
+        public $setBlendMode(value: BlendMode): void {
+            if (this._blendMode == value) {
+                return;
+            }
+            this._blendMode = value;
+            this.$updateRenderMode();
+            let p = this._parent;
+            if (p && !p.$cacheDirty) {
+                p.$cacheDirty = true;
+                p.$cacheDirtyUp();
+            }
+            let maskedObject = this.$maskedObject;
+            if (maskedObject && !maskedObject.$cacheDirty) {
+                maskedObject.$cacheDirty = true;
+                maskedObject.$cacheDirtyUp();
+            }
+        }
+
+        public $getBlendMode(): BlendMode {
+            return this._blendMode;
+        }
+
+        /**
+         * 显示对象的滚动矩形范围
+         * * 当前值是对象时, 修改当前值的属性之后, 需要重新赋值才会生效
+         * * 显示对象被裁切为矩形定义的大小, 当您更改 scrollRect 对象的 x 和 y 属性时, 它会在矩形内滚动
+         */
         public set scrollRect(value: Rectangle) {
             this.$setScrollRect(value);
         }
+        public get scrollRect(): Rectangle {
+            return this.$getScrollRect();
+        }
 
-        private $setScrollRect(value: Rectangle): void {
-            let self = this;
-            if (!value && !self.$scrollRect) {
-                self.$updateRenderMode();
+        public $setScrollRect(value: Rectangle): void {
+            if (!value && !this._scrollRect) {
+                this.$updateRenderMode();
                 return;
             }
             if (value) {
-                if (!self.$scrollRect) {
-                    self.$scrollRect = new Rectangle();
+                if (!this._scrollRect) {
+                    this._scrollRect = new Rectangle();
                 }
-                self.$scrollRect.copy(value);
+                this._scrollRect.copy(value);
             }
             else {
-                self.$scrollRect = null;
+                this._scrollRect = null;
             }
-            self.$updateRenderMode();
-            let p = self.$parent;
+            this.$updateRenderMode();
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
-        /**
-         * BlendMode 枚举中的一个值，用于指定要使用的混合模式，确定如何将一个源（新的）图像绘制到目标（已有）的图像上<br/>
-         * 如果尝试将此属性设置为无效值，则运行时会将此值设置为 BlendMode.NORMAL。
-         */
-        public get blendMode(): string {
-            return numberToBlendMode(this.$blendMode);
-        }
-
-        public set blendMode(value: string) {
-            let self = this;
-            let mode = blendModeToNumber(value);
-            if (self.$blendMode == mode) {
-                return;
-            }
-            self.$blendMode = mode;
-
-            self.$updateRenderMode();
-            let p = self.$parent;
-            if (p && !p.$cacheDirty) {
-                p.$cacheDirty = true;
-                p.$cacheDirtyUp();
-            }
-            let maskedObject = self.$maskedObject;
-            if (maskedObject && !maskedObject.$cacheDirty) {
-                maskedObject.$cacheDirty = true;
-                maskedObject.$cacheDirtyUp();
-            }
+        public $getScrollRect(): Rectangle {
+            return this._scrollRect;
         }
 
         /**
-         * 调用显示对象被指定的 mask 对象遮罩。要确保当舞台缩放时蒙版仍然有效，mask 显示对象必须处于显示列表的活动部分。
-         * 但不绘制 mask 对象本身。将 mask 设置为 null 可删除蒙版。要能够缩放遮罩对象，它必须在显示列表中。要能够拖动蒙版
-         * 对象，它必须在显示列表中。<br/>
-         * 注意：单个 mask 对象不能用于遮罩多个执行调用的显示对象。在将 mask 分配给第二个显示对象时，会撤消其作为第一个对象的遮罩，
-         * 该对象的 mask 属性将变为 null。
-         *
-         * 下面例子为 mask 为 Rectangle 类型对象，这种情况下，修改 mask 的值后，一定要对 myDisplayObject 重新赋值 mask，不然会出问题。
-         * @example 以下代码改变了显示对象 mask 的 x 属性值：
-         * <pre>
-         *     let myMask:Rectangle = myDisplayObject.mask;
-         *     myMask.x += 10;
-         *     myDisplayObject.mask = myMask;//设置完 mask 的x、y、width、height值之后，一定要对myDisplayObject重新赋值 mask，不然会出问题。
-         * </pre>
+         * 当前对象的遮罩
+         * * 当前值是对象时, 修改当前值的属性之后, 需要重新赋值才会生效
+         * * 如果遮罩是一个显示对象, 遮罩对象添加到舞台中不会进行绘制
+         * * 如果遮罩是一个显示对象, 要确保当舞台缩放时蒙版仍然有效需要将该遮罩添加到显示列表中
+         * * 如果遮罩是一个显示对象, 该遮罩对象不能用于遮罩多个执行调用的显示对象, 将其分配给第二个显示对象时, 会撤消其作为第一个对象的遮罩
          */
-        public get mask(): DisplayObject | Rectangle {
-            let self = this;
-            return self.$mask ? self.$mask : self.$maskRect;
-        }
-
         public set mask(value: DisplayObject | Rectangle) {
-            let self = this;
-            if (value === self) {
+            this.$setMask(value);
+        }
+        public get mask(): DisplayObject | Rectangle {
+            return this.$getMask();
+        }
+
+        public $setMask(value: DisplayObject | Rectangle): void {
+            if (value === this) {
                 return;
             }
             if (value) {
                 if (value instanceof DisplayObject) {
-                    if (value == self.$mask) {
+                    if (value == this.$mask) {
                         return;
                     }
                     if (value.$maskedObject) {
                         value.$maskedObject.mask = null;
                     }
-                    value.$maskedObject = self;
-
-                    self.$mask = value;
+                    value.$maskedObject = this;
+                    this.$mask = value;
                     value.$updateRenderMode();
-                    if (self.$maskRect) {
-                        self.$maskRect = null;
+                    if (this.$maskRect) {
+                        this.$maskRect = null;
                     }
                 }
                 else {
-                    if (!self.$maskRect) {
-                        self.$maskRect = new Rectangle();
+                    if (!this.$maskRect) {
+                        this.$maskRect = new Rectangle();
                     }
-                    self.$maskRect.copy(value);
-                    if (self.$mask) {
-                        self.$mask.$maskedObject = null;
-                        self.$mask.$updateRenderMode();
+                    this.$maskRect.copy(value);
+                    if (this.$mask) {
+                        this.$mask.$maskedObject = null;
+                        this.$mask.$updateRenderMode();
                     }
-                    if (self.mask) {
-                        self.$mask = null;
+                    if (this.mask) {
+                        this.$mask = null;
                     }
                 }
             }
             else {
-                if (self.$mask) {
-                    self.$mask.$maskedObject = null;
-                    self.$mask.$updateRenderMode();
+                if (this.$mask) {
+                    this.$mask.$maskedObject = null;
+                    this.$mask.$updateRenderMode();
                 }
-                if (self.mask) {
-                    self.$mask = null;
+                if (this.mask) {
+                    this.$mask = null;
                 }
-                if (self.$maskRect) {
-                    self.$maskRect = null;
+                if (this.$maskRect) {
+                    this.$maskRect = null;
                 }
             }
-            self.$updateRenderMode();
+            this.$updateRenderMode();
         }
 
-        private $setMaskRect(value: Rectangle): void {
-            let self = this;
-            if (!value && !self.$maskRect) {
-                return;
-            }
-            if (value) {
-                if (!self.$maskRect) {
-                    self.$maskRect = new Rectangle();
-                }
-                self.$maskRect.copy(value);
-            }
-            else {
-                self.$maskRect = null;
-            }
+        public $getMask(): DisplayObject | Rectangle {
+            return this.$mask ? this.$mask : this.$maskRect;
         }
 
         /**
-         * 包含当前与显示对象关联的每个滤镜对象的索引数组。
+         * 包含当前与显示对象关联的每个滤镜对象的索引数组
          */
-        public get filters(): Array<Filter | CustomFilter> {
-            return this.$filters;
+        public set filters(value: (Filter | CustomFilter)[]) {
+            this.$setFilters(value);
+        }
+        public get filters(): (Filter | CustomFilter)[] {
+            return this.$getFilters();
         }
 
-        public set filters(value: Array<Filter | CustomFilter>) {
-            let self = this;
-            let filters: Filter[] = self.$filters;
+        public $setFilters(value: (Filter | CustomFilter)[]): void {
+            let filters = this._filters;
             if (!filters && !value) {
-                self.$filters = value;
-                self.$updateRenderMode();
-                let p = self.$parent;
+                this._filters = value;
+                this.$updateRenderMode();
+                let p = this._parent;
                 if (p && !p.$cacheDirty) {
                     p.$cacheDirty = true;
                     p.$cacheDirtyUp();
                 }
-                let maskedObject = self.$maskedObject;
+                let maskedObject = this.$maskedObject;
                 if (maskedObject && !maskedObject.$cacheDirty) {
                     maskedObject.$cacheDirty = true;
                     maskedObject.$cacheDirtyUp();
@@ -1013,109 +824,207 @@ namespace dou2d {
             }
             if (value && value.length) {
                 value = value.concat();
-                self.$filters = value;
+                this._filters = value;
             }
             else {
-                self.$filters = value;
+                this._filters = value;
             }
-            self.$updateRenderMode();
-            let p = self.$parent;
+            this.$updateRenderMode();
+            let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
                 p.$cacheDirtyUp();
             }
-            let maskedObject = self.$maskedObject;
+            let maskedObject = this.$maskedObject;
             if (maskedObject && !maskedObject.$cacheDirty) {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
         }
 
+        public $getFilters(): (Filter | CustomFilter)[] {
+            return this._filters;
+        }
+
         /**
-         * 返回一个矩形，该矩形定义相对于 targetCoordinateSpace 对象坐标系的显示对象区域。
-         * @param targetCoordinateSpace 定义要使用的坐标系的显示对象。
-         * @param resultRect 一个用于存储结果的可复用Rectangle实例，传入此参数能够减少内部创建对象的次数，从而获得更高的运行性能。
-         * @returns 定义与 targetCoordinateSpace 对象坐标系统相关的显示对象面积的矩形。
+         * 是否将当前的显示对象缓存为位图
          */
-        public getTransformedBounds(targetCoordinateSpace: DisplayObject, resultRect?: Rectangle): Rectangle {
-            targetCoordinateSpace = targetCoordinateSpace || this;
-            return this.$getTransformedBounds(targetCoordinateSpace, resultRect);
+        public set cacheAsBitmap(value: boolean) {
+            this._cacheAsBitmap = value;
+            this.$setHasDisplayList(value);
+        }
+        public get cacheAsBitmap(): boolean {
+            return this._cacheAsBitmap;
+        }
+
+        public $setHasDisplayList(value: boolean): void {
+            let hasDisplayList = !!this.$displayList;
+            if (hasDisplayList == value) {
+                return;
+            }
+            if (value) {
+                let displayList = DisplayList.create(this);
+                if (displayList) {
+                    this.$displayList = displayList;
+                    this.$cacheDirty = true;
+                }
+            }
+            else {
+                this.$displayList = null;
+            }
+        }
+
+        /**
+         * 是否接收触摸事件
+         */
+        public set touchEnabled(value: boolean) {
+            this.$setTouchEnabled(value);
+        }
+        public get touchEnabled(): boolean {
+            return this.$getTouchEnabled();
+        }
+
+        public $setTouchEnabled(value: boolean): void {
+            this._touchEnabled = !!value;
+        }
+
+        public $getTouchEnabled(): boolean {
+            return this._touchEnabled;
+        }
+
+        /**
+         * 设置对象的 Z 轴顺序
+         */
+        public set zIndex(value: number) {
+            this._zIndex = value;
+            if (this.parent) {
+                this.parent.$sortDirty = true;
+            }
+        }
+        public get zIndex(): number {
+            return this._zIndex;
+        }
+
+        /**
+         * 允许对象使用 zIndex 排序
+         */
+        public set sortableChildren(value: boolean) {
+            this._sortableChildren = value;
+        }
+        public get sortableChildren(): boolean {
+            return this._sortableChildren;
+        }
+
+        /**
+         * 显示对象添加到舞台
+         */
+        public $onAddToStage(stage: Stage, nestLevel: number): void {
+            this._stage = stage;
+            this._nestLevel = nestLevel;
+            this.dispatch(Event2D.ADDED_TO_STAGE);
+        }
+
+        /**
+         * 显示对象从舞台移除
+         */
+        public $onRemoveFromStage(): void {
+            this._nestLevel = 0;
+            this._stage = null;
+            this.dispatch(Event2D.REMOVED_FROM_STAGE);
+        }
+
+        protected updateUseTransform(): void {
+            if (this._scaleX == 1 && this._scaleY == 1 && this._skewX == 0 && this._skewY == 0) {
+                this.$useTranslate = false;
+            }
+            else {
+                this.$useTranslate = true;
+            }
+        }
+
+        public $cacheDirtyUp(): void {
+            let p = this._parent;
+            if (p && !p.$cacheDirty) {
+                p.$cacheDirty = true;
+                p.$cacheDirtyUp();
+            }
+        }
+
+        /**
+         * 对子项进行排序
+         */
+        public sortChildren(): void {
+            this.$sortDirty = false;
+        }
+
+        /**
+         * 返回一个矩形，该矩形定义相对于 targetCoordinateSpace 对象坐标系的显示对象区域
+         */
+        public getTransformedBounds(targetCoordinateSpace: DisplayObject, result?: Rectangle): Rectangle {
+            return this.$getTransformedBounds(targetCoordinateSpace, result);
         }
 
         /**
          * 获取显示对象的测量边界
-         * @param resultRect {Rectangle} 可选参数，传入用于保存结果的Rectangle对象，避免重复创建对象。
-         * @param calculateAnchor {boolean} 可选参数，是否会计算锚点。
-         * @returns {Rectangle}
          */
-        public getBounds(resultRect?: Rectangle, calculateAnchor: boolean = true): Rectangle {
-            let self = this;
-            resultRect = self.$getTransformedBounds(self, resultRect);
+        public getBounds(result?: Rectangle, calculateAnchor: boolean = true): Rectangle {
+            result = this.$getTransformedBounds(this, result);
             if (calculateAnchor) {
-                if (self.$anchorOffsetX != 0) {
-                    resultRect.x -= self.$anchorOffsetX;
+                if (this._anchorOffsetX != 0) {
+                    result.x -= this._anchorOffsetX;
                 }
-                if (self.$anchorOffsetY != 0) {
-                    resultRect.y -= self.$anchorOffsetY;
+                if (this._anchorOffsetY != 0) {
+                    result.y -= this._anchorOffsetY;
                 }
             }
-            return resultRect;
+            return result;
         }
 
-        $getTransformedBounds(targetCoordinateSpace: DisplayObject, resultRect?: Rectangle): Rectangle {
-            let self = this;
-            let bounds = self.$getOriginalBounds();
-            if (!resultRect) {
-                resultRect = new Rectangle();
+        public $getTransformedBounds(targetCoordinateSpace: DisplayObject, result?: Rectangle): Rectangle {
+            let bounds = this.$getOriginalBounds();
+            if (!result) {
+                result = new Rectangle();
             }
-            resultRect.copy(bounds);
-            if (targetCoordinateSpace == self) {
-                return resultRect;
+            result.copy(bounds);
+            if (targetCoordinateSpace == this) {
+                return result;
             }
-            let m: Matrix;
             if (targetCoordinateSpace) {
-                m = $TempMatrix;
+                let m = dou.recyclable(Matrix);
                 let invertedTargetMatrix = targetCoordinateSpace.$getInvertedConcatenatedMatrix();
-                invertedTargetMatrix.premultiply(self.$getConcatenatedMatrix(), m);
+                invertedTargetMatrix.premultiply(this.$getConcatenatedMatrix(), m);
+                m.transformBounds(result);
+                m.recycle();
             } else {
-                m = self.$getConcatenatedMatrix();
+                let m = this.$getConcatenatedMatrix();
+                m.transformBounds(result);
             }
-            m.transformBounds(resultRect);
-            return resultRect;
+            return result;
         }
 
         /**
-         * 将从舞台（全局）坐标转换为显示对象的（本地）坐标。
-         * @param stageX 舞台坐标x
-         * @param stageY 舞台坐标y
-         * @param resultPoint 一个用于存储结果的可复用 Point 实例，传入此参数能够减少内部创建对象的次数，从而获得更高的运行性能。
-         * @returns 具有相对于显示对象的坐标的 Point 对象。
+         * 从全局坐标转换为本地坐标
          */
-        public globalToLocal(stageX: number = 0, stageY: number = 0, resultPoint?: Point): Point {
+        public globalToLocal(stageX: number = 0, stageY: number = 0, result?: Point): Point {
             let m = this.$getInvertedConcatenatedMatrix();
-            return m.transformPoint(stageX, stageY, resultPoint);
+            return m.transformPoint(stageX, stageY, result);
         }
 
         /**
-         * 将显示对象的（本地）坐标转换为舞台（全局）坐标。
-         * @param localX 本地坐标 x
-         * @param localY 本地坐标 y
-         * @param resultPoint 一个用于存储结果的可复用 Point 实例，传入此参数能够减少内部创建对象的次数，从而获得更高的运行性能。
-         * @returns 一个具有相对于舞台坐标的 Point 对象。
+         * 将本地坐标转换为全局坐标
          */
-        public localToGlobal(localX: number = 0, localY: number = 0, resultPoint?: Point): Point {
+        public localToGlobal(localX: number = 0, localY: number = 0, result?: Point): Point {
             let m = this.$getConcatenatedMatrix();
-            return m.transformPoint(localX, localY, resultPoint);
+            return m.transformPoint(localX, localY, result);
         }
 
         /**
-         * 获取显示对象占用的矩形区域集合，通常包括自身绘制的测量区域，如果是容器，还包括所有子项占据的区域。
+         * 获取显示对象占用的矩形区域, 通常包括自身绘制的测量区域, 如果是容器, 还包括所有子项占据的区域
          */
-        $getOriginalBounds(): Rectangle {
-            let self = this;
-            let bounds: Rectangle = self.$getContentBounds();
-            self.$measureChildBounds(bounds);
-            let offset = self.$measureFiltersOffset(false);
+        public $getOriginalBounds(): Rectangle {
+            let bounds = this.$getContentBounds();
+            this.$measureChildBounds(bounds);
+            let offset = this.$measureFiltersOffset(false);
             if (offset) {
                 bounds.x += offset.minX;
                 bounds.y += offset.minY;
@@ -1126,78 +1035,42 @@ namespace dou2d {
         }
 
         /**
-         * 测量子项占用的矩形区域
-         * @param bounds 测量结果存储在这个矩形对象内
+         * 获取显示对象自身占用的矩形区域
          */
-        $measureChildBounds(bounds: Rectangle): void {
-
-        }
-
-        $getContentBounds(): Rectangle {
-            let bounds = $TempRectangle;
-            bounds.setEmpty();
+        public $getContentBounds(): Rectangle {
+            let bounds = tempRect;
+            bounds.clear();
             this.$measureContentBounds(bounds);
             return bounds;
         }
 
         /**
-         * 测量自身占用的矩形区域，注意：此测量结果并不包括子项占据的区域。
-         * @param bounds 测量结果存储在这个矩形对象内
+         * 测量自身占用的矩形区域
          */
-        $measureContentBounds(bounds: Rectangle): void {
+        public $measureContentBounds(bounds: Rectangle): void {
         }
 
         /**
-         * 获取渲染节点
+         * 测量子项占用的矩形区域
          */
-        $getRenderNode(): RenderNode {
-            let self = this;
-            let node = self.$renderNode;
-            if (!node) {
-                return null;
-            }
-
-            if (self.$renderDirty) {
-                node.cleanBeforeRender();
-                self.$updateRenderNode();
-                self.$renderDirty = false;
-                node = self.$renderNode;
-            }
-            return node;
+        public $measureChildBounds(bounds: Rectangle): void {
         }
 
-        public $updateRenderMode(): void {
-            let self = this;
-            if (!self.$visible || self.$alpha <= 0 || self.$maskedObject) {
-                self.$renderMode = RenderMode.none;
-            }
-            else if (self.filters && self.filters.length > 0) {
-                self.$renderMode = RenderMode.filter;
-            }
-            else if (self.$blendMode !== 0 || (self.$mask && self.$mask.$stage)) {
-                self.$renderMode = RenderMode.clip;
-            }
-            else if (self.$scrollRect || self.$maskRect) {
-                self.$renderMode = RenderMode.scrollRect;
-            }
-            else {
-                self.$renderMode = null;
-            }
-        }
-
+        /**
+         * 测量滤镜偏移量
+         */
         private $measureFiltersOffset(fromParent: boolean): any {
             let display: DisplayObject = this;
-            let minX: number = 0;
-            let minY: number = 0;
-            let maxX: number = 0;
-            let maxY: number = 0;
+            let minX = 0;
+            let minY = 0;
+            let maxX = 0;
+            let maxY = 0;
             while (display) {
-                let filters = display.$filters;
+                let filters = display._filters;
                 if (filters && filters.length) {
                     let length = filters.length;
-                    for (let i: number = 0; i < length; i++) {
-                        let filter: Filter = filters[i];
-                        //todo 缓存这个数据
+                    for (let i = 0; i < length; i++) {
+                        let filter = filters[i];
                         if (filter.type == "blur") {
                             let offsetX = (<BlurFilter>filter).blurX;
                             let offsetY = (<BlurFilter>filter).blurY;
@@ -1213,19 +1086,19 @@ namespace dou2d {
                             minY -= offsetY;
                             maxX += offsetX;
                             maxY += offsetY;
-                            let distance: number = (<DropShadowFilter>filter).distance || 0;
-                            let angle: number = (<DropShadowFilter>filter).angle || 0;
+                            let distance = (<DropShadowFilter>filter).distance || 0;
+                            let angle = (<DropShadowFilter>filter).angle || 0;
                             let distanceX = 0;
                             let distanceY = 0;
                             if (distance != 0) {
-                                distanceX = distance * egret.NumberUtils.cos(angle);
+                                distanceX = distance * Math.cos(angle);
                                 if (distanceX > 0) {
                                     distanceX = Math.ceil(distanceX);
                                 }
                                 else {
                                     distanceX = Math.floor(distanceX);
                                 }
-                                distanceY = distance * egret.NumberUtils.sin(angle);
+                                distanceY = distance * Math.sin(angle);
                                 if (distanceY > 0) {
                                     distanceY = Math.ceil(distanceY);
                                 }
@@ -1237,7 +1110,8 @@ namespace dou2d {
                                 minY += distanceY;
                                 maxY += distanceY;
                             }
-                        } else if (filter.type == "custom") {
+                        }
+                        else if (filter.type == "custom") {
                             let padding = (<CustomFilter>filter).padding;
                             minX -= padding;
                             minY -= padding;
@@ -1247,7 +1121,7 @@ namespace dou2d {
                     }
                 }
                 if (fromParent) {
-                    display = display.$parent;
+                    display = display._parent;
                 }
                 else {
                     display = null;
@@ -1261,23 +1135,63 @@ namespace dou2d {
         }
 
         /**
-         * 获取相对于指定根节点的连接矩阵。
-         * @param root 根节点显示对象
-         * @param matrix 目标显示对象相对于舞台的完整连接矩阵。
+         * 获取渲染节点
          */
-        $getConcatenatedMatrixAt(root: DisplayObject, matrix: Matrix): void {
+        public $getRenderNode(): RenderNode {
+            let node = this.$renderNode;
+            if (!node) {
+                return null;
+            }
+            if (this.$renderDirty) {
+                node.cleanBeforeRender();
+                this.$updateRenderNode();
+                this.$renderDirty = false;
+                node = this.$renderNode;
+            }
+            return node;
+        }
+
+        /**
+         * 更新渲染模式
+         */
+        public $updateRenderMode(): void {
+            if (!this._visible || this._alpha <= 0 || this.$maskedObject) {
+                this.$renderMode = RenderMode.none;
+            }
+            else if (this.filters && this.filters.length > 0) {
+                this.$renderMode = RenderMode.filter;
+            }
+            else if (this._blendMode !== BlendMode.normal || (this.$mask && this.$mask._stage)) {
+                this.$renderMode = RenderMode.clip;
+            }
+            else if (this._scrollRect || this.$maskRect) {
+                this.$renderMode = RenderMode.scrollRect;
+            }
+            else {
+                this.$renderMode = null;
+            }
+        }
+
+        /**
+         * 获取相对于指定根节点的连接矩阵
+         */
+        public $getConcatenatedMatrixAt(root: DisplayObject, matrix: Matrix): void {
             let invertMatrix = root.$getInvertedConcatenatedMatrix();
-            if (invertMatrix.a === 0 || invertMatrix.d === 0) {//缩放值为0，逆矩阵无效
+            // 缩放值为 0 逆矩阵无效
+            if (invertMatrix.a === 0 || invertMatrix.d === 0) {
                 let target: DisplayObject = this;
-                let rootLevel = root.$nestLevel;
+                let rootLevel = root._nestLevel;
                 matrix.identity();
-                while (target.$nestLevel > rootLevel) {
-                    let rect = target.$scrollRect;
+                while (target._nestLevel > rootLevel) {
+                    let rect = target._scrollRect;
                     if (rect) {
-                        matrix.multiply($TempMatrix.set(1, 0, 0, 1, -rect.x, -rect.y));
+                        let m = dou.recyclable(Matrix);
+                        m.set(1, 0, 0, 1, -rect.x, -rect.y);
+                        matrix.multiply(m);
+                        m.recycle();
                     }
                     matrix.multiply(target.$getMatrix());
-                    target = target.$parent;
+                    target = target._parent;
                 }
             }
             else {
@@ -1286,61 +1200,58 @@ namespace dou2d {
         }
 
         /**
-         * 更新renderNode
+         * 更新渲染节点
          */
-        $updateRenderNode(): void {
-
+        public $updateRenderNode(): void {
         }
 
-        $hitTest(stageX: number, stageY: number): DisplayObject {
-            let self = this;
-            if ((!egret.nativeRender && !self.$renderNode) || !self.$visible || self.$scaleX == 0 || self.$scaleY == 0) {
+        /**
+         * 碰撞检测, 检测舞台坐标下面最先碰撞到的显示对象
+         */
+        public $hitTest(stageX: number, stageY: number): DisplayObject {
+            if (!this.$renderNode || !this._visible || this._scaleX == 0 || this._scaleY == 0) {
                 return null;
             }
-            let m = self.$getInvertedConcatenatedMatrix();
-            if (m.a == 0 && m.b == 0 && m.c == 0 && m.d == 0) {//防止父类影响子类
+            let m = this.$getInvertedConcatenatedMatrix();
+            // 防止父类影响子类
+            if (m.a == 0 && m.b == 0 && m.c == 0 && m.d == 0) {
                 return null;
             }
-            let bounds = self.$getContentBounds();
+            let bounds = this.$getContentBounds();
             let localX = m.a * stageX + m.c * stageY + m.tx;
             let localY = m.b * stageX + m.d * stageY + m.ty;
             if (bounds.contains(localX, localY)) {
-                if (!self.$children) {//容器已经检查过scrollRect和mask，避免重复对遮罩进行碰撞。
-
-                    let rect = self.$scrollRect ? self.$scrollRect : self.$maskRect;
+                // 容器已经检查过 scrollRect 和 mask, 避免重复对遮罩进行碰撞
+                if (!this._children) {
+                    let rect = this._scrollRect ? this._scrollRect : this.$maskRect;
                     if (rect && !rect.contains(localX, localY)) {
                         return null;
                     }
-                    if (self.$mask && !self.$mask.$hitTest(stageX, stageY)) {
+                    if (this.$mask && !this.$mask.$hitTest(stageX, stageY)) {
                         return null;
                     }
                 }
-                return self;
+                return this;
             }
             return null;
         }
 
         /**
-         * 计算显示对象，以确定它是否与 x 和 y 参数指定的点重叠或相交。x 和 y 参数指定舞台的坐标空间中的点，而不是包含显示对象的显示对象容器中的点（除非显示对象容器是舞台）。
-         * 注意，不要在大量物体中使用精确碰撞像素检测，这回带来巨大的性能开销
-         * @param x {number}  要测试的此对象的 x 坐标。
-         * @param y {number}  要测试的此对象的 y 坐标。
-         * @param shapeFlag {boolean} 是检查对象 (true) 的实际像素，还是检查边框 (false) 的实际像素。
-         * @returns {boolean} 如果显示对象与指定的点重叠或相交，则为 true；否则为 false。
+         * 碰撞检测
+         * @param shapeFlag 是否开启精确碰撞检测
          */
         public hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean {
-            let self = this;
             if (!shapeFlag) {
-                if (self.$scaleX == 0 || self.$scaleY == 0) {
+                if (this._scaleX == 0 || this._scaleY == 0) {
                     return false;
                 }
-                let m = self.$getInvertedConcatenatedMatrix();
-                let bounds = self.getBounds(null, false);
+                let m = this.$getInvertedConcatenatedMatrix();
+                let bounds = this.getBounds(null, false);
                 let localX = m.a * x + m.c * y + m.tx;
                 let localY = m.b * x + m.d * y + m.ty;
                 if (bounds.contains(localX, localY)) {
-                    //这里不考虑设置mask的情况
-                    let rect = self.$scrollRect ? self.$scrollRect : self.$maskRect;
+                    // 这里不考虑设置 mask 的情况
+                    let rect = this._scrollRect ? this._scrollRect : this.$maskRect;
                     if (rect && !rect.contains(localX, localY)) {
                         return false;
                     }
@@ -1349,35 +1260,32 @@ namespace dou2d {
                 return false;
             }
             else {
-                let m = self.$getInvertedConcatenatedMatrix();
+                let m = this.$getInvertedConcatenatedMatrix();
                 let localX = m.a * x + m.c * y + m.tx;
                 let localY = m.b * x + m.d * y + m.ty;
                 let data: number[] | Uint8Array;
-
-                let displayList = self.$displayList;
+                let displayList = this.$displayList;
                 if (displayList) {
                     let buffer = displayList.renderBuffer;
                     try {
                         data = buffer.getPixels(localX - displayList.offsetX, localY - displayList.offsetY);
                     }
                     catch (e) {
-                        throw new Error(sys.tr(1039));
+                        console.error("Cross domains pictures can not get pixel information!");
                     }
                 }
                 else {
-                    let buffer = sys.customHitTestBuffer;
+                    let buffer = hitTestBuffer;
                     buffer.resize(3, 3);
-                    let matrix = Matrix.create();
-                    matrix.identity();
+                    let matrix = dou.recyclable(Matrix);
                     matrix.translate(1 - localX, 1 - localY);
-                    sys.systemRenderer.render(this, buffer, matrix, true);
-                    Matrix.release(matrix);
-
+                    renderer.render(this, buffer, matrix, true);
+                    matrix.recycle();
                     try {
                         data = buffer.getPixels(1, 1);
                     }
                     catch (e) {
-                        throw new Error(sys.tr(1039));
+                        console.error("Cross domains pictures can not get pixel information!");
                     }
                 }
                 if (data[3] === 0) {
@@ -1387,122 +1295,89 @@ namespace dou2d {
             }
         }
 
-        $addListener(type: string, listener: Function, thisObject: any, useCapture?: boolean, priority?: number, dispatchOnce?: boolean): void {
-            super.$addListener(type, listener, thisObject, useCapture, priority, dispatchOnce);
-            let isEnterFrame = (type == Event.ENTER_FRAME);
-            if (isEnterFrame || type == Event.RENDER) {
-                let list = isEnterFrame ? DisplayObject.$enterFrameCallBackList : DisplayObject.$renderCallBackList;
-                if (list.indexOf(this) == -1) {
-                    list.push(this);
+        protected addEventListener(type: string, listener: Function, thisObj: any, once: boolean): boolean {
+            let result = super.addEventListener(type, listener, thisObj, once);
+            if (type == Event2D.ENTER_FRAME || type == Event2D.RENDER) {
+                let list: DisplayObject[];
+                if (type == Event2D.ENTER_FRAME) {
+                    list = once ? enterFrameOnceCallBackList : enterFrameCallBackList;
                 }
-            }
-        }
-
-        public removeEventListener(type: string, listener: Function, thisObject: any, useCapture?: boolean): void {
-            super.removeEventListener(type, listener, thisObject, useCapture);
-            let isEnterFrame: boolean = (type == Event.ENTER_FRAME);
-            if ((isEnterFrame || type == Event.RENDER) && !this.hasEventListener(type)) {
-                let list = isEnterFrame ? DisplayObject.$enterFrameCallBackList : DisplayObject.$renderCallBackList;
-                let index = list.indexOf(this);
-                if (index !== -1) {
-                    list.splice(index, 1);
+                else {
+                    list = once ? renderOnceCallBackList : renderCallBackList;
                 }
+                list.pushUnique(this);
             }
-        }
-
-        public dispatchEvent(event: Event): boolean {
-            if (!event.$bubbles) {
-                return super.dispatchEvent(event);
-            }
-
-            let list = this.$getPropagationList(this);
-            let targetIndex = list.length * 0.5;
-            event.$setTarget(this);
-            this.$dispatchPropagationEvent(event, list, targetIndex);
-            return !event.$isDefaultPrevented;
-        }
-
-        /**
-         * 获取事件流列表。注意：Egret框架的事件流与Flash实现并不一致。
-         *
-         * 事件流有三个阶段：捕获，目标，冒泡。
-         * Flash里默认的的事件监听若不开启useCapture将监听目标和冒泡阶段。若开始capture将只能监听捕获当不包括目标的事件。
-         * 可以在Flash中写一个简单的测试：实例化一个非容器显示对象，例如TextField。分别监听useCapture为true和false时的鼠标事件。
-         * 点击后将只有useCapture为false的回调函数输出信息。也就带来一个问题「Flash的捕获阶段不能监听到最内层对象本身，只在父级列表有效」。
-         *
-         * 而HTML里的事件流设置useCapture为true时是能监听到目标阶段的，也就是目标阶段会被触发两次，在捕获和冒泡过程各触发一次。这样可以避免
-         * 前面提到的监听捕获无法监听目标本身的问题。
-         *
-         * Egret最终采用了HTML里目标节点触发两次的事件流方式。
-         */
-        $getPropagationList(target: DisplayObject): DisplayObject[] {
-            let list: DisplayObject[] = [];
-            while (target) {
-                list.push(target);
-                target = target.$parent;
-            }
-            let captureList = list.concat();
-            captureList.reverse();//使用一次reverse()方法比多次调用unshift()性能高。
-            list = captureList.concat(list);
-            return list;
-        }
-
-        $dispatchPropagationEvent(event: Event, list: DisplayObject[], targetIndex: number): void {
-            let length = list.length;
-            let captureIndex = targetIndex - 1;
-            for (let i = 0; i < length; i++) {
-                let currentTarget = list[i];
-                event.$currentTarget = currentTarget;
-                if (i < captureIndex)
-                    event.$eventPhase = EventPhase.CAPTURING_PHASE;
-                else if (i == targetIndex || i == captureIndex)
-                    event.$eventPhase = EventPhase.AT_TARGET;
-                else
-                    event.$eventPhase = EventPhase.BUBBLING_PHASE;
-                currentTarget.$notifyListener(event, i < targetIndex);
-                if (event.$isPropagationStopped || event.$isPropagationImmediateStopped) {
-                    return;
-                }
-            }
+            return result;
         }
 
         public willTrigger(type: string): boolean {
             let parent: DisplayObject = this;
             while (parent) {
-                if (parent.hasEventListener(type))
+                if (parent.has(type)) {
                     return true;
-                parent = parent.$parent;
+                }
+                parent = parent._parent;
             }
             return false;
         }
 
-        /**
-         * 给当前对象设置填充色
-         */
-        public get tint(): number {
-            return this._tint;
+        public dispatch2D(type: string, data?: any, bubbles?: boolean, cancelable?: boolean): boolean {
+            let event = dou.recyclable(Event2D);
+            event.initEvent(type, data, bubbles, cancelable);
+            let result = this.dispatchEvent(event);
+            event.recycle();
+            return result;
         }
 
-        public set tint(value) {
-            this._tint = value;
-            this.$tintRGB = (value >> 16) + (value & 0xff00) + ((value & 0xff) << 16);
+        public dispatchEvent(event: dou.Event): boolean {
+            let needBubbles = false;
+            if (event instanceof Event2D && event.bubbles) {
+                needBubbles = true;
+            }
+            if (needBubbles) {
+                let list = this.getPropagationList(this);
+                event.$setTarget(this);
+                this.dispatchPropagationEvent(event as Event2D, list);
+                return !event.$isDefaultPrevented();
+            }
+            return super.dispatchEvent(event);
         }
 
-        public sortChildren(): void {
-            this.$sortDirty = false;
+        protected getPropagationList(target: DisplayObject): DisplayObject[] {
+            let list: DisplayObject[] = [];
+            while (target) {
+                list.push(target);
+                target = target._parent;
+            }
+            return list;
         }
 
-        /**
-         * 设置对象的 Z 轴顺序（前后顺序）
-         */
-        public get zIndex(): number {
-            return this._zIndex;
+        protected dispatchPropagationEvent(event: Event2D, list: DisplayObject[]): void {
+            for (let i = 0, len = list.length; i < len; i++) {
+                let currentTarget = list[i];
+                event.$setCurrentTarget(currentTarget);
+                currentTarget.dispatchEvent(event);
+                if (event.$isPropagationStopped()) {
+                    break;
+                }
+            }
         }
 
-        public set zIndex(value: number) {
-            this._zIndex = value;
-            if (this.parent) {
-                this.parent.$sortDirty = true;
+        public off(type: string, listener: Function, thisObj?: any): void {
+            super.off(type, listener, thisObj);
+            if (type == Event2D.ENTER_FRAME || type == Event2D.RENDER) {
+                let list: DisplayObject[];
+                let listOnce: DisplayObject[];
+                if (type == Event2D.ENTER_FRAME) {
+                    list = enterFrameCallBackList;
+                    listOnce = enterFrameOnceCallBackList;
+                }
+                else {
+                    list = renderCallBackList;
+                    listOnce = renderOnceCallBackList;
+                }
+                list.remove(this);
+                listOnce.remove(this);
             }
         }
     }

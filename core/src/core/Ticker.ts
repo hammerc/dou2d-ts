@@ -6,11 +6,8 @@ namespace dou2d {
     export class Ticker extends dou.TickerBase {
         private _deltaTime: number = 0;
 
-        private _engine: Engine;
-
-        public constructor(engine: Engine) {
+        public constructor() {
             super();
-            this._engine = engine;
         }
 
         public get deltaTime(): number {
@@ -21,7 +18,7 @@ namespace dou2d {
             this._deltaTime = passedTime;
 
             dou.Tween.tick(passedTime, false);
-
+            player.render(passedTime);
         }
     }
 }

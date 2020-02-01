@@ -6,6 +6,42 @@ namespace dou2d {
     export class BitmapData {
         private static _map: Map<BitmapData, DisplayObject[]> = new Map();
 
+        public static create(type: "arraybuffer", data: ArrayBuffer, callback?: (bitmapData: BitmapData) => void): BitmapData;
+        public static create(type: "base64", data: string, callback?: (bitmapData: BitmapData) => void): BitmapData;
+        public static create(type: "arraybuffer" | "base64", data: ArrayBuffer | string, callback?: (bitmapData: BitmapData) => void): BitmapData {
+            let base64 = "";
+            if (type === "arraybuffer") {
+                base64 = Base64Util.encode(data as ArrayBuffer);
+            }
+            else {
+                base64 = data as string;
+            }
+            let imageType = "image/png";
+            if (base64.charAt(0) === '/') {
+                imageType = "image/jpeg";
+            }
+            else if (base64.charAt(0) === 'R') {
+                imageType = "image/gif";
+            }
+            else if (base64.charAt(0) === 'i') {
+                imageType = "image/png";
+            }
+            let img = new Image();
+            img.src = "data:" + imageType + ";base64," + base64;
+            img.crossOrigin = '*';
+            let bitmapData = new BitmapData(img);
+            img.onload = function () {
+                img.onload = undefined;
+                bitmapData.source = img;
+                bitmapData.height = img.height;
+                bitmapData.width = img.width;
+                if (callback) {
+                    callback(bitmapData);
+                }
+            }
+            return bitmapData;
+        }
+
         public static addDisplayObject(displayObject: DisplayObject, bitmapData: BitmapData): void {
             if (!BitmapData._map.has(bitmapData)) {
                 BitmapData._map.set(bitmapData, [displayObject]);
@@ -39,7 +75,7 @@ namespace dou2d {
                 }
                 let bitmap = list[i];
                 bitmap.$renderDirty = true;
-                let p = bitmap.$parent;
+                let p = bitmap.parent;
                 if (p && !p.$cacheDirty) {
                     p.$cacheDirty = true;
                     p.$cacheDirtyUp();
@@ -62,7 +98,7 @@ namespace dou2d {
                     node.$bitmapData = null;
                 }
                 node.$renderDirty = true;
-                let p = node.$parent;
+                let p = node.parent;
                 if (p && !p.$cacheDirty) {
                     p.$cacheDirty = true;
                     p.$cacheDirtyUp();
@@ -108,42 +144,6 @@ namespace dou2d {
                 this.width = +source.width;
                 this.height = +source.height;
             }
-        }
-
-        public static create(type: "arraybuffer", data: ArrayBuffer, callback?: (bitmapData: BitmapData) => void): BitmapData;
-        public static create(type: "base64", data: string, callback?: (bitmapData: BitmapData) => void): BitmapData;
-        public static create(type: "arraybuffer" | "base64", data: ArrayBuffer | string, callback?: (bitmapData: BitmapData) => void): BitmapData {
-            let base64 = "";
-            if (type === "arraybuffer") {
-                base64 = Base64Util.encode(data as ArrayBuffer);
-            }
-            else {
-                base64 = data as string;
-            }
-            let imageType = "image/png";//default value
-            if (base64.charAt(0) === '/') {
-                imageType = "image/jpeg";
-            }
-            else if (base64.charAt(0) === 'R') {
-                imageType = "image/gif";
-            }
-            else if (base64.charAt(0) === 'i') {
-                imageType = "image/png";
-            }
-            let img = new Image();
-            img.src = "data:" + imageType + ";base64," + base64;
-            img.crossOrigin = '*';
-            let bitmapData = new BitmapData(img);
-            img.onload = function () {
-                img.onload = undefined;
-                bitmapData.source = img;
-                bitmapData.height = img.height;
-                bitmapData.width = img.width;
-                if (callback) {
-                    callback(bitmapData);
-                }
-            }
-            return bitmapData;
         }
 
         public dispose(): void {

@@ -4,40 +4,45 @@ namespace dou2d {
      * @author wizardc
      */
     export class Sprite extends DisplayObjectContainer {
-        $graphics: Graphics;
+        private _graphics: Graphics;
 
         public constructor() {
             super();
-            this.$graphics = new Graphics();
-            this.$graphics.$setTarget(this);
+            this._graphics = new Graphics();
+            this._graphics.$setTarget(this);
         }
 
         /**
-         * 获取 Shape 中的 Graphics 对象。可通过此对象执行矢量绘图命令。
+         * 矢量绘制对象
          */
         public get graphics(): Graphics {
-            return this.$graphics;
+            return this._graphics;
         }
 
-        $hitTest(stageX: number, stageY: number): DisplayObject {
-            if (!this.$visible) {
+        public $onRemoveFromStage(): void {
+            super.$onRemoveFromStage();
+            if (this._graphics) {
+                this._graphics.$onRemoveFromStage();
+            }
+        }
+
+        public $hitTest(stageX: number, stageY: number): DisplayObject {
+            if (!this._visible) {
                 return null;
             }
             let m = this.$getInvertedConcatenatedMatrix();
             let localX = m.a * stageX + m.c * stageY + m.tx;
             let localY = m.b * stageX + m.d * stageY + m.ty;
-
-            let rect = this.$scrollRect ? this.$scrollRect : this.$maskRect;
+            let rect = this._scrollRect ? this._scrollRect : this.$maskRect;
             if (rect && !rect.contains(localX, localY)) {
                 return null;
             }
-
             if (this.$mask && !this.$mask.$hitTest(stageX, stageY)) {
                 return null;
             }
-            let children = this.$children;
+            let children = this._children;
             let found = false;
-            let target: DisplayObject = null;
+            let target: DisplayObject;
             for (let i = children.length - 1; i >= 0; i--) {
                 let child = children[i];
                 if (child.$maskedObject) {
@@ -46,7 +51,7 @@ namespace dou2d {
                 target = child.$hitTest(stageX, stageY);
                 if (target) {
                     found = true;
-                    if (target.$touchEnabled) {
+                    if (target.touchEnabled) {
                         break;
                     }
                     else {
@@ -55,7 +60,7 @@ namespace dou2d {
                 }
             }
             if (target) {
-                if (this.$touchChildren) {
+                if (this._touchChildren) {
                     return target;
                 }
                 return this;
@@ -63,24 +68,15 @@ namespace dou2d {
             if (found) {
                 return this;
             }
-
             target = DisplayObject.prototype.$hitTest.call(this, stageX, stageY);
             if (target) {
-                target = this.$graphics.$hitTest(stageX, stageY);
+                target = this._graphics.$hitTest(stageX, stageY);
             }
-
             return target;
         }
 
-        $measureContentBounds(bounds: Rectangle): void {
-            this.$graphics.$measureContentBounds(bounds);
-        }
-
-        public $onRemoveFromStage(): void {
-            super.$onRemoveFromStage();
-            if (this.$graphics) {
-                this.$graphics.$onRemoveFromStage();
-            }
+        public $measureContentBounds(bounds: Rectangle): void {
+            this._graphics.$measureContentBounds(bounds);
         }
     }
 }
