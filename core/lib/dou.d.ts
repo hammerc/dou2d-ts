@@ -78,11 +78,12 @@ declare namespace dou {
          * 设置帧率
          * 注意: 只能设置为可以被 60 整除的帧率, 包括 60, 30, 20, 15, 12, 10, 6, 5, 4, 3, 2, 1
          */
-        frameRate: number;
+        set frameRate(value: number);
+        get frameRate(): number;
         /**
          * 是否暂停
          */
-        readonly paused: boolean;
+        get paused(): boolean;
         protected setFrameRate(value: number): void;
         /**
          * 暂停计时器
@@ -146,10 +147,10 @@ declare namespace dou {
         private _isDefaultPrevented;
         private _target;
         init(type: string, data?: any, cancelable?: boolean): void;
-        readonly type: string;
-        readonly data: any;
-        readonly cancelable: boolean;
-        readonly target: IEventDispatcher;
+        get type(): string;
+        get data(): any;
+        get cancelable(): boolean;
+        get target(): IEventDispatcher;
         $setTarget(target: IEventDispatcher): void;
         /**
          * 如果可以取消事件的默认行为, 则取消该行为
@@ -168,7 +169,7 @@ declare namespace dou {
         static IO_ERROR: string;
         static dispatch(target: IEventDispatcher, type: string, msg: string, cancelable?: boolean): boolean;
         private _msg;
-        readonly msg: string;
+        get msg(): string;
         initEvent(type: string, msg: string, cancelable?: boolean): void;
         onRecycle(): void;
     }
@@ -183,8 +184,8 @@ declare namespace dou {
         static dispatch(target: IEventDispatcher, type: string, loaded: number, total: number, cancelable?: boolean): boolean;
         private _loaded;
         private _total;
-        readonly loaded: number;
-        readonly total: number;
+        get loaded(): number;
+        get total(): number;
         initEvent(type: string, loaded: number, total: number, cancelable?: boolean): void;
         onRecycle(): void;
     }
@@ -248,7 +249,7 @@ declare namespace dou {
      */
     class LoadManager {
         private static _instance;
-        static readonly instance: LoadManager;
+        static get instance(): LoadManager;
         private _maxLoadingThread;
         private _resourceRoot;
         private _analyzerMap;
@@ -264,11 +265,13 @@ declare namespace dou {
         /**
          * 最大的下载线程数
          */
-        maxLoadingThread: number;
+        set maxLoadingThread(value: number);
+        get maxLoadingThread(): number;
         /**
          * 资源根路径
          */
-        resourceRoot: string;
+        set resourceRoot(value: string);
+        get resourceRoot(): string;
         /**
          * 注册加载器
          */
@@ -354,9 +357,11 @@ declare namespace dou {
         private _url;
         private _method;
         constructor();
-        responseType: HttpResponseType;
-        withCredentials: boolean;
-        readonly response: any;
+        set responseType(value: HttpResponseType);
+        get responseType(): HttpResponseType;
+        set withCredentials(value: boolean);
+        get withCredentials(): boolean;
+        get response(): any;
         setRequestHeader(header: string, value: string): void;
         getResponseHeader(header: string): string;
         getAllResponseHeaders(): {
@@ -385,8 +390,9 @@ declare namespace dou {
         /**
          * 是否开启跨域访问控制
          */
-        crossOrigin: boolean;
-        readonly data: HTMLImageElement;
+        set crossOrigin(value: boolean);
+        get crossOrigin(): boolean;
+        get data(): HTMLImageElement;
         load(url: string): void;
         private getImage;
         private onLoad;
@@ -401,7 +407,7 @@ declare namespace dou {
     class SoundLoader extends EventDispatcher {
         private _data;
         private _currentAudio;
-        readonly data: HTMLAudioElement;
+        get data(): HTMLAudioElement;
         load(url: string): void;
         private getAudio;
         private onLoaded;
@@ -423,15 +429,17 @@ declare namespace dou {
         private _cacheInput;
         private _addInputPosition;
         constructor(host?: string, port?: number);
-        endian: Endian;
-        readonly input: ByteArray;
-        readonly output: ByteArray;
-        readonly url: string;
-        readonly connected: boolean;
+        set endian(value: Endian);
+        get endian(): Endian;
+        get input(): ByteArray;
+        get output(): ByteArray;
+        get url(): string;
+        get connected(): boolean;
         /**
          * 是否缓存服务端发送的数据到输入流中
          */
-        cacheInput: boolean;
+        set cacheInput(value: boolean);
+        get cacheInput(): boolean;
         connect(host: string, port: number): void;
         connectByUrl(url: string): void;
         private onOpen;
@@ -646,7 +654,7 @@ declare namespace dou {
         private _list;
         private _map;
         constructor(creator: Creator<T>, maxCount?: number);
-        readonly size: number;
+        get size(): number;
         join(obj: T): void;
         take(): T;
         clear(): void;
@@ -694,17 +702,22 @@ declare namespace dou {
         private _eofByte;
         private _eofCodePoint;
         constructor(buffer?: ArrayBuffer | Uint8Array, bufferExtSize?: number);
-        endian: Endian;
-        readonly readAvailable: number;
-        buffer: ArrayBuffer;
-        readonly rawBuffer: ArrayBuffer;
-        readonly bytes: Uint8Array;
-        dataView: DataView;
-        readonly bufferOffset: number;
-        position: number;
-        length: number;
+        set endian(value: Endian);
+        get endian(): Endian;
+        get readAvailable(): number;
+        get buffer(): ArrayBuffer;
+        get rawBuffer(): ArrayBuffer;
+        set buffer(value: ArrayBuffer);
+        get bytes(): Uint8Array;
+        get dataView(): DataView;
+        set dataView(value: DataView);
+        get bufferOffset(): number;
+        set position(value: number);
+        get position(): number;
+        set length(value: number);
+        get length(): number;
         protected validateBuffer(value: number): void;
-        readonly bytesAvailable: number;
+        get bytesAvailable(): number;
         validate(len: number): boolean;
         protected validateBuffer2(len: number): void;
         readBoolean(): boolean;
