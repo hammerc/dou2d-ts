@@ -5,12 +5,12 @@ namespace dou2d {
      */
     export class TextNode extends RenderNode {
         /**
-         * 绘制x偏移
+         * 绘制 x 偏移
          */
         public x: number;
 
         /**
-         * 绘制y偏移
+         * 绘制 y 偏移
          */
         public y: number;
 
@@ -24,16 +24,13 @@ namespace dou2d {
          */
         public height: number;
 
-        /**
-         * 脏渲染标记
-         */
         public dirtyRender: boolean = true;
 
-        public $texture: WebGLTexture;
-        public $textureWidth: number;
-        public $textureHeight: number;
-        public $canvasScaleX: number;
-        public $canvasScaleY: number;
+        public texture: WebGLTexture;
+        public textureWidth: number;
+        public textureHeight: number;
+        public canvasScaleX: number;
+        public canvasScaleY: number;
 
         /**
          * 颜色值
@@ -84,23 +81,20 @@ namespace dou2d {
             this.dirtyRender = true;
         }
 
+        public cleanBeforeRender(): void {
+            super.cleanBeforeRender();
+            this.dirtyRender = true;
+        }
+
         /**
          * 清除非绘制的缓存数据
          */
         public clean(): void {
-            if (this.$texture) {
-                WebGLUtil.deleteTexture(this.$texture);
-                this.$texture = null;
+            if (this.texture) {
+                WebGLUtil.deleteTexture(this.texture);
+                this.texture = null;
                 this.dirtyRender = true;
             }
-        }
-
-        /**
-         * 在显示对象的$updateRenderNode()方法被调用前，自动清空自身的drawData数据。
-         */
-        public cleanBeforeRender(): void {
-            super.cleanBeforeRender();
-            this.dirtyRender = true;
         }
     }
 

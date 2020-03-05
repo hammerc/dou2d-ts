@@ -1,0 +1,197 @@
+namespace dou2d.input {
+    /**
+     * 输入文本输入管理类
+     * @author wizardc
+     */
+    export class InputManager {
+        public inputDIV: any;
+
+        public needShow: boolean = false;
+
+        public scaleX: number = 1;
+        public scaleY: number = 1;
+
+        private _stageText: HtmlText;
+
+        private _simpleElement: any;
+        private _multiElement: any;
+
+        private _inputElement: any;
+
+        private _stageDelegateDiv;
+        private _canvas;
+
+        public isInputOn(): boolean {
+            return this._stageText != null;
+        }
+
+        public isCurrentStageText(stageText): boolean {
+            return this._stageText == stageText;
+        }
+
+        private initValue(dom: any): void {
+            dom.style.position = "absolute";
+            dom.style.left = "0px";
+            dom.style.top = "0px";
+            dom.style.border = "none";
+            dom.style.padding = "0";
+        }
+
+        public initStageDelegateDiv(container, canvas): any {
+            this._canvas = canvas;
+            let self = this;
+            let stageDelegateDiv;
+            if (!stageDelegateDiv) {
+                stageDelegateDiv = document.createElement("div");
+                this._stageDelegateDiv = stageDelegateDiv;
+                stageDelegateDiv.id = "StageDelegateDiv";
+                container.appendChild(stageDelegateDiv);
+                self.initValue(stageDelegateDiv);
+                self.inputDIV = document.createElement("div");
+                self.initValue(self.inputDIV);
+                self.inputDIV.style.width = "0px";
+                self.inputDIV.style.height = "0px";
+                self.inputDIV.style.left = 0 + "px";
+                self.inputDIV.style.top = "-100px";
+                self.inputDIV.style[HtmlUtil.getStyleName("transformOrigin")] = "0% 0% 0px";
+                stageDelegateDiv.appendChild(self.inputDIV);
+                this._canvas.addEventListener("click", function (e) {
+                    if (self.needShow) {
+                        self.needShow = false;
+                        self._stageText.onClickHandler(e);
+                        self.show();
+                    }
+                    else {
+                        if (self._inputElement) {
+                            self.clearInputElement();
+                            self._inputElement.blur();
+                            self._inputElement = null;
+                        }
+                    }
+                });
+                self.initInputElement(true);
+                self.initInputElement(false);
+            }
+        }
+
+        //初始化输入框
+        private initInputElement(multiline: boolean): void {
+            let self = this;
+            //增加1个空的textarea
+            let inputElement: any;
+            if (multiline) {
+                inputElement = document.createElement("textarea");
+                inputElement.style["resize"] = "none";
+                self._multiElement = inputElement;
+                inputElement.id = "egretTextarea";
+            }
+            else {
+                inputElement = document.createElement("input");
+                self._simpleElement = inputElement;
+                inputElement.id = "egretInput";
+            }
+            inputElement.type = "text";
+            self.inputDIV.appendChild(inputElement);
+            inputElement.setAttribute("tabindex", "-1");
+            inputElement.style.width = "1px";
+            inputElement.style.height = "12px";
+            self.initValue(inputElement);
+            inputElement.style.outline = "thin";
+            inputElement.style.background = "none";
+            inputElement.style.overflow = "hidden";
+            inputElement.style.wordBreak = "break-all";
+            //隐藏输入框
+            inputElement.style.opacity = 0;
+            inputElement.oninput = function () {
+                if (self._stageText) {
+                    self._stageText.onInput();
+                }
+            };
+        }
+
+        public updateSize(): void {
+            if (!this._canvas) {
+                return;
+            }
+            this.scaleX = DisplayList.$canvasScaleX;
+            this.scaleY = DisplayList.$canvasScaleY;
+            this._stageDelegateDiv.style.left = this._canvas.style.left;
+            this._stageDelegateDiv.style.top = this._canvas.style.top;
+            let transformKey = HtmlUtil.getStyleName("transform");
+            this._stageDelegateDiv.style[transformKey] = this._canvas.style[transformKey];
+            this._stageDelegateDiv.style[HtmlUtil.getStyleName("transformOrigin")] = "0% 0% 0px";
+        }
+
+        public show(): void {
+            let self = this;
+            let inputElement = self._inputElement;
+            //隐藏输入框
+            callLater(function () {
+                inputElement.style.opacity = 1;
+            }, self);
+        }
+
+        public getInputElement(stageText): any {
+            let self = this;
+            self.clearInputElement();
+            self._stageText = stageText;
+            this._canvas['userTyping'] = true;
+            if (self._stageText.textfield.multiline) {
+                self._inputElement = self._multiElement;
+            }
+            else {
+                self._inputElement = self._simpleElement;
+            }
+            let otherElement;
+            if (self._simpleElement == self._inputElement) {
+                otherElement = self._multiElement;
+            }
+            else {
+                otherElement = self._simpleElement;
+            }
+            otherElement.style.display = "none";
+            return self._inputElement;
+        }
+
+        public disconnectStageText(stageText): void {
+            if (this._stageText == null || this._stageText == stageText) {
+                if (this._inputElement) {
+                    this._inputElement.blur();
+                }
+                this.clearInputElement();
+            }
+            this.needShow = false;
+        }
+
+        public clearInputElement(): void {
+            let self = this;
+            if (self._inputElement) {
+                self._inputElement.value = "";
+                self._inputElement.onblur = null;
+                self._inputElement.onfocus = null;
+                self._inputElement.style.width = "1px";
+                self._inputElement.style.height = "12px";
+                self._inputElement.style.left = "0px";
+                self._inputElement.style.top = "0px";
+                self._inputElement.style.opacity = 0;
+                let otherElement;
+                if (self._simpleElement == self._inputElement) {
+                    otherElement = self._multiElement;
+                }
+                else {
+                    otherElement = self._simpleElement;
+                }
+                otherElement.style.display = "block";
+                self.inputDIV.style.left = 0 + "px";
+                self.inputDIV.style.top = "-100px";
+                self.inputDIV.style.height = 0 + "px";
+                self.inputDIV.style.width = 0 + "px";
+            }
+            if (self._stageText) {
+                self._stageText.onDisconnect();
+                self._stageText = null;
+                this._canvas['userTyping'] = false;
+            }
+        }
+    }
+}

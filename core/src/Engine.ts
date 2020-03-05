@@ -18,7 +18,7 @@ namespace dou2d {
         };
 
         private _touchHandler: TouchHandler;
-        private _input: Input;
+        private _input: input.InputManager;
 
         /**
          * @param rootClass 根显示容器类
@@ -55,10 +55,12 @@ namespace dou2d {
             let renderBuffer = new RenderBuffer(undefined, undefined, true);
             canvas = renderBuffer.surface as HTMLCanvasElement;
 
+            context2D = HtmlUtil.get2DContext(HtmlUtil.createCanvas(2, 2));
+
             player = new Player(renderBuffer, stage, options.rootClass);
             player.start();
             this._touchHandler = new TouchHandler(stage, canvas);
-            this._input = new Input();
+            this._input = new input.InputManager();
 
             ticker = new Ticker();
             this.startTicker();
@@ -160,7 +162,7 @@ namespace dou2d {
             canvas.style[HtmlUtil.getStyleName("transform")] = transform;
             DisplayList.$setCanvasScale(canvasScaleX, canvasScaleY);
             this._touchHandler.updateScaleMode(scalex, scaley, rotation);
-            this._input.$updateSize();
+            this._input.updateSize();
             player.updateStageSize(stageWidth, stageHeight);
         }
 

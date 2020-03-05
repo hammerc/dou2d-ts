@@ -243,8 +243,9 @@ var dou;
      * @author wizardc
      */
     class EventDispatcher {
-        constructor() {
+        constructor(target) {
             this._eventMap = {};
+            this._eventTarget = target;
         }
         on(type, listener, thisObj) {
             this.addEventListener(type, listener, thisObj, false);
@@ -274,7 +275,7 @@ var dou;
         has(type) {
             return this._eventMap.hasOwnProperty(type) && this._eventMap[type].length > 0;
         }
-        dispatchEvent(event) {
+        dispatch(event) {
             let map = this._eventMap;
             if (!map.hasOwnProperty(event.type)) {
                 return true;
@@ -283,7 +284,7 @@ var dou;
             if (list.length == 0) {
                 return true;
             }
-            event.$setTarget(this);
+            event.$setTarget(this._eventTarget || this);
             let currentIndex = 0;
             for (var i = 0, len = list.length; i < len; i++) {
                 let bin = list[i];
@@ -314,13 +315,6 @@ var dou;
             event.$setTarget(null);
             return !event.$isDefaultPrevented();
         }
-        dispatch(type, data, cancelable) {
-            let event = dou.recyclable(dou.Event);
-            event.init(type, data, cancelable);
-            let result = this.dispatchEvent(event);
-            event.recycle();
-            return result;
-        }
         off(type, listener, thisObj) {
             let map = this._eventMap;
             if (map.hasOwnProperty(type)) {
@@ -343,6 +337,20 @@ var dou;
         }
     }
 })(dou || (dou = {}));
+(function () {
+    Object.defineProperties(dou.EventDispatcher, {
+        dispatchEvent: {
+            value: function (type, data, cancelable) {
+                let event = dou.recyclable(dou.Event);
+                event.$initEvent(type, data, cancelable);
+                let result = this.dispatch(event);
+                event.recycle();
+                return result;
+            },
+            enumerable: false
+        }
+    });
+})();
 var dou;
 (function (dou) {
     /**
@@ -352,11 +360,6 @@ var dou;
     class Event {
         constructor() {
             this._isDefaultPrevented = false;
-        }
-        init(type, data, cancelable) {
-            this._type = type;
-            this._data = data;
-            this._cancelable = cancelable;
         }
         get type() {
             return this._type;
@@ -369,6 +372,11 @@ var dou;
         }
         get target() {
             return this._target;
+        }
+        $initEvent(type, data, cancelable) {
+            this._type = type;
+            this._data = data;
+            this._cancelable = cancelable;
         }
         $setTarget(target) {
             this._target = target;
@@ -395,10 +403,25 @@ var dou;
     Event.OPEN = "open";
     Event.CHANGE = "change";
     Event.COMPLETE = "complete";
+    Event.SOUND_COMPLETE = "soundComplete";
     Event.MESSAGE = "message";
     Event.CLOSE = "close";
     dou.Event = Event;
 })(dou || (dou = {}));
+(function () {
+    Object.defineProperties(dou.EventDispatcher, {
+        dispatchIOErrorEvent: {
+            value: function (type, msg, cancelable) {
+                let event = dou.recyclable(dou.IOErrorEvent);
+                event.$initIOErrorEvent(type, msg, cancelable);
+                let result = this.dispatch(event);
+                event.recycle();
+                return result;
+            },
+            enumerable: false
+        }
+    });
+})();
 var dou;
 (function (dou) {
     /**
@@ -406,18 +429,11 @@ var dou;
      * @author wizardc
      */
     class IOErrorEvent extends dou.Event {
-        static dispatch(target, type, msg, cancelable) {
-            let event = dou.recyclable(IOErrorEvent);
-            event.initEvent(type, msg, cancelable);
-            let result = target.dispatchEvent(event);
-            event.recycle();
-            return result;
-        }
         get msg() {
             return this._msg;
         }
-        initEvent(type, msg, cancelable) {
-            this.init(type, null, cancelable);
+        $initIOErrorEvent(type, msg, cancelable) {
+            this.$initEvent(type, null, cancelable);
             this._msg = msg;
         }
         onRecycle() {
@@ -428,6 +444,20 @@ var dou;
     IOErrorEvent.IO_ERROR = "ioError";
     dou.IOErrorEvent = IOErrorEvent;
 })(dou || (dou = {}));
+(function () {
+    Object.defineProperties(dou.EventDispatcher, {
+        dispatchProgressEvent: {
+            value: function (type, loaded, total, cancelable) {
+                let event = dou.recyclable(dou.ProgressEvent);
+                event.$initProgressEvent(type, loaded, total, cancelable);
+                let result = this.dispatch(event);
+                event.recycle();
+                return result;
+            },
+            enumerable: false
+        }
+    });
+})();
 var dou;
 (function (dou) {
     /**
@@ -435,21 +465,14 @@ var dou;
      * @author wizardc
      */
     class ProgressEvent extends dou.Event {
-        static dispatch(target, type, loaded, total, cancelable) {
-            let event = dou.recyclable(ProgressEvent);
-            event.initEvent(type, loaded, total, cancelable);
-            let result = target.dispatchEvent(event);
-            event.recycle();
-            return result;
-        }
         get loaded() {
             return this._loaded;
         }
         get total() {
             return this._total;
         }
-        initEvent(type, loaded, total, cancelable) {
-            this.init(type, null, cancelable);
+        $initProgressEvent(type, loaded, total, cancelable) {
+            this.$initEvent(type, null, cancelable);
             this._loaded = loaded;
             this._total = total;
         }
@@ -534,6 +557,33 @@ var dou;
         }
     }
     dou.BytesAnalyzer = BytesAnalyzer;
+})(dou || (dou = {}));
+var dou;
+(function (dou) {
+    /**
+     * 声音加载器
+     * @author wizardc
+     */
+    class SoundAnalyzer {
+        load(url, callback, thisObj) {
+            let sound = new dou.Sound();
+            sound.on(dou.Event.COMPLETE, () => {
+                callback.call(thisObj, url, sound);
+            });
+            sound.on(dou.IOErrorEvent.IO_ERROR, () => {
+                callback.call(thisObj, url);
+            });
+            sound.load(url);
+        }
+        release(data) {
+            if (data) {
+                data.close();
+                return true;
+            }
+            return false;
+        }
+    }
+    dou.SoundAnalyzer = SoundAnalyzer;
 })(dou || (dou = {}));
 var dou;
 (function (dou) {
@@ -755,6 +805,506 @@ var dou;
 })(dou || (dou = {}));
 var dou;
 (function (dou) {
+    var impl;
+    (function (impl) {
+        /**
+         * 声音
+         * * Audio 标签实现
+         * @author wizardc
+         */
+        class AudioSound extends dou.EventDispatcher {
+            constructor(target) {
+                super(target);
+            }
+            static pop(url) {
+                let array = AudioSound._audios[url];
+                if (array && array.length > 0) {
+                    return array.pop();
+                }
+                return null;
+            }
+            static recycle(url, audio) {
+                if (AudioSound._clearAudios[url]) {
+                    return;
+                }
+                let array = AudioSound._audios[url];
+                if (AudioSound._audios[url] == null) {
+                    array = AudioSound._audios[url] = [];
+                }
+                array.push(audio);
+            }
+            static clear(url) {
+                AudioSound._clearAudios[url] = true;
+                let array = AudioSound._audios[url];
+                if (array) {
+                    array.length = 0;
+                }
+            }
+            get length() {
+                if (this._originAudio) {
+                    return this._originAudio.duration;
+                }
+                throw new Error("Sound not loaded.");
+            }
+            load(url) {
+                this._url = url;
+                let audio = new Audio(url);
+                audio.addEventListener("canplaythrough", onAudioLoaded);
+                audio.addEventListener("error", onAudioError);
+                let ua = navigator.userAgent.toLowerCase();
+                if (ua.indexOf("firefox") >= 0) {
+                    audio.autoplay = !0;
+                    audio.muted = true;
+                }
+                audio.load();
+                this._originAudio = audio;
+                if (AudioSound._clearAudios[this._url]) {
+                    delete AudioSound._clearAudios[this._url];
+                }
+                let self = this;
+                function onAudioLoaded() {
+                    AudioSound.recycle(self._url, audio);
+                    removeListeners();
+                    if (ua.indexOf("firefox") >= 0) {
+                        audio.pause();
+                        audio.muted = false;
+                    }
+                    self._loaded = true;
+                    self.dispatchEvent(dou.Event.COMPLETE);
+                }
+                function onAudioError() {
+                    removeListeners();
+                    self.dispatchIOErrorEvent(dou.IOErrorEvent.IO_ERROR, `Audio Error: ${self._url}`);
+                }
+                function removeListeners() {
+                    audio.removeEventListener("canplaythrough", onAudioLoaded);
+                    audio.removeEventListener("error", onAudioError);
+                }
+            }
+            play(startTime, loops) {
+                if (!this._loaded) {
+                    console.error("In the absence of sound is not allowed to play after loading.");
+                    return;
+                }
+                let audio = AudioSound.pop(this._url);
+                if (!audio) {
+                    audio = this._originAudio.cloneNode();
+                }
+                audio.autoplay = true;
+                let channel = new impl.AudioSoundChannel(audio);
+                channel.url = this._url;
+                channel.loops = loops;
+                channel.startTime = startTime;
+                channel.play();
+                return channel;
+            }
+            close() {
+                if (this._loaded && this._originAudio) {
+                    this._originAudio.src = "";
+                }
+                if (this._originAudio) {
+                    this._originAudio = null;
+                }
+                AudioSound.clear(this._url);
+                this._loaded = false;
+            }
+        }
+        AudioSound._audios = {};
+        AudioSound._clearAudios = {};
+        impl.AudioSound = AudioSound;
+    })(impl = dou.impl || (dou.impl = {}));
+})(dou || (dou = {}));
+var dou;
+(function (dou) {
+    var impl;
+    (function (impl) {
+        /**
+         * 声音通道
+         * * Audio 标签实现
+         * @author wizardc
+         */
+        class AudioSoundChannel extends dou.EventDispatcher {
+            constructor(audio) {
+                super();
+                this.startTime = 0;
+                this._isStopped = false;
+                this._volume = 1;
+                this._canPlay = () => {
+                    this._audio.removeEventListener("canplay", this._canPlay);
+                    try {
+                        this._audio.currentTime = this.startTime;
+                    }
+                    catch (e) {
+                    }
+                    finally {
+                        this._audio.play();
+                    }
+                };
+                this._onPlayEnd = () => {
+                    if (this.loops == 1) {
+                        this.stop();
+                        this.dispatchEvent(dou.Event.SOUND_COMPLETE);
+                        return;
+                    }
+                    if (this.loops > 0) {
+                        this.loops--;
+                    }
+                    this.play();
+                };
+                this._audio = audio;
+                audio.addEventListener("ended", this._onPlayEnd);
+            }
+            set volume(value) {
+                if (this._isStopped) {
+                    console.error("Sound has stopped, please recall Sound.play () to play the sound.");
+                    return;
+                }
+                this._volume = value;
+                if (!this._audio) {
+                    return;
+                }
+                this._audio.volume = value;
+            }
+            get volume() {
+                return this._volume;
+            }
+            get position() {
+                if (!this._audio) {
+                    return 0;
+                }
+                return this._audio.currentTime;
+            }
+            play() {
+                if (this._isStopped) {
+                    console.error("Sound has stopped, please recall Sound.play () to play the sound.");
+                    return;
+                }
+                try {
+                    this._audio.volume = this._volume;
+                    this._audio.currentTime = this.startTime;
+                }
+                catch (error) {
+                    this._audio.addEventListener("canplay", this._canPlay);
+                    return;
+                }
+                this._audio.play();
+            }
+            stop() {
+                if (!this._audio) {
+                    return;
+                }
+                this._isStopped = true;
+                let audio = this._audio;
+                audio.removeEventListener("ended", this._onPlayEnd);
+                audio.removeEventListener("canplay", this._canPlay);
+                audio.volume = 0;
+                this._volume = 0;
+                this._audio = null;
+                let url = this.url;
+                // 延迟一定时间再停止, 规避 chrome 报错
+                window.setTimeout(() => {
+                    audio.pause();
+                    impl.AudioSound.recycle(url, audio);
+                }, 200);
+            }
+        }
+        impl.AudioSoundChannel = AudioSoundChannel;
+    })(impl = dou.impl || (dou.impl = {}));
+})(dou || (dou = {}));
+var dou;
+(function (dou) {
+    var impl;
+    (function (impl) {
+        /**
+         * AudioContext 解码器
+         * @author wizardc
+         */
+        let AudioAPIDecode;
+        (function (AudioAPIDecode) {
+            let _context;
+            let _decodeList;
+            let _decoding;
+            function init(context) {
+                _context = context;
+            }
+            AudioAPIDecode.init = init;
+            function getContext() {
+                return this._context;
+            }
+            AudioAPIDecode.getContext = getContext;
+            function addDecode(decode) {
+                _decodeList.push(decode);
+            }
+            AudioAPIDecode.addDecode = addDecode;
+            function decode() {
+                if (_decodeList.length <= 0) {
+                    return;
+                }
+                if (_decoding) {
+                    return;
+                }
+                _decoding = true;
+                let decodeInfo = _decodeList.shift();
+                _context.decodeAudioData(decodeInfo.buffer, (audioBuffer) => {
+                    decodeInfo.self.audioBuffer = audioBuffer;
+                    if (decodeInfo.success) {
+                        decodeInfo.success();
+                    }
+                    _decoding = false;
+                    decode();
+                }, () => {
+                    console.warn("Sound decode error.");
+                    if (decodeInfo.fail) {
+                        decodeInfo.fail();
+                    }
+                    _decoding = false;
+                    decode();
+                });
+            }
+            AudioAPIDecode.decode = decode;
+        })(AudioAPIDecode = impl.AudioAPIDecode || (impl.AudioAPIDecode = {}));
+    })(impl = dou.impl || (dou.impl = {}));
+})(dou || (dou = {}));
+var dou;
+(function (dou) {
+    var impl;
+    (function (impl) {
+        /**
+         * 声音
+         * * Audio API 实现
+         * @author wizardc
+         */
+        class AudioAPISound extends dou.EventDispatcher {
+            constructor(target) {
+                super(target);
+                this._loaded = false;
+            }
+            get length() {
+                if (this._audioBuffer) {
+                    return this._audioBuffer.duration;
+                }
+                throw new Error("sound not loaded!");
+            }
+            load(url) {
+                this._url = url;
+                let self = this;
+                let request = new XMLHttpRequest();
+                request.open("GET", url, true);
+                request.responseType = "arraybuffer";
+                request.addEventListener("load", function () {
+                    let ioError = request.status >= 400;
+                    if (ioError) {
+                        self.dispatchIOErrorEvent(dou.IOErrorEvent.IO_ERROR, `Audio Error: ${self._url}`);
+                    }
+                    else {
+                        impl.AudioAPIDecode.addDecode({
+                            buffer: request.response,
+                            success: onAudioLoaded,
+                            fail: onAudioError,
+                            self: self
+                        });
+                        impl.AudioAPIDecode.decode();
+                    }
+                });
+                request.addEventListener("error", function () {
+                    self.dispatchIOErrorEvent(dou.IOErrorEvent.IO_ERROR, `Audio Error: ${self._url}`);
+                });
+                request.send();
+                function onAudioLoaded() {
+                    self._loaded = true;
+                    self.dispatchEvent(dou.Event.COMPLETE);
+                }
+                function onAudioError() {
+                    self.dispatchIOErrorEvent(dou.IOErrorEvent.IO_ERROR, `Audio Error: ${self._url}`);
+                }
+            }
+            play(startTime, loops) {
+                if (!this._loaded) {
+                    console.error("In the absence of sound is not allowed to play after loading.");
+                    return;
+                }
+                let channel = new impl.AudioAPISoundChannel();
+                channel.url = this._url;
+                channel.loops = loops;
+                channel.audioBuffer = this._audioBuffer;
+                channel.startTime = startTime;
+                channel.play();
+                return channel;
+            }
+            close() {
+            }
+        }
+        impl.AudioAPISound = AudioAPISound;
+    })(impl = dou.impl || (dou.impl = {}));
+})(dou || (dou = {}));
+var dou;
+(function (dou) {
+    var impl;
+    (function (impl) {
+        /**
+         * 声音通道
+         * * Audio API 实现
+         * @author wizardc
+         */
+        class AudioAPISoundChannel extends dou.EventDispatcher {
+            constructor() {
+                super();
+                this.startTime = 0;
+                this._isStopped = false;
+                this._recordStartTime = 0;
+                this._volume = 1;
+                this._onPlayEnd = () => {
+                    if (this.loops == 1) {
+                        this.stop();
+                        this.dispatchEvent(dou.Event.SOUND_COMPLETE);
+                        return;
+                    }
+                    if (this.loops > 0) {
+                        this.loops--;
+                    }
+                    this.play();
+                };
+                this._context = impl.AudioAPIDecode.getContext();
+                if (this._context.createGain) {
+                    this._gain = this._context.createGain();
+                }
+                else {
+                    this._gain = this._context["createGainNode"]();
+                }
+            }
+            set volume(value) {
+                if (this._isStopped) {
+                    console.error("Sound has stopped, please recall Sound.play () to play the sound.");
+                    return;
+                }
+                this._volume = value;
+                this._gain.gain.value = value;
+            }
+            get volume() {
+                return this._volume;
+            }
+            get position() {
+                if (this._bufferSource) {
+                    return (Date.now() - this._recordStartTime) / 1000 + this.startTime;
+                }
+                return 0;
+            }
+            play() {
+                if (this._isStopped) {
+                    console.error("Sound has stopped, please recall Sound.play () to play the sound.");
+                    return;
+                }
+                if (this._bufferSource) {
+                    this._bufferSource.onended = null;
+                    this._bufferSource = null;
+                }
+                let context = this._context;
+                let gain = this._gain;
+                let bufferSource = context.createBufferSource();
+                this._bufferSource = bufferSource;
+                bufferSource.buffer = this.audioBuffer;
+                bufferSource.connect(gain);
+                gain.connect(context.destination);
+                bufferSource.onended = this._onPlayEnd;
+                this._recordStartTime = Date.now();
+                this._gain.gain.value = this._volume;
+                bufferSource.start(0, this.startTime);
+            }
+            stop() {
+                if (this._bufferSource) {
+                    let sourceNode = this._bufferSource;
+                    if (sourceNode.stop) {
+                        sourceNode.stop(0);
+                    }
+                    else {
+                        sourceNode.noteOff(0);
+                    }
+                    sourceNode.onended = null;
+                    sourceNode.disconnect();
+                    this._bufferSource = null;
+                    this.audioBuffer = null;
+                }
+                this._isStopped = true;
+            }
+        }
+        impl.AudioAPISoundChannel = AudioAPISoundChannel;
+    })(impl = dou.impl || (dou.impl = {}));
+})(dou || (dou = {}));
+var dou;
+(function (dou) {
+    var impl;
+    (function (impl) {
+        let context;
+        try {
+            context = new (window["AudioContext"] || window["webkitAudioContext"] || window["mozAudioContext"])();
+        }
+        catch (error) {
+        }
+        if (context) {
+            impl.AudioAPIDecode.init(context);
+            impl.soundImpl = impl.AudioAPISound;
+        }
+        else {
+            impl.soundImpl = impl.AudioSound;
+        }
+    })(impl = dou.impl || (dou.impl = {}));
+})(dou || (dou = {}));
+var dou;
+(function (dou) {
+    /**
+     * 声音
+     * @author wizardc
+     */
+    class Sound {
+        constructor() {
+            this._impl = new dou.impl.soundImpl(this);
+        }
+        /**
+         * 当前声音的长度, 以秒为单位
+         */
+        get length() {
+            return this._impl.length;
+        }
+        /**
+         * 启动从指定 URL 加载外部音频文件
+         */
+        load(url) {
+            this._impl.load(url);
+        }
+        /**
+         * 生成一个新的 SoundChannel 对象来播放该声音
+         * @param startTime 开始播放的时间, 以秒为单位
+         * @param loops 循环次数, 0 表示循环播放
+         */
+        play(startTime, loops) {
+            return this._impl.play(startTime, loops);
+        }
+        /**
+         * 关闭该流
+         */
+        close() {
+            return this._impl.close();
+        }
+        on(type, listener, thisObj) {
+            this._impl.on(type, listener, thisObj);
+        }
+        once(type, listener, thisObj) {
+            this._impl.once(type, listener, thisObj);
+        }
+        has(type) {
+            return this._impl.has(type);
+        }
+        dispatch(event) {
+            return this._impl.dispatch(event);
+        }
+        off(type, listener, thisObj) {
+            this._impl.off(type, listener, thisObj);
+        }
+    }
+    dou.Sound = Sound;
+})(dou || (dou = {}));
+var dou;
+(function (dou) {
     /**
      * HTTP 请求方法
      * @author wizardc
@@ -852,17 +1402,17 @@ var dou;
                 let ioError = (xhr.status >= 400 || xhr.status == 0);
                 setTimeout(() => {
                     if (ioError) {
-                        dou.IOErrorEvent.dispatch(this, dou.IOErrorEvent.IO_ERROR, `Request Error: ${this._url}`);
+                        this.dispatchIOErrorEvent(dou.IOErrorEvent.IO_ERROR, `Request Error: ${this._url}`);
                     }
                     else {
-                        this.dispatch(dou.Event.COMPLETE);
+                        this.dispatchEvent(dou.Event.COMPLETE);
                     }
                 }, 0);
             }
         }
         updateProgress(event) {
             if (event.lengthComputable) {
-                dou.ProgressEvent.dispatch(this, dou.ProgressEvent.PROGRESS, event.loaded, event.total);
+                this.dispatchProgressEvent(dou.ProgressEvent.PROGRESS, event.loaded, event.total);
             }
         }
         abort() {
@@ -925,7 +1475,7 @@ var dou;
             let image = this.getImage(event.target);
             if (image) {
                 setTimeout(() => {
-                    this.dispatch(dou.Event.COMPLETE);
+                    this.dispatchEvent(dou.Event.COMPLETE);
                 }, 0);
             }
         }
@@ -933,7 +1483,7 @@ var dou;
             let image = this.getImage(event.target);
             if (image) {
                 setTimeout(() => {
-                    dou.IOErrorEvent.dispatch(this, dou.IOErrorEvent.IO_ERROR, `Image load error: ${image.src}`);
+                    this.dispatchIOErrorEvent(dou.IOErrorEvent.IO_ERROR, `Image load error: ${image.src}`);
                 }, 0);
             }
         }
@@ -943,50 +1493,6 @@ var dou;
      */
     ImageLoader.crossOrigin = false;
     dou.ImageLoader = ImageLoader;
-})(dou || (dou = {}));
-var dou;
-(function (dou) {
-    /**
-     * 声音加载器
-     * @author wizardc
-     */
-    class SoundLoader extends dou.EventDispatcher {
-        get data() {
-            return this._data;
-        }
-        load(url) {
-            this._data = null;
-            let audio = this._currentAudio = new Audio(url);
-            audio.addEventListener("canplaythrough", this.onLoaded.bind(this));
-            audio.addEventListener("error", this.onError.bind(this));
-            audio.load();
-        }
-        getAudio(element) {
-            if (this._currentAudio === element) {
-                this._data = element;
-                this._currentAudio = null;
-                return element;
-            }
-            return null;
-        }
-        onLoaded(event) {
-            let audio = this.getAudio(event.target);
-            if (audio) {
-                setTimeout(() => {
-                    this.dispatch(dou.Event.COMPLETE);
-                }, 0);
-            }
-        }
-        onError(event) {
-            let audio = this.getAudio(event.target);
-            if (audio) {
-                setTimeout(() => {
-                    dou.IOErrorEvent.dispatch(this, dou.IOErrorEvent.IO_ERROR, `Sound load error: ${audio.src}`);
-                }, 0);
-            }
-        }
-    }
-    dou.SoundLoader = SoundLoader;
 })(dou || (dou = {}));
 var dou;
 (function (dou) {
@@ -1069,7 +1575,7 @@ var dou;
         }
         onOpen(event) {
             this._connected = true;
-            this.dispatch(dou.Event.OPEN);
+            this.dispatchEvent(dou.Event.OPEN);
         }
         onMessage(messageEvent) {
             if (!messageEvent || !messageEvent.data) {
@@ -1077,7 +1583,7 @@ var dou;
             }
             let data = messageEvent.data;
             if (!this._cacheInput && data) {
-                this.dispatch(dou.Event.MESSAGE, data);
+                this.dispatchEvent(dou.Event.MESSAGE, data);
                 return;
             }
             if (this._input.length > 0 && this._input.bytesAvailable < 1) {
@@ -1099,14 +1605,14 @@ var dou;
                 this._addInputPosition = this._input.position;
                 this._input.position = pre;
             }
-            this.dispatch(dou.Event.MESSAGE, data);
+            this.dispatchEvent(dou.Event.MESSAGE, data);
         }
         onClose(event) {
             this._connected = false;
-            this.dispatch(dou.Event.CLOSE);
+            this.dispatchEvent(dou.Event.CLOSE);
         }
         onError(event) {
-            dou.IOErrorEvent.dispatch(this, dou.IOErrorEvent.IO_ERROR, `Socket connect error: ${this._url}`);
+            this.dispatchIOErrorEvent(dou.IOErrorEvent.IO_ERROR, `Socket connect error: ${this._url}`);
         }
         send(data) {
             this._webSocket.send(data);
@@ -1125,7 +1631,7 @@ var dou;
                 this._output.endian = this.endian;
                 this._output.clear();
                 if (error) {
-                    dou.IOErrorEvent.dispatch(this, dou.IOErrorEvent.IO_ERROR, `Socket connect error: ${this._url}`);
+                    this.dispatchIOErrorEvent(dou.IOErrorEvent.IO_ERROR, `Socket connect error: ${this._url}`);
                 }
             }
         }
@@ -1597,7 +2103,7 @@ var dou;
                     }
                 }
             }
-            this.dispatch(dou.Event.CHANGE);
+            this.dispatchEvent(dou.Event.COMPLETE);
             return end;
         }
         _runAction(action, startPos, endPos, includeStart = false) {

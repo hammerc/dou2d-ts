@@ -448,7 +448,7 @@ namespace dou2d {
                 case DrawableType.texture:
                     if (filter) {
                         if (filter.type === "custom") {
-                            program = Program.getProgram(filter.$shaderKey, gl, filter.$vertexSrc, filter.$fragmentSrc);
+                            program = Program.getProgram((<CustomFilter>filter).$shaderKey, gl, (<CustomFilter>filter).$vertexSrc, (<CustomFilter>filter).$fragmentSrc);
                         }
                         else if (filter.type === "colorTransform") {
                             program = Program.getProgram("colorTransform", gl, ShaderLib.default_vs, ShaderLib.colorTransform_fs);

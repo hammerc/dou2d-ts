@@ -29,13 +29,5 @@ namespace dou2d {
         public $measureContentBounds(bounds: Rectangle): void {
             this._graphics.$measureContentBounds(bounds);
         }
-
-        public $hitTest(stageX: number, stageY: number): DisplayObject {
-            let target = super.$hitTest(stageX, stageY);
-            if (target == this) {
-                target = this._graphics.$hitTest(stageX, stageY);
-            }
-            return target;
-        }
     }
 }

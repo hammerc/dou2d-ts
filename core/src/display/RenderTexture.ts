@@ -49,7 +49,7 @@ namespace dou2d {
             if (clipBounds) {
                 matrix.translate(-clipBounds.x, -clipBounds.y);
             }
-            renderer.render(displayObject, renderBuffer, matrix, true);
+            renderer.render(displayObject, renderBuffer, matrix);
             matrix.recycle();
             // 设置纹理参数
             this.$initData(0, 0, width, height, 0, 0, width, height, width, height);

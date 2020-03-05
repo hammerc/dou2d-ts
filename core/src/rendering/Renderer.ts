@@ -1,54 +1,51 @@
 namespace dou2d {
+    let blendModes = ["source-over", "lighter", "destination-out"];
+    let defaultCompositeOp = "source-over";
+
     /**
      * 核心渲染类
      * @author wizardc
      */
     export class Renderer {
+        private renderBufferPool: RenderBuffer[] = [];
 
-        public constructor() {
-        }
-
-        private nestLevel: number = 0;//渲染的嵌套层次，0表示在调用堆栈的最外层。
+        /**
+         * 渲染的嵌套层次, 0 表示在调用堆栈的最外层
+         */
+        private nestLevel: number = 0;
 
         /**
          * 渲染一个显示对象
          * @param displayObject 要渲染的显示对象
          * @param buffer 渲染缓冲
          * @param matrix 要对显示对象整体叠加的变换矩阵
-         * @param dirtyList 脏矩形列表
-         * @param forRenderTexture 绘制目标是RenderTexture的标志
-         * @returns drawCall触发绘制的次数
+         * @returns drawCall 触发绘制的次数
          */
-        public render(displayObject: DisplayObject, buffer: RenderBuffer, matrix: Matrix, forRenderTexture?: boolean): number {
+        public render(displayObject: DisplayObject, buffer: RenderBuffer, matrix: Matrix): number {
             this.nestLevel++;
-            let webglBuffer: RenderBuffer = <RenderBuffer>buffer;
-            let webglBufferContext: RenderContext = webglBuffer.context;
-            let root: DisplayObject = forRenderTexture ? displayObject : null;
-
+            let webglBuffer = buffer;
+            let webglBufferContext = webglBuffer.context;
             webglBufferContext.pushBuffer(webglBuffer);
-
-            //绘制显示对象
+            // 绘制显示对象
             webglBuffer.transform(matrix.a, matrix.b, matrix.c, matrix.d, 0, 0);
             this.drawDisplayObject(displayObject, webglBuffer, matrix.tx, matrix.ty, true);
-            webglBufferContext.$drawWebGL();
-            let drawCall = webglBuffer.$drawCalls;
+            webglBufferContext.draw();
+            let drawCall = webglBuffer.drawCalls;
             webglBuffer.onRenderFinish();
-
             webglBufferContext.popBuffer();
-            let invert = Matrix.create();
-            matrix.$invertInto(invert);
+            let invert = dou.recyclable(Matrix);
+            invert.inverse(matrix);
             webglBuffer.transform(invert.a, invert.b, invert.c, invert.d, 0, 0);
-            Matrix.release(invert);
-
+            invert.recycle();
             this.nestLevel--;
             if (this.nestLevel === 0) {
                 //最大缓存6个渲染缓冲
-                if (renderBufferPool.length > 6) {
-                    renderBufferPool.length = 6;
+                if (this.renderBufferPool.length > 6) {
+                    this.renderBufferPool.length = 6;
                 }
-                let length = renderBufferPool.length;
+                let length = this.renderBufferPool.length;
                 for (let i = 0; i < length; i++) {
-                    renderBufferPool[i].resize(0, 0);
+                    this.renderBufferPool[i].resize(0, 0);
                 }
             }
             return drawCall;
@@ -81,8 +78,8 @@ namespace dou2d {
             displayObject.$cacheDirty = false;
             if (node) {
                 drawCalls++;
-                buffer.$offsetX = offsetX;
-                buffer.$offsetY = offsetY;
+                buffer.offsetX = offsetX;
+                buffer.offsetY = offsetY;
                 switch (node.type) {
                     case RenderNodeType.bitmapNode:
                         this.renderBitmap(<BitmapNode>node, buffer);
@@ -100,13 +97,13 @@ namespace dou2d {
                         this.renderNormalBitmap(<NormalBitmapNode>node, buffer);
                         break;
                 }
-                buffer.$offsetX = 0;
-                buffer.$offsetY = 0;
+                buffer.offsetX = 0;
+                buffer.offsetY = 0;
             }
             if (displayList && !isStage) {
                 return drawCalls;
             }
-            let children = displayObject._children;
+            let children = displayObject.$children;
             if (children) {
                 if (displayObject.sortableChildren && displayObject.$sortDirty) {
                     //绘制排序
@@ -119,21 +116,21 @@ namespace dou2d {
                     let offsetY2;
                     let tempAlpha;
                     let tempTintColor;
-                    if (child._alpha != 1) {
+                    if (child.alpha != 1) {
                         tempAlpha = buffer.globalAlpha;
-                        buffer.globalAlpha *= child._alpha;
+                        buffer.globalAlpha *= child.alpha;
                     }
                     if (child.tint !== 0xFFFFFF) {
                         tempTintColor = buffer.globalTintColor;
                         buffer.globalTintColor = child.$tintRGB;
                     }
-                    let savedMatrix: Matrix;
+                    let savedMatrix: dou.Recyclable<Matrix>;
                     if (child.$useTranslate) {
                         let m = child.$getMatrix();
-                        offsetX2 = offsetX + child._x;
-                        offsetY2 = offsetY + child._y;
+                        offsetX2 = offsetX + child.x;
+                        offsetY2 = offsetY + child.y;
                         let m2 = buffer.globalMatrix;
-                        savedMatrix = Matrix.create();
+                        savedMatrix = dou.recyclable(Matrix);
                         savedMatrix.a = m2.a;
                         savedMatrix.b = m2.b;
                         savedMatrix.c = m2.c;
@@ -141,23 +138,23 @@ namespace dou2d {
                         savedMatrix.tx = m2.tx;
                         savedMatrix.ty = m2.ty;
                         buffer.transform(m.a, m.b, m.c, m.d, offsetX2, offsetY2);
-                        offsetX2 = -child._anchorOffsetX;
-                        offsetY2 = -child._anchorOffsetY;
+                        offsetX2 = -child.anchorOffsetX;
+                        offsetY2 = -child.anchorOffsetY;
                     }
                     else {
-                        offsetX2 = offsetX + child._x - child._anchorOffsetX;
-                        offsetY2 = offsetY + child._y - child._anchorOffsetY;
+                        offsetX2 = offsetX + child.x - child.anchorOffsetX;
+                        offsetY2 = offsetY + child.y - child.anchorOffsetY;
                     }
                     switch (child.$renderMode) {
-                        case RenderMode.NONE:
+                        case RenderMode.none:
                             break;
-                        case RenderMode.FILTER:
+                        case RenderMode.filter:
                             drawCalls += this.drawWithFilter(child, buffer, offsetX2, offsetY2);
                             break;
-                        case RenderMode.CLIP:
+                        case RenderMode.clip:
                             drawCalls += this.drawWithClip(child, buffer, offsetX2, offsetY2);
                             break;
-                        case RenderMode.SCROLLRECT:
+                        case RenderMode.scrollRect:
                             drawCalls += this.drawWithScrollRect(child, buffer, offsetX2, offsetY2);
                             break;
                         default:
@@ -178,7 +175,7 @@ namespace dou2d {
                         m.d = savedMatrix.d;
                         m.tx = savedMatrix.tx;
                         m.ty = savedMatrix.ty;
-                        Matrix.release(savedMatrix);
+                        savedMatrix.recycle();
                     }
                 }
             }
@@ -190,14 +187,14 @@ namespace dou2d {
          */
         private drawWithFilter(displayObject: DisplayObject, buffer: RenderBuffer, offsetX: number, offsetY: number): number {
             let drawCalls = 0;
-            if (displayObject._children && displayObject._children.length == 0 && (!displayObject.$renderNode || displayObject.$renderNode.$getRenderCount() == 0)) {
+            if (displayObject.$children && displayObject.$children.length == 0 && (!displayObject.$renderNode || displayObject.$renderNode.renderCount == 0)) {
                 return drawCalls;
             }
-            let filters = displayObject._filters;
-            let hasBlendMode = (displayObject._blendMode !== 0);
+            let filters = displayObject.filters;
+            let hasBlendMode = (displayObject.blendMode !== BlendMode.normal);
             let compositeOp: string;
             if (hasBlendMode) {
-                compositeOp = blendModes[displayObject._blendMode];
+                compositeOp = blendModes[displayObject.blendMode];
                 if (!compositeOp) {
                     compositeOp = defaultCompositeOp;
                 }
@@ -214,23 +211,23 @@ namespace dou2d {
 
             if (!displayObject.mask && filters.length == 1 && (filters[0].type == "colorTransform" || (filters[0].type === "custom" && (<CustomFilter>filters[0]).padding === 0))) {
                 let childrenDrawCount = this.getRenderCount(displayObject);
-                if (!displayObject._children || childrenDrawCount == 1) {
+                if (!displayObject.$children || childrenDrawCount == 1) {
                     if (hasBlendMode) {
                         buffer.context.setGlobalCompositeOperation(compositeOp);
                     }
 
-                    buffer.context.$filter = <ColorMatrixFilter>filters[0];
+                    buffer.context.colorMatrixFilter = <ColorMatrixFilter>filters[0];
                     if (displayObject.$mask) {
                         drawCalls += this.drawWithClip(displayObject, buffer, offsetX, offsetY);
                     }
-                    else if (displayObject._scrollRect || displayObject.$maskRect) {
+                    else if (displayObject.scrollRect || displayObject.$maskRect) {
                         drawCalls += this.drawWithScrollRect(displayObject, buffer, offsetX, offsetY);
                     }
                     else {
                         drawCalls += this.drawDisplayObject(displayObject, buffer, offsetX, offsetY);
                     }
 
-                    buffer.context.$filter = null;
+                    buffer.context.colorMatrixFilter = null;
 
                     if (hasBlendMode) {
                         buffer.context.setGlobalCompositeOperation(defaultCompositeOp);
@@ -248,7 +245,7 @@ namespace dou2d {
             if (displayObject.$mask) {
                 drawCalls += this.drawWithClip(displayObject, displayBuffer, -displayBoundsX, -displayBoundsY);
             }
-            else if (displayObject._scrollRect || displayObject.$maskRect) {
+            else if (displayObject.scrollRect || displayObject.$maskRect) {
                 drawCalls += this.drawWithScrollRect(displayObject, displayBuffer, -displayBoundsX, -displayBoundsY);
             }
             else {
@@ -264,9 +261,9 @@ namespace dou2d {
                 }
                 drawCalls++;
                 // 绘制结果的时候，应用滤镜
-                buffer.$offsetX = offsetX + displayBoundsX;
-                buffer.$offsetY = offsetY + displayBoundsY;
-                let savedMatrix = Matrix.create();
+                buffer.offsetX = offsetX + displayBoundsX;
+                buffer.offsetY = offsetY + displayBoundsY;
+                let savedMatrix = dou.recyclable(Matrix);
                 let curMatrix = buffer.globalMatrix;
                 savedMatrix.a = curMatrix.a;
                 savedMatrix.b = curMatrix.b;
@@ -282,12 +279,12 @@ namespace dou2d {
                 curMatrix.d = savedMatrix.d;
                 curMatrix.tx = savedMatrix.tx;
                 curMatrix.ty = savedMatrix.ty;
-                Matrix.release(savedMatrix);
+                savedMatrix.recycle();
                 if (hasBlendMode) {
                     buffer.context.setGlobalCompositeOperation(defaultCompositeOp);
                 }
             }
-            renderBufferPool.push(displayBuffer);
+            this.renderBufferPool.push(displayBuffer);
             return drawCalls;
         }
 
@@ -295,22 +292,22 @@ namespace dou2d {
             let drawCount = 0;
             const node = displayObject.$getRenderNode();
             if (node) {
-                drawCount += node.$getRenderCount();
+                drawCount += node.renderCount;
             }
-            if (displayObject._children) {
-                for (const child of displayObject._children) {
-                    const filters = child._filters;
+            if (displayObject.$children) {
+                for (const child of displayObject.$children) {
+                    const filters = child.filters;
                     // 特殊处理有滤镜的对象
                     if (filters && filters.length > 0) {
                         return 2;
                     }
-                    else if (child._children) {
+                    else if (child.$children) {
                         drawCount += this.getRenderCount(child);
                     }
                     else {
                         const node = child.$getRenderNode();
                         if (node) {
-                            drawCount += node.$getRenderCount();
+                            drawCount += node.renderCount;
                         }
                     }
                 }
@@ -323,16 +320,16 @@ namespace dou2d {
          */
         private drawWithClip(displayObject: DisplayObject, buffer: RenderBuffer, offsetX: number, offsetY: number): number {
             let drawCalls = 0;
-            let hasBlendMode = (displayObject._blendMode !== 0);
+            let hasBlendMode = displayObject.blendMode !== BlendMode.normal;
             let compositeOp: string;
             if (hasBlendMode) {
-                compositeOp = blendModes[displayObject._blendMode];
+                compositeOp = blendModes[displayObject.blendMode];
                 if (!compositeOp) {
                     compositeOp = defaultCompositeOp;
                 }
             }
 
-            let scrollRect = displayObject._scrollRect ? displayObject._scrollRect : displayObject.$maskRect;
+            let scrollRect = displayObject.scrollRect ? displayObject.scrollRect : displayObject.$maskRect;
             let mask = displayObject.$mask;
             if (mask) {
                 let maskRenderMatrix = mask.$getMatrix();
@@ -343,7 +340,7 @@ namespace dou2d {
             }
 
             //没有遮罩,同时显示对象没有子项
-            if (!mask && (!displayObject._children || displayObject._children.length == 0)) {
+            if (!mask && (!displayObject.$children || displayObject.$children.length == 0)) {
                 if (scrollRect) {
                     buffer.context.pushMask(scrollRect.x + offsetX, scrollRect.y + offsetY, scrollRect.width, scrollRect.height);
                 }
@@ -369,38 +366,35 @@ namespace dou2d {
                 if (displayBoundsWidth <= 0 || displayBoundsHeight <= 0) {
                     return drawCalls;
                 }
-                //绘制显示对象自身，若有scrollRect，应用clip
+                // 绘制显示对象自身，若有scrollRect，应用clip
                 let displayBuffer = this.createRenderBuffer(displayBoundsWidth, displayBoundsHeight);
                 displayBuffer.context.pushBuffer(displayBuffer);
                 drawCalls += this.drawDisplayObject(displayObject, displayBuffer, -displayBoundsX, -displayBoundsY);
-                //绘制遮罩
+                // 绘制遮罩
                 if (mask) {
                     let maskBuffer = this.createRenderBuffer(displayBoundsWidth, displayBoundsHeight);
                     maskBuffer.context.pushBuffer(maskBuffer);
-                    let maskMatrix = Matrix.create();
-                    maskMatrix.copyFrom(mask.$getConcatenatedMatrix());
+                    let maskMatrix = dou.recyclable(Matrix);
+                    maskMatrix.copy(mask.$getConcatenatedMatrix());
                     mask.$getConcatenatedMatrixAt(displayObject, maskMatrix);
                     maskMatrix.translate(-displayBoundsX, -displayBoundsY);
                     maskBuffer.setTransform(maskMatrix.a, maskMatrix.b, maskMatrix.c, maskMatrix.d, maskMatrix.tx, maskMatrix.ty);
-                    Matrix.release(maskMatrix);
+                    maskMatrix.recycle();
                     drawCalls += this.drawDisplayObject(mask, maskBuffer, 0, 0);
                     maskBuffer.context.popBuffer();
                     displayBuffer.context.setGlobalCompositeOperation("destination-in");
                     displayBuffer.setTransform(1, 0, 0, -1, 0, maskBuffer.height);
-                    let maskBufferWidth = maskBuffer.rootRenderTarget.width;
-                    let maskBufferHeight = maskBuffer.rootRenderTarget.height;
-                    displayBuffer.context.drawTexture(maskBuffer.rootRenderTarget.texture, 0, 0, maskBufferWidth, maskBufferHeight,
-                        0, 0, maskBufferWidth, maskBufferHeight, maskBufferWidth, maskBufferHeight);
+                    let maskBufferWidth = maskBuffer.renderTarget.width;
+                    let maskBufferHeight = maskBuffer.renderTarget.height;
+                    displayBuffer.context.drawTexture(maskBuffer.renderTarget.texture, 0, 0, maskBufferWidth, maskBufferHeight, 0, 0, maskBufferWidth, maskBufferHeight, maskBufferWidth, maskBufferHeight);
                     displayBuffer.setTransform(1, 0, 0, 1, 0, 0);
                     displayBuffer.context.setGlobalCompositeOperation("source-over");
                     maskBuffer.setTransform(1, 0, 0, 1, 0, 0);
-                    renderBufferPool.push(maskBuffer);
+                    this.renderBufferPool.push(maskBuffer);
                 }
-
                 displayBuffer.context.setGlobalCompositeOperation(defaultCompositeOp);
                 displayBuffer.context.popBuffer();
-
-                //绘制结果到屏幕
+                // 绘制结果到屏幕
                 if (drawCalls > 0) {
                     drawCalls++;
                     if (hasBlendMode) {
@@ -409,7 +403,7 @@ namespace dou2d {
                     if (scrollRect) {
                         buffer.context.pushMask(scrollRect.x + offsetX, scrollRect.y + offsetY, scrollRect.width, scrollRect.height);
                     }
-                    let savedMatrix = Matrix.create();
+                    let savedMatrix = dou.recyclable(Matrix);
                     let curMatrix = buffer.globalMatrix;
                     savedMatrix.a = curMatrix.a;
                     savedMatrix.b = curMatrix.b;
@@ -418,9 +412,9 @@ namespace dou2d {
                     savedMatrix.tx = curMatrix.tx;
                     savedMatrix.ty = curMatrix.ty;
                     curMatrix.append(1, 0, 0, -1, offsetX + displayBoundsX, offsetY + displayBoundsY + displayBuffer.height);
-                    let displayBufferWidth = displayBuffer.rootRenderTarget.width;
-                    let displayBufferHeight = displayBuffer.rootRenderTarget.height;
-                    buffer.context.drawTexture(displayBuffer.rootRenderTarget.texture, 0, 0, displayBufferWidth, displayBufferHeight,
+                    let displayBufferWidth = displayBuffer.renderTarget.width;
+                    let displayBufferHeight = displayBuffer.renderTarget.height;
+                    buffer.context.drawTexture(displayBuffer.renderTarget.texture, 0, 0, displayBufferWidth, displayBufferHeight,
                         0, 0, displayBufferWidth, displayBufferHeight, displayBufferWidth, displayBufferHeight);
                     if (scrollRect) {
                         displayBuffer.context.popMask();
@@ -435,9 +429,9 @@ namespace dou2d {
                     matrix.d = savedMatrix.d;
                     matrix.tx = savedMatrix.tx;
                     matrix.ty = savedMatrix.ty;
-                    Matrix.release(savedMatrix);
+                    savedMatrix.recycle();
                 }
-                renderBufferPool.push(displayBuffer);
+                this.renderBufferPool.push(displayBuffer);
                 return drawCalls;
             }
         }
@@ -447,18 +441,18 @@ namespace dou2d {
          */
         private drawWithScrollRect(displayObject: DisplayObject, buffer: RenderBuffer, offsetX: number, offsetY: number): number {
             let drawCalls = 0;
-            let scrollRect = displayObject._scrollRect ? displayObject._scrollRect : displayObject.$maskRect;
+            let scrollRect = displayObject.scrollRect ? displayObject.scrollRect : displayObject.$maskRect;
             if (scrollRect.isEmpty()) {
                 return drawCalls;
             }
-            if (displayObject._scrollRect) {
+            if (displayObject.scrollRect) {
                 offsetX -= scrollRect.x;
                 offsetY -= scrollRect.y;
             }
             let m = buffer.globalMatrix;
             let context = buffer.context;
             let scissor = false;
-            if (buffer.$hasScissor || m.b != 0 || m.c != 0) {// 有旋转的情况下不能使用scissor
+            if (buffer.hasScissor || m.b != 0 || m.c != 0) {// 有旋转的情况下不能使用scissor
                 buffer.context.pushMask(scrollRect.x + offsetX, scrollRect.y + offsetY, scrollRect.width, scrollRect.height);
             } else {
                 let a = m.a;
@@ -544,7 +538,7 @@ namespace dou2d {
 
             webglBuffer.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
             this.renderNode(node, buffer, 0, 0, forHitTest);
-            webglBuffer.context.$drawWebGL();
+            webglBuffer.context.draw();
             webglBuffer.onRenderFinish();
 
             //popRenderTARGET
@@ -590,7 +584,7 @@ namespace dou2d {
                         break;
                 }
             }
-            let children = displayObject._children;
+            let children = displayObject.$children;
             if (children) {
                 let length = children.length;
                 for (let i = 0; i < length; i++) {
@@ -614,7 +608,7 @@ namespace dou2d {
                 }
             }
 
-            buffer.context.$drawWebGL();
+            buffer.context.draw();
             buffer.onRenderFinish();
             buffer.context.popBuffer();
 
@@ -625,25 +619,22 @@ namespace dou2d {
          * @private
          */
         private renderNode(node: RenderNode, buffer: RenderBuffer, offsetX: number, offsetY: number, forHitTest?: boolean): void {
-            buffer.$offsetX = offsetX;
-            buffer.$offsetY = offsetY;
+            buffer.offsetX = offsetX;
+            buffer.offsetY = offsetY;
             switch (node.type) {
-                case RenderNodeType.BitmapNode:
+                case RenderNodeType.bitmapNode:
                     this.renderBitmap(<BitmapNode>node, buffer);
                     break;
-                case RenderNodeType.TextNode:
+                case RenderNodeType.textNode:
                     this.renderText(<TextNode>node, buffer);
                     break;
-                case RenderNodeType.GraphicsNode:
+                case RenderNodeType.graphicsNode:
                     this.renderGraphics(<GraphicsNode>node, buffer, forHitTest);
                     break;
-                case RenderNodeType.GroupNode:
+                case RenderNodeType.groupNode:
                     this.renderGroup(<GroupNode>node, buffer);
                     break;
-                case RenderNodeType.MeshNode:
-                    this.renderMesh(<MeshNode>node, buffer);
-                    break;
-                case RenderNodeType.NormalBitmapNode:
+                case RenderNodeType.normalBitmapNode:
                     this.renderNormalBitmap(<NormalBitmapNode>node, buffer);
                     break;
             }
@@ -676,11 +667,11 @@ namespace dou2d {
             let m = node.matrix;
             let blendMode = node.blendMode;
             let alpha = node.alpha;
-            let savedMatrix;
+            let savedMatrix: dou.Recyclable<Matrix>;
             let offsetX;
             let offsetY;
             if (m) {
-                savedMatrix = Matrix.create();
+                savedMatrix = dou.recyclable(Matrix);
                 let curMatrix = buffer.globalMatrix;
                 savedMatrix.a = curMatrix.a;
                 savedMatrix.b = curMatrix.b;
@@ -688,8 +679,8 @@ namespace dou2d {
                 savedMatrix.d = curMatrix.d;
                 savedMatrix.tx = curMatrix.tx;
                 savedMatrix.ty = curMatrix.ty;
-                offsetX = buffer.$offsetX;
-                offsetY = buffer.$offsetY;
+                offsetX = buffer.offsetX;
+                offsetY = buffer.offsetY;
                 buffer.useOffset();
                 buffer.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
             }
@@ -703,12 +694,12 @@ namespace dou2d {
                 buffer.globalAlpha *= alpha;
             }
             if (node.filter) {
-                buffer.context.$filter = node.filter;
+                buffer.context.colorMatrixFilter = node.filter;
                 while (pos < length) {
                     buffer.context.drawImage(image, data[pos++], data[pos++], data[pos++], data[pos++],
                         data[pos++], data[pos++], data[pos++], data[pos++], node.imageWidth, node.imageHeight, node.rotated, node.smoothing);
                 }
-                buffer.context.$filter = null;
+                buffer.context.colorMatrixFilter = null;
             }
             else {
                 while (pos < length) {
@@ -730,98 +721,19 @@ namespace dou2d {
                 matrix.d = savedMatrix.d;
                 matrix.tx = savedMatrix.tx;
                 matrix.ty = savedMatrix.ty;
-                buffer.$offsetX = offsetX;
-                buffer.$offsetY = offsetY;
-                Matrix.release(savedMatrix);
+                buffer.offsetX = offsetX;
+                buffer.offsetY = offsetY;
+                savedMatrix.recycle();
             }
         }
 
         private canvasRenderer: CanvasRenderer;
         private canvasRenderBuffer: CanvasRenderBuffer;
-        /**
-         * @private
-         */
-        private ___renderText____(node: TextNode, buffer: RenderBuffer): void {
-            let width = node.width - node.x;
-            let height = node.height - node.y;
-            if (width <= 0 || height <= 0 || !width || !height || node.drawData.length === 0) {
-                return;
-            }
-            let canvasScaleX = DisplayList.$canvasScaleX;
-            let canvasScaleY = DisplayList.$canvasScaleY;
-            const maxTextureSize = buffer.context.$maxTextureSize;
-            if (width * canvasScaleX > maxTextureSize) {
-                canvasScaleX *= maxTextureSize / (width * canvasScaleX);
-            }
-            if (height * canvasScaleY > maxTextureSize) {
-                canvasScaleY *= maxTextureSize / (height * canvasScaleY);
-            }
-            width *= canvasScaleX;
-            height *= canvasScaleY;
-            const x = node.x * canvasScaleX;
-            const y = node.y * canvasScaleY;
-            if (node.$canvasScaleX !== canvasScaleX || node.$canvasScaleY !== canvasScaleY) {
-                node.$canvasScaleX = canvasScaleX;
-                node.$canvasScaleY = canvasScaleY;
-                node.dirtyRender = true;
-            }
-            if (x || y) {
-                buffer.transform(1, 0, 0, 1, x / canvasScaleX, y / canvasScaleY);
-            }
-            if (node.dirtyRender) {
-                TextAtlasRender.analysisTextNodeAndFlushDrawLabel(node);
-            }
-            const drawCommands = node[property_drawLabel] as Array<DrawLabel>;
-            if (drawCommands && drawCommands.length > 0) {
-                //存一下
-                const saveOffsetX = buffer.$offsetX;
-                const saveOffsetY = buffer.$offsetY;
-                //开始画
-                let cmd: DrawLabel = null;
-                let anchorX = 0;
-                let anchorY = 0;
-                let textBlocks: TextBlock[] = null;
-                let tb: TextBlock = null;
-                let page: Page = null;
-                for (let i = 0, length = drawCommands.length; i < length; ++i) {
-                    cmd = drawCommands[i];
-                    anchorX = cmd.anchorX;
-                    anchorY = cmd.anchorY;
-                    textBlocks = cmd.textBlocks;
-                    buffer.$offsetX = saveOffsetX + anchorX;
-                    for (let j = 0, length1 = textBlocks.length; j < length1; ++j) {
-                        tb = textBlocks[j];
-                        if (j > 0) {
-                            buffer.$offsetX -= tb.canvasWidthOffset;
-                        }
-                        buffer.$offsetY = saveOffsetY + anchorY - (tb.measureHeight + (tb.stroke2 ? tb.canvasHeightOffset : 0)) / 2;
-                        page = tb.line.page;
-                        buffer.context.drawTexture(page.webGLTexture,
-                            tb.u, tb.v, tb.contentWidth, tb.contentHeight,
-                            0, 0, tb.contentWidth, tb.contentHeight,
-                            page.pageWidth, page.pageHeight);
 
-                        buffer.$offsetX += (tb.contentWidth - tb.canvasWidthOffset);
-                    }
-                }
-                //还原回去
-                buffer.$offsetX = saveOffsetX;
-                buffer.$offsetY = saveOffsetY;
-            }
-            if (x || y) {
-                buffer.transform(1, 0, 0, 1, -x / canvasScaleX, -y / canvasScaleY);
-            }
-            node.dirtyRender = false;
-        }
         /**
          * @private
          */
         private renderText(node: TextNode, buffer: RenderBuffer): void {
-            if (textAtlasRenderEnable) {
-                //新的文字渲染机制
-                this.___renderText____(node, buffer);
-                return;
-            }
             let width = node.width - node.x;
             let height = node.height - node.y;
             if (width <= 0 || height <= 0 || !width || !height || node.drawData.length == 0) {
@@ -829,7 +741,7 @@ namespace dou2d {
             }
             let canvasScaleX = DisplayList.$canvasScaleX;
             let canvasScaleY = DisplayList.$canvasScaleY;
-            let maxTextureSize = buffer.context.$maxTextureSize;
+            let maxTextureSize = buffer.context.maxTextureSize;
             if (width * canvasScaleX > maxTextureSize) {
                 canvasScaleX *= maxTextureSize / (width * canvasScaleX);
             }
@@ -840,28 +752,19 @@ namespace dou2d {
             height *= canvasScaleY;
             let x = node.x * canvasScaleX;
             let y = node.y * canvasScaleY;
-            if (node.$canvasScaleX != canvasScaleX || node.$canvasScaleY != canvasScaleY) {
-                node.$canvasScaleX = canvasScaleX;
-                node.$canvasScaleY = canvasScaleY;
+            if (node.canvasScaleX != canvasScaleX || node.canvasScaleY != canvasScaleY) {
+                node.canvasScaleX = canvasScaleX;
+                node.canvasScaleY = canvasScaleY;
                 node.dirtyRender = true;
             }
-            if (this.wxiOS10) {
-                if (!this.canvasRenderer) {
-                    this.canvasRenderer = new CanvasRenderer();
-                }
-                if (node.dirtyRender) {
-                    this.canvasRenderBuffer = new CanvasRenderBuffer(width, height);
-                }
+            if (!this.canvasRenderBuffer || !this.canvasRenderBuffer.context) {
+                this.canvasRenderer = new CanvasRenderer();
+                this.canvasRenderBuffer = new CanvasRenderBuffer(width, height);
             }
-            else {
-                if (!this.canvasRenderBuffer || !this.canvasRenderBuffer.context) {
-                    this.canvasRenderer = new CanvasRenderer();
-                    this.canvasRenderBuffer = new CanvasRenderBuffer(width, height);
-                }
-                else if (node.dirtyRender) {
-                    this.canvasRenderBuffer.resize(width, height);
-                }
+            else if (node.dirtyRender) {
+                this.canvasRenderBuffer.resize(width, height);
             }
+
             if (!this.canvasRenderBuffer.context) {
                 return;
             }
@@ -884,29 +787,24 @@ namespace dou2d {
                 let surface = this.canvasRenderBuffer.surface;
                 this.canvasRenderer.renderText(node, this.canvasRenderBuffer.context);
 
-                if (this.wxiOS10) {
-                    surface["isCanvas"] = true;
-                    node.$texture = surface;
+                // 拷贝canvas到texture
+                let texture = node.texture;
+                if (!texture) {
+                    texture = buffer.context.createTexture(<any>surface);
+                    node.texture = texture;
+                } else {
+                    // 重新拷贝新的图像
+                    buffer.context.updateTexture(texture, <any>surface);
                 }
-                else {
-                    // 拷贝canvas到texture
-                    let texture = node.$texture;
-                    if (!texture) {
-                        texture = buffer.context.createTexture(<BitmapData><any>surface);
-                        node.$texture = texture;
-                    } else {
-                        // 重新拷贝新的图像
-                        buffer.context.updateTexture(texture, <BitmapData><any>surface);
-                    }
-                }
+
                 // 保存材质尺寸
-                node.$textureWidth = surface.width;
-                node.$textureHeight = surface.height;
+                node.textureWidth = surface.width;
+                node.textureHeight = surface.height;
             }
 
-            let textureWidth = node.$textureWidth;
-            let textureHeight = node.$textureHeight;
-            buffer.context.drawTexture(node.$texture, 0, 0, textureWidth, textureHeight, 0, 0, textureWidth / canvasScaleX, textureHeight / canvasScaleY, textureWidth, textureHeight);
+            let textureWidth = node.textureWidth;
+            let textureHeight = node.textureHeight;
+            buffer.context.drawTexture(node.texture, 0, 0, textureWidth, textureHeight, 0, 0, textureWidth / canvasScaleX, textureHeight / canvasScaleY, textureWidth, textureHeight);
 
             if (x || y) {
                 if (node.dirtyRender) {
@@ -931,9 +829,9 @@ namespace dou2d {
             if (width * canvasScaleX < 1 || height * canvasScaleY < 1) {
                 canvasScaleX = canvasScaleY = 1;
             }
-            if (node.$canvasScaleX != canvasScaleX || node.$canvasScaleY != canvasScaleY) {
-                node.$canvasScaleX = canvasScaleX;
-                node.$canvasScaleY = canvasScaleY;
+            if (node.canvasScaleX != canvasScaleX || node.canvasScaleY != canvasScaleY) {
+                node.canvasScaleX = canvasScaleX;
+                node.canvasScaleY = canvasScaleY;
                 node.dirtyRender = true;
             }
             //缩放叠加 width2 / width 填满整个区域
@@ -946,23 +844,14 @@ namespace dou2d {
             width = width2;
             height = height2;
 
-            if (this.wxiOS10) {
-                if (!this.canvasRenderer) {
-                    this.canvasRenderer = new CanvasRenderer();
-                }
-                if (node.dirtyRender) {
-                    this.canvasRenderBuffer = new CanvasRenderBuffer(width, height);
-                }
+            if (!this.canvasRenderBuffer || !this.canvasRenderBuffer.context) {
+                this.canvasRenderer = new CanvasRenderer();
+                this.canvasRenderBuffer = new CanvasRenderBuffer(width, height);
             }
-            else {
-                if (!this.canvasRenderBuffer || !this.canvasRenderBuffer.context) {
-                    this.canvasRenderer = new CanvasRenderer();
-                    this.canvasRenderBuffer = new CanvasRenderBuffer(width, height);
-                }
-                else if (node.dirtyRender) {
-                    this.canvasRenderBuffer.resize(width, height);
-                }
+            else if (node.dirtyRender) {
+                this.canvasRenderBuffer.resize(width, height);
             }
+
 
             if (!this.canvasRenderBuffer.context) {
                 return;
@@ -978,43 +867,33 @@ namespace dou2d {
             }
             let surface = this.canvasRenderBuffer.surface;
             if (forHitTest) {
-                this.canvasRenderer.renderGraphics(node, this.canvasRenderBuffer.context, true);
+                this.canvasRenderer.renderGraphics(node, this.canvasRenderBuffer.context);
                 let texture;
-                if (this.wxiOS10) {
-                    surface["isCanvas"] = true;
-                    texture = surface;
-                }
-                else {
-                    WebGLUtils.deleteWebGLTexture(surface);
-                    texture = buffer.context.getWebGLTexture(<BitmapData><any>surface);
-                }
+                WebGLUtil.deleteTexture(surface);
+                texture = buffer.context.getTexture(<BitmapData><any>surface);
+
                 buffer.context.drawTexture(texture, 0, 0, width, height, 0, 0, width, height, surface.width, surface.height);
             } else {
                 if (node.dirtyRender) {
                     this.canvasRenderer.renderGraphics(node, this.canvasRenderBuffer.context);
 
-                    if (this.wxiOS10) {
-                        surface["isCanvas"] = true;
-                        node.$texture = surface;
+                    // 拷贝canvas到texture
+                    let texture = node.texture;
+                    if (!texture) {
+                        texture = buffer.context.createTexture(<any>surface);
+                        node.texture = texture;
+                    } else {
+                        // 重新拷贝新的图像
+                        buffer.context.updateTexture(texture, <any>surface);
                     }
-                    else {
-                        // 拷贝canvas到texture
-                        let texture = node.$texture;
-                        if (!texture) {
-                            texture = buffer.context.createTexture(<BitmapData><any>surface);
-                            node.$texture = texture;
-                        } else {
-                            // 重新拷贝新的图像
-                            buffer.context.updateTexture(texture, <BitmapData><any>surface);
-                        }
-                    }
+
                     // 保存材质尺寸
-                    node.$textureWidth = surface.width;
-                    node.$textureHeight = surface.height;
+                    node.textureWidth = surface.width;
+                    node.textureHeight = surface.height;
                 }
-                let textureWidth = node.$textureWidth;
-                let textureHeight = node.$textureHeight;
-                buffer.context.drawTexture(node.$texture, 0, 0, textureWidth, textureHeight, 0, 0, textureWidth / canvasScaleX, textureHeight / canvasScaleY, textureWidth, textureHeight);
+                let textureWidth = node.textureWidth;
+                let textureHeight = node.textureHeight;
+                buffer.context.drawTexture(node.texture, 0, 0, textureWidth, textureHeight, 0, 0, textureWidth / canvasScaleX, textureHeight / canvasScaleY, textureWidth, textureHeight);
             }
 
             if (node.x || node.y) {
@@ -1030,11 +909,11 @@ namespace dou2d {
 
         private renderGroup(groupNode: GroupNode, buffer: RenderBuffer): void {
             let m = groupNode.matrix;
-            let savedMatrix;
+            let savedMatrix: dou.Recyclable<Matrix>;
             let offsetX;
             let offsetY;
             if (m) {
-                savedMatrix = Matrix.create();
+                savedMatrix = dou.recyclable(Matrix);
                 let curMatrix = buffer.globalMatrix;
                 savedMatrix.a = curMatrix.a;
                 savedMatrix.b = curMatrix.b;
@@ -1042,8 +921,8 @@ namespace dou2d {
                 savedMatrix.d = curMatrix.d;
                 savedMatrix.tx = curMatrix.tx;
                 savedMatrix.ty = curMatrix.ty;
-                offsetX = buffer.$offsetX;
-                offsetY = buffer.$offsetY;
+                offsetX = buffer.offsetX;
+                offsetY = buffer.offsetY;
                 buffer.useOffset();
                 buffer.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
             }
@@ -1052,7 +931,7 @@ namespace dou2d {
             let length = children.length;
             for (let i = 0; i < length; i++) {
                 let node: RenderNode = children[i];
-                this.renderNode(node, buffer, buffer.$offsetX, buffer.$offsetY);
+                this.renderNode(node, buffer, buffer.offsetX, buffer.offsetY);
             }
             if (m) {
                 let matrix = buffer.globalMatrix;
@@ -1062,9 +941,9 @@ namespace dou2d {
                 matrix.d = savedMatrix.d;
                 matrix.tx = savedMatrix.tx;
                 matrix.ty = savedMatrix.ty;
-                buffer.$offsetX = offsetX;
-                buffer.$offsetY = offsetY;
-                Matrix.release(savedMatrix);
+                buffer.offsetX = offsetX;
+                buffer.offsetY = offsetY;
+                savedMatrix.recycle();
             }
         }
 
@@ -1072,13 +951,13 @@ namespace dou2d {
          * @private
          */
         private createRenderBuffer(width: number, height: number): RenderBuffer {
-            let buffer = renderBufferPool.pop();
+            let buffer = this.renderBufferPool.pop();
             if (buffer) {
                 buffer.resize(width, height);
             }
             else {
                 buffer = new RenderBuffer(width, height);
-                buffer.$computeDrawCall = false;
+                buffer.computeDrawCall = false;
             }
             return buffer;
         }

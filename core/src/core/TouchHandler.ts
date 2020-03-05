@@ -10,7 +10,7 @@ namespace dou2d {
          */
         public constructor(stage: Stage, canvas: HTMLCanvasElement) {
             this.canvas = canvas;
-            this.touch = new sys.TouchHandler(stage);
+            this.touch = new TouchHandlerImpl(stage);
             this.addListeners();
         }
 
@@ -21,7 +21,7 @@ namespace dou2d {
         /**
          * @private
          */
-        private touch: sys.TouchHandler;
+        private touch: TouchHandlerImpl;
 
         /**
          * @private
@@ -162,8 +162,10 @@ namespace dou2d {
             }
             newx = newx / this.scaleX;
             newy = newy / this.scaleY;
-            return $TempPoint.setTo(Math.round(newx), Math.round(newy));
+            return this.$TempPoint.set(Math.round(newx), Math.round(newy));
         }
+
+        private $TempPoint: Point = new Point();
 
         /**
          * @private

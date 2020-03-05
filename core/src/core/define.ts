@@ -18,4 +18,6 @@ namespace dou2d {
      * 是否抗锯齿
      */
     export const SMOOTHING = "smoothing";
+
+    export const property_drawLabel: string = 'DrawLabel';
 }

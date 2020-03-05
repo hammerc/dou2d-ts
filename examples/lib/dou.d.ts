@@ -109,7 +109,7 @@ declare namespace dou {
         on(type: string, listener: Function, thisObj?: any): void;
         once(type: string, listener: Function, thisObj?: any): void;
         has(type: string): boolean;
-        dispatchEvent(event: Event): boolean;
+        dispatch(event: Event): boolean;
         off(type: string, listener: Function, thisObj?: any): void;
     }
 }
@@ -120,14 +120,22 @@ declare namespace dou {
      */
     class EventDispatcher implements IEventDispatcher {
         private _eventMap;
-        constructor();
+        private _eventTarget;
+        constructor(target?: any);
         on(type: string, listener: Function, thisObj?: any): void;
         once(type: string, listener: Function, thisObj?: any): void;
         protected addEventListener(type: string, listener: Function, thisObj: any, once: boolean): boolean;
         has(type: string): boolean;
-        dispatchEvent(event: Event): boolean;
-        dispatch(type: string, data?: any, cancelable?: boolean): boolean;
+        dispatch(event: Event): boolean;
         off(type: string, listener: Function, thisObj?: any): void;
+    }
+}
+declare module dou {
+    interface EventDispatcher {
+        /**
+         * 抛出事件
+         */
+        dispatchEvent(type: string, data?: any, cancelable?: boolean): boolean;
     }
 }
 declare namespace dou {
@@ -139,6 +147,7 @@ declare namespace dou {
         static OPEN: string;
         static CHANGE: string;
         static COMPLETE: string;
+        static SOUND_COMPLETE: string;
         static MESSAGE: string;
         static CLOSE: string;
         private _type;
@@ -146,11 +155,11 @@ declare namespace dou {
         private _cancelable;
         private _isDefaultPrevented;
         private _target;
-        init(type: string, data?: any, cancelable?: boolean): void;
         get type(): string;
         get data(): any;
         get cancelable(): boolean;
         get target(): IEventDispatcher;
+        $initEvent(type: string, data?: any, cancelable?: boolean): void;
         $setTarget(target: IEventDispatcher): void;
         /**
          * 如果可以取消事件的默认行为, 则取消该行为
@@ -160,6 +169,14 @@ declare namespace dou {
         onRecycle(): void;
     }
 }
+declare module dou {
+    interface EventDispatcher {
+        /**
+         * 抛出 IO 错误事件
+         */
+        dispatchIOErrorEvent(type: string, msg: string, cancelable?: boolean): boolean;
+    }
+}
 declare namespace dou {
     /**
      * IO 错误事件类
@@ -167,11 +184,18 @@ declare namespace dou {
      */
     class IOErrorEvent extends Event {
         static IO_ERROR: string;
-        static dispatch(target: IEventDispatcher, type: string, msg: string, cancelable?: boolean): boolean;
         private _msg;
         get msg(): string;
-        initEvent(type: string, msg: string, cancelable?: boolean): void;
+        $initIOErrorEvent(type: string, msg: string, cancelable?: boolean): void;
         onRecycle(): void;
+    }
+}
+declare module dou {
+    interface EventDispatcher {
+        /**
+         * 抛出进度事件
+         */
+        dispatchProgressEvent(type: string, loaded: number, total: number, cancelable?: boolean): boolean;
     }
 }
 declare namespace dou {
@@ -181,12 +205,11 @@ declare namespace dou {
      */
     class ProgressEvent extends Event {
         static PROGRESS: string;
-        static dispatch(target: IEventDispatcher, type: string, loaded: number, total: number, cancelable?: boolean): boolean;
         private _loaded;
         private _total;
         get loaded(): number;
         get total(): number;
-        initEvent(type: string, loaded: number, total: number, cancelable?: boolean): void;
+        $initProgressEvent(type: string, loaded: number, total: number, cancelable?: boolean): void;
         onRecycle(): void;
     }
 }
@@ -240,6 +263,16 @@ declare namespace dou {
     class BytesAnalyzer extends RequestAnalyzerBase {
         protected getResponseType(): HttpResponseType;
         protected dataAnalyze(data: any): any;
+    }
+}
+declare namespace dou {
+    /**
+     * 声音加载器
+     * @author wizardc
+     */
+    class SoundAnalyzer implements IAnalyzer {
+        load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
+        release(data: Sound): boolean;
     }
 }
 declare namespace dou {
@@ -321,6 +354,179 @@ declare namespace dou {
      */
     const loader: LoadManager;
 }
+declare namespace dou.impl {
+    /**
+     * 声音
+     * * Audio 标签实现
+     * @author wizardc
+     */
+    class AudioSound extends EventDispatcher implements ISound {
+        private static _audios;
+        private static _clearAudios;
+        static pop(url: string): HTMLAudioElement;
+        static recycle(url: string, audio: HTMLAudioElement): void;
+        static clear(url: string): void;
+        private _url;
+        private _originAudio;
+        private _loaded;
+        constructor(target: any);
+        get length(): number;
+        load(url: string): void;
+        play(startTime?: number, loops?: number): AudioSoundChannel;
+        close(): void;
+    }
+}
+declare namespace dou.impl {
+    /**
+     * 声音通道
+     * * Audio 标签实现
+     * @author wizardc
+     */
+    class AudioSoundChannel extends EventDispatcher {
+        url: string;
+        loops: number;
+        startTime: number;
+        private _audio;
+        private _isStopped;
+        private _volume;
+        private _canPlay;
+        private _onPlayEnd;
+        constructor(audio: HTMLAudioElement);
+        set volume(value: number);
+        get volume(): number;
+        get position(): number;
+        play(): void;
+        stop(): void;
+    }
+}
+declare namespace dou.impl {
+    /**
+     * AudioContext 解码器
+     * @author wizardc
+     */
+    namespace AudioAPIDecode {
+        function init(context: AudioContext): void;
+        function getContext(): AudioContext;
+        function addDecode(decode: {
+            buffer: any;
+            success: Function;
+            fail: Function;
+            self: any;
+        }): void;
+        function decode(): void;
+    }
+}
+declare namespace dou.impl {
+    /**
+     * 声音
+     * * Audio API 实现
+     * @author wizardc
+     */
+    class AudioAPISound extends EventDispatcher implements ISound {
+        private _url;
+        private _loaded;
+        private _audioBuffer;
+        constructor(target: any);
+        get length(): number;
+        load(url: string): void;
+        play(startTime?: number, loops?: number): AudioAPISoundChannel;
+        close(): void;
+    }
+}
+declare namespace dou.impl {
+    /**
+     * 声音通道
+     * * Audio API 实现
+     * @author wizardc
+     */
+    class AudioAPISoundChannel extends EventDispatcher {
+        url: string;
+        loops: number;
+        startTime: number;
+        audioBuffer: AudioBuffer;
+        private _context;
+        private _gain;
+        private _bufferSource;
+        private _isStopped;
+        private _recordStartTime;
+        private _volume;
+        private _onPlayEnd;
+        constructor();
+        set volume(value: number);
+        get volume(): number;
+        get position(): number;
+        play(): void;
+        stop(): void;
+    }
+}
+declare namespace dou.impl {
+    /**
+     * 声音接口
+     * @author wizardc
+     */
+    interface ISound extends IEventDispatcher {
+        readonly length: number;
+        load(url: string): void;
+        play(startTime?: number, loops?: number): SoundChannel;
+        close(): void;
+    }
+    let soundImpl: {
+        new (target: any): ISound;
+    };
+}
+declare namespace dou {
+    /**
+     * 声音
+     * @author wizardc
+     */
+    class Sound implements IEventDispatcher {
+        private _impl;
+        constructor();
+        /**
+         * 当前声音的长度, 以秒为单位
+         */
+        get length(): number;
+        /**
+         * 启动从指定 URL 加载外部音频文件
+         */
+        load(url: string): void;
+        /**
+         * 生成一个新的 SoundChannel 对象来播放该声音
+         * @param startTime 开始播放的时间, 以秒为单位
+         * @param loops 循环次数, 0 表示循环播放
+         */
+        play(startTime?: number, loops?: number): SoundChannel;
+        /**
+         * 关闭该流
+         */
+        close(): void;
+        on(type: string, listener: Function, thisObj?: any): void;
+        once(type: string, listener: Function, thisObj?: any): void;
+        has(type: string): boolean;
+        dispatch(event: Event): boolean;
+        off(type: string, listener: Function, thisObj?: any): void;
+    }
+}
+declare namespace dou {
+    /**
+     * 声音通道
+     * @author wizardc
+     */
+    interface SoundChannel extends IEventDispatcher {
+        /**
+         * 音量范围, [0-1]
+         */
+        volume: number;
+        /**
+         * 当播放声音时, 表示声音文件中当前播放的位置, 以秒为单位
+         */
+        readonly position: number;
+        /**
+         * 停止在该声道中播放声音
+         */
+        stop(): void;
+    }
+}
 declare namespace dou {
     /**
      * HTTP 请求方法
@@ -396,21 +602,6 @@ declare namespace dou {
         load(url: string): void;
         private getImage;
         private onLoad;
-        private onError;
-    }
-}
-declare namespace dou {
-    /**
-     * 声音加载器
-     * @author wizardc
-     */
-    class SoundLoader extends EventDispatcher {
-        private _data;
-        private _currentAudio;
-        get data(): HTMLAudioElement;
-        load(url: string): void;
-        private getAudio;
-        private onLoaded;
         private onError;
     }
 }

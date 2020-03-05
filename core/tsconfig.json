@@ -70,6 +70,7 @@
 
     "src/core/Ticker.ts",
     "src/core/TouchHandler.ts",
+    "src/core/TouchHandlerImpl.ts",
     "src/core/Player.ts",
 
     "src/debug/Stat.ts",
@@ -99,8 +100,14 @@
     "src/enum/GradientType.ts",
     "src/enum/BlendMode.ts",
     "src/enum/StageScaleMode.ts",
+    "src/enum/HorizontalAlign.ts",
+    "src/enum/VerticalAlign.ts",
+    "src/enum/TextKeys.ts",
+    "src/enum/TextFieldType.ts",
+    "src/enum/TextFieldInputType.ts",
 
     "src/event/Event2D.ts",
+    "src/event/TouchEvent.ts",
 
     "src/filters/Filter.ts",
     "src/filters/ColorMatrixFilter.ts",
@@ -128,6 +135,7 @@
     "src/rendering/DrawCommand.ts",
     "src/rendering/VertexData.ts",
     "src/rendering/DisplayList.ts",
+    "src/rendering/CanvasRenderBuffer.ts",
     "src/rendering/CanvasRenderer.ts",
     "src/rendering/Renderer.ts",
 
@@ -141,8 +149,22 @@
     "src/shader/Uniform.ts",
 
     "src/text/input/HtmlText.ts",
-    "src/text/input/Input.ts",
+    "src/text/input/InputController.ts",
+    "src/text/input/InputManager.ts",
 
+    "src/text/ITextStyle.ts",
+    "src/text/ITextElement.ts",
+    "src/text/IHitTextElement.ts",
+    "src/text/IWTextElement.ts",
+    "src/text/ILineElement.ts",
+    "src/text/TextField.ts",
+    "src/text/BitmapFont.ts",
+    "src/text/BitmapText.ts",
+    "src/text/HtmlTextParser.ts",
+
+    "src/utils/callLater.ts",
+    "src/utils/setTimeout.ts",
+    "src/utils/setInterval.ts",
     "src/utils/MathUtil.ts",
     "src/utils/HtmlUtil.ts",
     "src/utils/WebGLUtil.ts",
@@ -150,6 +172,7 @@
     "src/utils/Implementation.ts",
     "src/utils/Capabilities.ts",
     "src/utils/toColorString.ts",
+    "src/utils/TextFieldUtil.ts",
 
     "src/Engine.ts"
   ]

@@ -114,7 +114,7 @@ namespace dou2d {
                 child.$onAddToStage(stage, this._nestLevel + 1);
             }
             if (notifyListeners) {
-                child.dispatch2D(Event2D.ADDED, null, true);
+                child.dispatchEvent2D(Event2D.ADDED, null, true);
             }
             if (child.$maskedObject) {
                 child.$maskedObject.$updateRenderMode();
@@ -316,7 +316,7 @@ namespace dou2d {
             let child = children[index];
             this.$childRemoved(child, index);
             if (notifyListeners) {
-                child.dispatch2D(Event2D.REMOVED, null, true);
+                child.dispatchEvent2D(Event2D.REMOVED, null, true);
             }
             // 在舞台上
             if (this._stage) {

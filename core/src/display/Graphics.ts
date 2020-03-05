@@ -37,6 +37,16 @@ namespace dou2d {
          */
         private _bottomRightStrokeWidth = 0;
 
+        /**
+         * 是否已经包含上一次 moveTo 的坐标点
+         */
+        private _includeLastPosition: boolean = true;
+
+        private _minX: number = Infinity;
+        private _minY: number = Infinity;
+        private _maxX: number = -Infinity;
+        private _maxY: number = -Infinity;
+
         public constructor() {
             this._renderNode = new GraphicsNode();
         }
@@ -109,11 +119,11 @@ namespace dou2d {
 
         /**
          * 指定线条样式
-         * @param thickness 以点为单位表示线条的粗细, 有效值为 0 到 255, 如果未指定数字，或者未定义该参数，则不绘制线条
+         * @param thickness 以点为单位表示线条的粗细, 有效值为 0 到 255, 如果未指定数字, 或者未定义该参数, 则不绘制线条
          * @param color 线条的颜色值, 默认值为黑色
          * @param alpha 线条透明度
-         * @param caps 用于指定线条末端处端点类型的 CapsStyle 类的值。默认值：CapsStyle.ROUND
-         * @param joints 指定用于拐角的连接外观的类型。默认值：JointStyle.ROUND
+         * @param caps 用于指定线条末端处端点类型的 CapsStyle 类的值默认值：CapsStyle.ROUND
+         * @param joints 指定用于拐角的连接外观的类型默认值：JointStyle.ROUND
          * @param miterLimit 用于表示剪切斜接的极限值的数字
          * @param lineDash 设置虚线样式
          */
@@ -163,7 +173,7 @@ namespace dou2d {
          * @param width 矩形的宽度
          * @param height 矩形的高度
          * @param ellipseWidth 用于绘制圆角的椭圆的宽度
-         * @param ellipseHeight 用于绘制圆角的椭圆的高度, 。 （可选）如果未指定值，则默认值与为 ellipseWidth 参数提供的值相匹配。
+         * @param ellipseHeight 用于绘制圆角的椭圆的高度, 如果未指定值则默认值与为 ellipseWidth 参数提供的值相匹配
          */
         public drawRoundRect(x: number, y: number, width: number, height: number, ellipseWidth: number, ellipseHeight?: number): void {
             x = +x || 0;
@@ -188,10 +198,10 @@ namespace dou2d {
         }
 
         /**
-         * 绘制一个圆。
-         * @param x 圆心相对于父显示对象注册点的 x 位置（以像素为单位）。
-         * @param y 相对于父显示对象注册点的圆心的 y 位置（以像素为单位）。
-         * @param radius 圆的半径（以像素为单位）。
+         * 绘制一个圆
+         * @param x 圆心相对于父显示对象注册点的 x 位置
+         * @param y 相对于父显示对象注册点的圆心的 y 位置
+         * @param radius 圆的半径
          */
         public drawCircle(x: number, y: number, radius: number): void {
             x = +x || 0;
@@ -201,7 +211,7 @@ namespace dou2d {
             let strokePath = this._strokePath;
             fillPath && fillPath.drawCircle(x, y, radius);
             strokePath && strokePath.drawCircle(x, y, radius);
-            //-1 +2 解决WebGL裁切问题
+            // -1 +2 解决 WebGL 裁切问题
             this.extendBoundsByPoint(x - radius - 1, y - radius - 1);
             this.extendBoundsByPoint(x + radius + 2, y + radius + 2);
             this.updatePosition(x + radius, y);
@@ -209,11 +219,11 @@ namespace dou2d {
         }
 
         /**
-         * 绘制一个椭圆。
-         * @param x 一个表示相对于父显示对象注册点的水平位置的数字（以像素为单位）。
-         * @param y 一个表示相对于父显示对象注册点的垂直位置的数字（以像素为单位）。
-         * @param width 矩形的宽度（以像素为单位）。
-         * @param height 矩形的高度（以像素为单位）。
+         * 绘制一个椭圆
+         * @param x 一个表示相对于父显示对象注册点的水平位置的数字
+         * @param y 一个表示相对于父显示对象注册点的垂直位置的数字
+         * @param width 矩形的宽度
+         * @param height 矩形的高度
          */
         public drawEllipse(x: number, y: number, width: number, height: number): void {
             x = +x || 0;
@@ -224,7 +234,7 @@ namespace dou2d {
             let strokePath = this._strokePath;
             fillPath && fillPath.drawEllipse(x, y, width, height);
             strokePath && strokePath.drawEllipse(x, y, width, height);
-            //-1 +2 解决WebGL裁切问题
+            // -1 +2 解决 WebGL 裁切问题
             this.extendBoundsByPoint(x - 1, y - 1);
             this.extendBoundsByPoint(x + width + 2, y + height + 2);
             this.updatePosition(x + width, y + height * 0.5);
@@ -232,9 +242,9 @@ namespace dou2d {
         }
 
         /**
-         * 将当前绘图位置移动到 (x, y)。如果缺少任何一个参数，则此方法将失败，并且当前绘图位置不改变。
-         * @param x 一个表示相对于父显示对象注册点的水平位置的数字（以像素为单位）。
-         * @param y 一个表示相对于父显示对象注册点的垂直位置的数字（以像素为单位）。
+         * 将当前绘图位置移动到 x, y
+         * @param x 一个表示相对于父显示对象注册点的水平位置的数字
+         * @param y 一个表示相对于父显示对象注册点的垂直位置的数字
          */
         public moveTo(x: number, y: number): void {
             x = +x || 0;
@@ -243,16 +253,16 @@ namespace dou2d {
             let strokePath = this._strokePath;
             fillPath && fillPath.moveTo(x, y);
             strokePath && strokePath.moveTo(x, y);
-            this.includeLastPosition = false;
+            this._includeLastPosition = false;
             this._lastX = x;
             this._lastY = y;
             this.dirty();
         }
 
         /**
-         * 使用当前线条样式绘制一条从当前绘图位置开始到 (x, y) 结束的直线；当前绘图位置随后会设置为 (x, y)。
-         * @param x 一个表示相对于父显示对象注册点的水平位置的数字（以像素为单位）。
-         * @param y 一个表示相对于父显示对象注册点的垂直位置的数字（以像素为单位）。
+         * 使用当前线条样式绘制一条从当前绘图位置开始到 x, y 结束的直线, 当前绘图位置随后会设置为 x, y
+         * @param x 一个表示相对于父显示对象注册点的水平位置的数字
+         * @param y 一个表示相对于父显示对象注册点的垂直位置的数字
          */
         public lineTo(x: number, y: number): void {
             x = +x || 0;
@@ -266,13 +276,14 @@ namespace dou2d {
         }
 
         /**
-         * 使用当前线条样式和由 (controlX, controlY) 指定的控制点绘制一条从当前绘图位置开始到 (anchorX, anchorY) 结束的二次贝塞尔曲线。当前绘图位置随后设置为 (anchorX, anchorY)。
-         * 如果在调用 moveTo() 方法之前调用了 curveTo() 方法，则当前绘图位置的默认值为 (0, 0)。如果缺少任何一个参数，则此方法将失败，并且当前绘图位置不改变。
-         * 绘制的曲线是二次贝塞尔曲线。二次贝塞尔曲线包含两个锚点和一个控制点。该曲线内插这两个锚点，并向控制点弯曲。
-         * @param controlX 一个数字，指定控制点相对于父显示对象注册点的水平位置。
-         * @param controlY 一个数字，指定控制点相对于父显示对象注册点的垂直位置。
-         * @param anchorX 一个数字，指定下一个锚点相对于父显示对象注册点的水平位置。
-         * @param anchorY 一个数字，指定下一个锚点相对于父显示对象注册点的垂直位置。
+         * 使用当前线条样式和由 (controlX, controlY) 指定的控制点绘制一条从当前绘图位置开始到 (anchorX, anchorY) 结束的二次贝塞尔曲线,
+         * 当前绘图位置随后设置为 (anchorX, anchorY), 如果在调用 moveTo() 方法之前调用了 curveTo() 方法, 则当前绘图位置的默认值为 (0, 0),
+         * 如果缺少任何一个参数, 则此方法将失败, 并且当前绘图位置不改变,
+         * 绘制的曲线是二次贝塞尔曲线, 二次贝塞尔曲线包含两个锚点和一个控制点, 该曲线内插这两个锚点, 并向控制点弯曲
+         * @param controlX 一个数字, 指定控制点相对于父显示对象注册点的水平位置
+         * @param controlY 一个数字, 指定控制点相对于父显示对象注册点的垂直位置
+         * @param anchorX 一个数字, 指定下一个锚点相对于父显示对象注册点的水平位置
+         * @param anchorY 一个数字, 指定下一个锚点相对于父显示对象注册点的垂直位置
          */
         public curveTo(controlX: number, controlY: number, anchorX: number, anchorY: number): void {
             controlX = +controlX || 0;
@@ -285,11 +296,11 @@ namespace dou2d {
             strokePath && strokePath.curveTo(controlX, controlY, anchorX, anchorY);
             let lastX = this._lastX || 0;
             let lastY = this._lastY || 0;
-            let bezierPoints = createBezierPoints([lastX, lastY, controlX, controlY, anchorX, anchorY], 50);
+            let bezierPoints = this.createBezierPoints([lastX, lastY, controlX, controlY, anchorX, anchorY], 50);
             for (let i = 0; i < bezierPoints.length; i++) {
                 let point = bezierPoints[i];
                 this.extendBoundsByPoint(point.x, point.y);
-                egret.Point.release(point);
+                point.recycle();
             }
             this.extendBoundsByPoint(anchorX, anchorY);
             this.updatePosition(anchorX, anchorY);
@@ -297,13 +308,13 @@ namespace dou2d {
         }
 
         /**
-         * 从当前绘图位置到指定的锚点绘制一条三次贝塞尔曲线。三次贝塞尔曲线由两个锚点和两个控制点组成。该曲线内插这两个锚点，并向两个控制点弯曲。
-         * @param controlX1 指定首个控制点相对于父显示对象的注册点的水平位置。
-         * @param controlY1 指定首个控制点相对于父显示对象的注册点的垂直位置。
-         * @param controlX2 指定第二个控制点相对于父显示对象的注册点的水平位置。
-         * @param controlY2 指定第二个控制点相对于父显示对象的注册点的垂直位置。
-         * @param anchorX 指定锚点相对于父显示对象的注册点的水平位置。
-         * @param anchorY 指定锚点相对于父显示对象的注册点的垂直位置。
+         * 从当前绘图位置到指定的锚点绘制一条三次贝塞尔曲线, 三次贝塞尔曲线由两个锚点和两个控制点组成, 该曲线内插这两个锚点并向两个控制点弯曲
+         * @param controlX1 指定首个控制点相对于父显示对象的注册点的水平位置
+         * @param controlY1 指定首个控制点相对于父显示对象的注册点的垂直位置
+         * @param controlX2 指定第二个控制点相对于父显示对象的注册点的水平位置
+         * @param controlY2 指定第二个控制点相对于父显示对象的注册点的垂直位置
+         * @param anchorX 指定锚点相对于父显示对象的注册点的水平位置
+         * @param anchorY 指定锚点相对于父显示对象的注册点的垂直位置
          */
         public cubicCurveTo(controlX1: number, controlY1: number, controlX2: number, controlY2: number, anchorX: number, anchorY: number): void {
             controlX1 = +controlX1 || 0;
@@ -318,11 +329,11 @@ namespace dou2d {
             strokePath && strokePath.cubicCurveTo(controlX1, controlY1, controlX2, controlY2, anchorX, anchorY);
             let lastX = this._lastX || 0;
             let lastY = this._lastY || 0;
-            let bezierPoints = createBezierPoints([lastX, lastY, controlX1, controlY1, controlX2, controlY2, anchorX, anchorY], 50);
+            let bezierPoints = this.createBezierPoints([lastX, lastY, controlX1, controlY1, controlX2, controlY2, anchorX, anchorY], 50);
             for (let i = 0; i < bezierPoints.length; i++) {
                 let point = bezierPoints[i];
                 this.extendBoundsByPoint(point.x, point.y);
-                egret.Point.release(point);
+                point.recycle();
             }
             this.extendBoundsByPoint(anchorX, anchorY);
             this.updatePosition(anchorX, anchorY);
@@ -330,13 +341,13 @@ namespace dou2d {
         }
 
         /**
-         * 绘制一段圆弧路径。圆弧路径的圆心在 (x, y) 位置，半径为 r ，根据anticlockwise （默认为顺时针）指定的方向从 startAngle 开始绘制，到 endAngle 结束。
-         * @param x 圆弧中心（圆心）的 x 轴坐标。
-         * @param y 圆弧中心（圆心）的 y 轴坐标。
-         * @param radius 圆弧的半径。
-         * @param startAngle 圆弧的起始点， x轴方向开始计算，单位以弧度表示。
-         * @param endAngle 圆弧的终点， 单位以弧度表示。
-         * @param anticlockwise 如果为 true，逆时针绘制圆弧，反之，顺时针绘制。
+         * 绘制一段圆弧路径
+         * @param x 圆心的 x 轴坐标
+         * @param y 圆心的 y 轴坐标
+         * @param radius 圆弧的半径
+         * @param startAngle 圆弧的起始点,  x轴方向开始计算, 单位以弧度表示
+         * @param endAngle 圆弧的终点,  单位以弧度表示
+         * @param anticlockwise 如果为 true, 逆时针绘制圆弧, 反之, 顺时针绘制
          */
         public drawArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise?: boolean): void {
             if (radius < 0 || startAngle === endAngle) {
@@ -348,18 +359,18 @@ namespace dou2d {
             startAngle = +startAngle || 0;
             endAngle = +endAngle || 0;
             anticlockwise = !!anticlockwise;
-            startAngle = clampAngle(startAngle);
-            endAngle = clampAngle(endAngle);
+            startAngle = MathUtil.clampAngle(startAngle);
+            endAngle = MathUtil.clampAngle(endAngle);
             let fillPath = this._fillPath;
             let strokePath = this._strokePath;
             if (fillPath) {
-                fillPath.$lastX = this._lastX;
-                fillPath.$lastY = this._lastY;
+                fillPath.lastX = this._lastX;
+                fillPath.lastY = this._lastY;
                 fillPath.drawArc(x, y, radius, startAngle, endAngle, anticlockwise);
             }
             if (strokePath) {
-                strokePath.$lastX = this._lastX;
-                strokePath.$lastY = this._lastY;
+                strokePath.lastX = this._lastX;
+                strokePath.lastY = this._lastY;
                 strokePath.drawArc(x, y, radius, startAngle, endAngle, anticlockwise);
             }
             if (anticlockwise) {
@@ -372,23 +383,6 @@ namespace dou2d {
             let endY = y + Math.sin(endAngle) * radius;
             this.updatePosition(endX, endY);
             this.dirty();
-        }
-
-        private dirty(): void {
-            let self = this;
-            self._renderNode.dirtyRender = true;
-            const target = self._targetDisplay;
-            target.$cacheDirty = true;
-            let p = target._parent;
-            if (p && !p.$cacheDirty) {
-                p.$cacheDirty = true;
-                p.$cacheDirtyUp();
-            }
-            let maskedObject = target.$maskedObject;
-            if (maskedObject && !maskedObject.$cacheDirty) {
-                maskedObject.$cacheDirty = true;
-                maskedObject.$cacheDirtyUp();
-            }
         }
 
         /**
@@ -438,23 +432,21 @@ namespace dou2d {
             this.extendBoundsByPoint(xMax + x, yMax + y);
         }
 
-        /**
-         * 清除绘制到此 Graphics 对象的图形，并重置填充和线条样式设置。
-         */
-        public clear(): void {
-            this._renderNode.clear();
-            this.updatePosition(0, 0);
-            this.minX = Infinity;
-            this.minY = Infinity;
-            this.maxX = -Infinity;
-            this.maxY = -Infinity;
-            this.dirty();
+        private dirty(): void {
+            this._renderNode.dirtyRender = true;
+            const target = this._targetDisplay;
+            target.$cacheDirty = true;
+            let p = target.parent;
+            if (p && !p.$cacheDirty) {
+                p.$cacheDirty = true;
+                p.$cacheDirtyUp();
+            }
+            let maskedObject = target.$maskedObject;
+            if (maskedObject && !maskedObject.$cacheDirty) {
+                maskedObject.$cacheDirty = true;
+                maskedObject.$cacheDirtyUp();
+            }
         }
-
-        private minX: number = Infinity;
-        private minY: number = Infinity;
-        private maxX: number = -Infinity;
-        private maxY: number = -Infinity;
 
         private extendBoundsByPoint(x: number, y: number): void {
             this.extendBoundsByX(x);
@@ -462,75 +454,102 @@ namespace dou2d {
         }
 
         private extendBoundsByX(x: number): void {
-            this.minX = Math.min(this.minX, x - this._topLeftStrokeWidth);
-            this.maxX = Math.max(this.maxX, x + this._bottomRightStrokeWidth);
+            this._minX = Math.min(this._minX, x - this._topLeftStrokeWidth);
+            this._maxX = Math.max(this._maxX, x + this._bottomRightStrokeWidth);
             this.updateNodeBounds();
         }
 
         private extendBoundsByY(y: number): void {
-            this.minY = Math.min(this.minY, y - this._topLeftStrokeWidth);
-            this.maxY = Math.max(this.maxY, y + this._bottomRightStrokeWidth);
+            this._minY = Math.min(this._minY, y - this._topLeftStrokeWidth);
+            this._maxY = Math.max(this._maxY, y + this._bottomRightStrokeWidth);
             this.updateNodeBounds();
         }
 
         private updateNodeBounds(): void {
             let node = this._renderNode;
-            node.x = this.minX;
-            node.y = this.minY;
-            node.width = Math.ceil(this.maxX - this.minX);
-            node.height = Math.ceil(this.maxY - this.minY);
+            node.x = this._minX;
+            node.y = this._minY;
+            node.width = Math.ceil(this._maxX - this._minX);
+            node.height = Math.ceil(this._maxY - this._minY);
         }
 
         /**
-         * 是否已经包含上一次moveTo的坐标点
-         */
-        private includeLastPosition: boolean = true;
-
-        /**
-         * 更新当前的lineX和lineY值，并标记尺寸失效。
+         * 更新当前的lineX和lineY值, 并标记尺寸失效
          */
         private updatePosition(x: number, y: number): void {
-            if (!this.includeLastPosition) {
+            if (!this._includeLastPosition) {
                 this.extendBoundsByPoint(this._lastX, this._lastY);
-                this.includeLastPosition = true;
+                this._includeLastPosition = true;
             }
             this._lastX = x;
             this._lastY = y;
             this.extendBoundsByPoint(x, y);
         }
 
-        $measureContentBounds(bounds: Rectangle): void {
-            if (this.minX === Infinity) {
-                bounds.setEmpty();
-            }
-            else {
-                bounds.setTo(this.minX, this.minY, this.maxX - this.minX, this.maxY - this.minY);
-            }
-        }
-
-        $hitTest(stageX: number, stageY: number): DisplayObject {
-            let target = this._targetDisplay;
-            let m = target.$getInvertedConcatenatedMatrix();
-            let localX = m.a * stageX + m.c * stageY + m.tx;
-            let localY = m.b * stageX + m.d * stageY + m.ty;
-            let buffer = sys.canvasHitTestBuffer;
-            buffer.resize(3, 3);
-            let node = this._renderNode;
-            let matrix = Matrix.create();
-            matrix.identity();
-            matrix.translate(1 - localX, 1 - localY);
-            sys.canvasRenderer.drawNodeToBuffer(node, buffer, matrix, true);
-            Matrix.release(matrix);
-            try {
-                let data = buffer.getPixels(1, 1);
-                if (data[3] === 0) {
-                    return null;
+        /**
+         * 根据传入的锚点组返回贝塞尔曲线上的一组点
+         */
+        private createBezierPoints(pointsData: number[], pointsAmount: number): dou.Recyclable<Point>[] {
+            let points = [];
+            for (let i = 0; i < pointsAmount; i++) {
+                let point = this.getBezierPointByFactor(pointsData, i / pointsAmount);
+                if (point) {
+                    points.push(point);
                 }
             }
-            catch (e) {
-                throw new Error(sys.tr(1039));
+            return points;
+        }
+
+        /**
+         * 根据锚点组与取值系数获取贝塞尔曲线上的一点
+         */
+        private getBezierPointByFactor(pointsData: number[], t: number): dou.Recyclable<Point> {
+            let i = 0;
+            let x = 0, y = 0;
+            let len = pointsData.length;
+            if (len / 2 == 3) {
+                let x0 = pointsData[i++];
+                let y0 = pointsData[i++];
+                let x1 = pointsData[i++];
+                let y1 = pointsData[i++];
+                let x2 = pointsData[i++];
+                let y2 = pointsData[i++];
+                x = this.getCurvePoint(x0, x1, x2, t);
+                y = this.getCurvePoint(y0, y1, y2, t);
             }
-            return target;
+            else if (len / 2 == 4) {
+                let x0 = pointsData[i++];
+                let y0 = pointsData[i++];
+                let x1 = pointsData[i++];
+                let y1 = pointsData[i++];
+                let x2 = pointsData[i++];
+                let y2 = pointsData[i++];
+                let x3 = pointsData[i++];
+                let y3 = pointsData[i++];
+                x = this.getCubicCurvePoint(x0, x1, x2, x3, t);
+                y = this.getCubicCurvePoint(y0, y1, y2, y3, t);
+            }
+            let result = dou.recyclable(Point);
+            result.set(x, y);
+            return result;
+        }
+
+        /**
+         * 通过factor参数获取二次贝塞尔曲线上的位置
+         * 公式为 B(t) = (1-t)^2 * P0 + 2t(1-t) * P1 + t^2 * P2
+         * @param factor 从 0 到 1 的闭区间
+         */
+        private getCurvePoint(value0: number, value1: number, value2: number, factor: number): number {
+            return Math.pow((1 - factor), 2) * value0 + 2 * factor * (1 - factor) * value1 + Math.pow(factor, 2) * value2;
+        }
+
+        /**
+         * 通过 factor 参数获取三次贝塞尔曲线上的位置
+         * * 公式为 B(t) = (1-t)^3 * P0 + 3t(1-t)^2 * P1 + 3t^2 * (1-t) t^2 * P2 + t^3 *P3
+         * @param factor 从 0 到 1 的闭区间
+         */
+        private getCubicCurvePoint(value0: number, value1: number, value2: number, value3: number, factor: number): number {
+            return Math.pow((1 - factor), 3) * value0 + 3 * factor * Math.pow((1 - factor), 2) * value1 + 3 * (1 - factor) * Math.pow(factor, 2) * value2 + Math.pow(factor, 3) * value3;
         }
 
         public $onRemoveFromStage(): void {
@@ -538,86 +557,27 @@ namespace dou2d {
                 this._renderNode.clean();
             }
         }
-    }
 
-    /**
-     * 根据传入的锚点组返回贝塞尔曲线上的一组点,返回类型为egret.Point[];
-     * @param pointsData 锚点组,保存着所有控制点的x和y坐标,格式为[x0,y0,x1,y1,x2,y2...]
-     * @param pointsAmount 要获取的点的总个数，实际返回点数不一定等于该属性，与范围有关
-     * @param range 要获取的点与中心锚点的范围值，0~1之间
-     * @returns egret.Point[];
-     */
-    function createBezierPoints(pointsData: number[], pointsAmount: number): egret.Point[] {
-        let points = [];
-        for (let i = 0; i < pointsAmount; i++) {
-            const point = getBezierPointByFactor(pointsData, i / pointsAmount);
-            if (point)
-                points.push(point);
+        public $measureContentBounds(bounds: Rectangle): void {
+            if (this._minX === Infinity) {
+                bounds.clear();
+            }
+            else {
+                bounds.set(this._minX, this._minY, this._maxX - this._minX, this._maxY - this._minY);
+            }
         }
-        return points;
-    }
 
-    /**
-     * 根据锚点组与取值系数获取贝塞尔曲线上的一点
-     * @param pointsData 锚点组,保存着所有控制点的x和y坐标,格式为[x0,y0,x1,y1,x2,y2...]
-     * @param t 取值系数
-     * @returns egret.Point
-     */
-    function getBezierPointByFactor(pointsData: number[], t: number): egret.Point {
-        let i = 0;
-        let x = 0, y = 0;
-        const len = pointsData.length;
-        //根据传入的数据数量判断是二次贝塞尔还是三次贝塞尔
-        if (len / 2 == 3) {
-            //二次
-            const x0 = pointsData[i++];
-            const y0 = pointsData[i++];
-            const x1 = pointsData[i++];
-            const y1 = pointsData[i++];
-            const x2 = pointsData[i++];
-            const y2 = pointsData[i++];
-            x = getCurvePoint(x0, x1, x2, t);
-            y = getCurvePoint(y0, y1, y2, t);
-        } else if (len / 2 == 4) {
-            //三次
-            const x0 = pointsData[i++];
-            const y0 = pointsData[i++];
-            const x1 = pointsData[i++];
-            const y1 = pointsData[i++];
-            const x2 = pointsData[i++];
-            const y2 = pointsData[i++];
-            const x3 = pointsData[i++];
-            const y3 = pointsData[i++];
-            x = getCubicCurvePoint(x0, x1, x2, x3, t);
-            y = getCubicCurvePoint(y0, y1, y2, y3, t);
+        /**
+         * 清除绘制到此 Graphics 对象的图形, 并重置填充和线条样式设置
+         */
+        public clear(): void {
+            this._renderNode.clear();
+            this.updatePosition(0, 0);
+            this._minX = Infinity;
+            this._minY = Infinity;
+            this._maxX = -Infinity;
+            this._maxY = -Infinity;
+            this.dirty();
         }
-        return egret.Point.create(x, y);
-    }
-
-    /**
-     * 通过factor参数获取二次贝塞尔曲线上的位置
-     * 公式为B(t) = (1-t)^2 * P0 + 2t(1-t) * P1 + t^2 * P2 
-     * @param value0 P0
-     * @param value1 P1
-     * @param value2 P2
-     * @param factor t，从0到1的闭区间
-     */
-    function getCurvePoint(value0: number, value1: number, value2: number, factor: number): number {
-        const result = Math.pow((1 - factor), 2) * value0 + 2 * factor * (1 - factor) * value1 + Math.pow(factor, 2) * value2;
-        return result;
-    }
-
-    /**
-     * 通过factor参数获取三次贝塞尔曲线上的位置
-     * 公式为B(t) = (1-t)^3 * P0 + 3t(1-t)^2 * P1 + 3t^2 * (1-t) t^2 * P2 + t^3 *P3 
-     * @param value0 P0
-     * @param value1 P1
-     * @param value2 P2
-     * @param value3 P3
-     * @param factor t，从0到1的闭区间
-     */
-    function getCubicCurvePoint(value0: number, value1: number, value2: number, value3: number, factor: number): number {
-        const result = Math.pow((1 - factor), 3) * value0 + 3 * factor * Math.pow((1 - factor), 2) * value1 + 3 * (1 - factor) * Math.pow(factor, 2) * value2 + Math.pow(factor, 3) * value3;
-        return result;
     }
 }

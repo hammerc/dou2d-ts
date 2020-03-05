@@ -17,7 +17,7 @@ namespace dou2d {
         public lastY: number = 0;
 
         public commands: number[] = [];
-        public data: (number | number[])[] = [];
+        public data: number | number[][] = [];
 
         protected _type: number;
 
@@ -200,8 +200,8 @@ namespace dou2d {
          * @param x 圆弧中心 (圆心) 的 x 轴坐标
          * @param y 圆弧中心 (圆心) 的 y 轴坐标
          * @param radius 圆弧的半径
-         * @param startAngle 圆弧的起始点, x 轴方向开始计算, 单位以弧度表示, 注意, 必须在0~2π之间
-         * @param endAngle 圆弧的终点, 单位以弧度表示, 注意, 必须在0~2π之间
+         * @param startAngle 圆弧的起始点, x 轴方向开始计算, 单位以弧度表示, 注意, 必须在 0~2π 之间
+         * @param endAngle 圆弧的终点, 单位以弧度表示, 注意, 必须在 0~2π 之间
          * @param anticlockwise 如果为 true, 逆时针绘制圆弧, 反之, 顺时针绘制
          */
         public drawArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean): void {
@@ -225,8 +225,8 @@ namespace dou2d {
          * @param radiusX 圆弧的半径 x
          * @param radiusY 圆弧的半径 y
          * @param startAngle 圆弧的起始点, x 轴方向开始计算, 单位以弧度表示, 注意：必须为正数
-         * @param endAngle 圆弧的终点, 单位以弧度表示, 注意：与startAngle差值必须在0~2π之间
-         * @param anticlockwise 如果为 true, 逆时针绘制圆弧, 反之, 顺时针绘制, 注意：如果为true, endAngle必须小于startAngle, 反之必须大于
+         * @param endAngle 圆弧的终点, 单位以弧度表示, 注意：与 startAngle 差值必须在 0~2π 之间
+         * @param anticlockwise 如果为 true, 逆时针绘制圆弧, 反之, 顺时针绘制, 注意：如果为 true, endAngle 必须小于 startAngle, 反之必须大于
          */
         private arcToBezier(x: number, y: number, radiusX: number, radiusY: number, startAngle: number, endAngle: number, anticlockwise?: boolean): void {
             let halfPI = Math.PI * 0.5;

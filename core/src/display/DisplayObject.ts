@@ -107,6 +107,13 @@ namespace dou2d {
         }
 
         /**
+         * 子项列表
+         */
+        public get $children(): DisplayObject[] {
+            return this._children;
+        }
+
+        /**
          * 舞台
          */
         public get stage(): Stage {
@@ -921,7 +928,7 @@ namespace dou2d {
         public $onAddToStage(stage: Stage, nestLevel: number): void {
             this._stage = stage;
             this._nestLevel = nestLevel;
-            this.dispatch(Event2D.ADDED_TO_STAGE);
+            this.dispatchEvent2D(Event2D.ADDED_TO_STAGE);
         }
 
         /**
@@ -930,7 +937,7 @@ namespace dou2d {
         public $onRemoveFromStage(): void {
             this._nestLevel = 0;
             this._stage = null;
-            this.dispatch(Event2D.REMOVED_FROM_STAGE);
+            this.dispatchEvent2D(Event2D.REMOVED_FROM_STAGE);
         }
 
         protected updateUseTransform(): void {
@@ -1279,7 +1286,7 @@ namespace dou2d {
                     buffer.resize(3, 3);
                     let matrix = dou.recyclable(Matrix);
                     matrix.translate(1 - localX, 1 - localY);
-                    renderer.render(this, buffer, matrix, true);
+                    renderer.render(this, buffer, matrix);
                     matrix.recycle();
                     try {
                         data = buffer.getPixels(1, 1);
@@ -1321,15 +1328,7 @@ namespace dou2d {
             return false;
         }
 
-        public dispatch2D(type: string, data?: any, bubbles?: boolean, cancelable?: boolean): boolean {
-            let event = dou.recyclable(Event2D);
-            event.initEvent(type, data, bubbles, cancelable);
-            let result = this.dispatchEvent(event);
-            event.recycle();
-            return result;
-        }
-
-        public dispatchEvent(event: dou.Event): boolean {
+        public dispatch(event: dou.Event): boolean {
             let needBubbles = false;
             if (event instanceof Event2D && event.bubbles) {
                 needBubbles = true;
@@ -1340,7 +1339,7 @@ namespace dou2d {
                 this.dispatchPropagationEvent(event as Event2D, list);
                 return !event.$isDefaultPrevented();
             }
-            return super.dispatchEvent(event);
+            return super.dispatch(event);
         }
 
         protected getPropagationList(target: DisplayObject): DisplayObject[] {
@@ -1356,7 +1355,7 @@ namespace dou2d {
             for (let i = 0, len = list.length; i < len; i++) {
                 let currentTarget = list[i];
                 event.$setCurrentTarget(currentTarget);
-                currentTarget.dispatchEvent(event);
+                currentTarget.dispatch(event);
                 if (event.$isPropagationStopped()) {
                     break;
                 }

@@ -69,10 +69,9 @@ namespace dou2d {
          */
         public updateStageSize(stageWidth: number, stageHeight: number): void {
             let stage = this._stage;
-            stage.stageWidth = stageWidth;
-            stage.stageHeight = stageHeight;
+            stage.$setStageSize(stageWidth, stageHeight);
             this._screenDisplayList.setClipRect(stageWidth, stageHeight);
-            stage.dispatch(Event2D.RESIZE);
+            stage.dispatchEvent2D(Event2D.RESIZE);
         }
     }
 }

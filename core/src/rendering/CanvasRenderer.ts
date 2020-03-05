@@ -1,3 +1,8 @@
+interface CanvasRenderingContext2D {
+    $offsetX: number;
+    $offsetY: number;
+}
+
 namespace dou2d {
     /**
      * 画布渲染类
@@ -7,7 +12,7 @@ namespace dou2d {
         public renderText(node: TextNode, context: CanvasRenderingContext2D): void {
             context.textAlign = "left";
             context.textBaseline = "middle";
-            context.lineJoin = "round";//确保描边样式是圆角
+            context.lineJoin = "round";
             let drawData = node.drawData;
             let length = drawData.length;
             let pos = 0;
@@ -16,7 +21,7 @@ namespace dou2d {
                 let y = drawData[pos++];
                 let text = drawData[pos++];
                 let format: TextFormat = drawData[pos++];
-                context.font = this.getFontString(node, format);
+                context.font = HtmlUtil.getFontString(node, format);
                 let textColor = format.textColor == null ? node.textColor : format.textColor;
                 let strokeColor = format.strokeColor == null ? node.strokeColor : format.strokeColor;
                 let stroke = format.stroke == null ? node.stroke : format.stroke;
@@ -30,17 +35,6 @@ namespace dou2d {
             }
         }
 
-        private getFontString(node: TextNode, format: TextFormat): string {
-            let italic: boolean = format.italic == null ? node.italic : format.italic;
-            let bold: boolean = format.bold == null ? node.bold : format.bold;
-            let size: number = format.size == null ? node.size : format.size;
-            let fontFamily: string = format.fontFamily || node.fontFamily;
-            let font: string = italic ? "italic " : "normal ";
-            font += bold ? "bold " : "normal ";
-            font += size + "px " + fontFamily;
-            return font;
-        }
-
         public renderGraphics(node: GraphicsNode, context: CanvasRenderingContext2D): number {
             let drawData = node.drawData;
             let length = drawData.length;
@@ -51,12 +45,7 @@ namespace dou2d {
                         let fillPath = <FillPath>path;
                         context.fillStyle = this.getRGBAString(fillPath.fillColor, fillPath.fillAlpha);
                         this.renderPath(path, context);
-                        if (this.renderingMask) {
-                            context.clip();
-                        }
-                        else {
-                            context.fill();
-                        }
+                        context.fill();
                         break;
                     case PathType.gradientFill:
                         let g = <GradientFillPath>path;
@@ -74,12 +63,12 @@ namespace dou2d {
                         context.lineWidth = lineWidth;
                         context.strokeStyle = this.getRGBAString(strokeFill.lineColor, strokeFill.lineAlpha);
                         context.lineCap = CAPS_STYLES[strokeFill.caps];
-                        context.lineJoin = strokeFill.joints;
+                        context.lineJoin = <CanvasLineJoin>strokeFill.joints;
                         context.miterLimit = strokeFill.miterLimit;
                         if (context.setLineDash) {
                             context.setLineDash(strokeFill.lineDash);
                         }
-                        //对1像素和3像素特殊处理，向右下角偏移0.5像素，以显示清晰锐利的线条。
+                        // 对 1 像素和 3 像素特殊处理, 向右下角偏移 0.5 像素, 以显示清晰锐利的线条
                         let isSpecialCaseWidth = lineWidth === 1 || lineWidth === 3;
                         if (isSpecialCaseWidth) {
                             context.translate(0.5, 0.5);
@@ -111,7 +100,6 @@ namespace dou2d {
             else {
                 gradient = context.createRadialGradient(0, 0, 0, 0, 0, 1);
             }
-            //todo colors alphas ratios数量不一致情况处理
             let l = colors.length;
             for (let i = 0; i < l; i++) {
                 gradient.addColorStop(ratios[i] / 255, this.getRGBAString(colors[i], alphas[i]));
@@ -121,8 +109,8 @@ namespace dou2d {
 
         private renderPath(path: Path2D, context: CanvasRenderingContext2D): void {
             context.beginPath();
-            let data = path.$data;
-            let commands = path.$commands;
+            let data = path.data;
+            let commands = path.commands;
             let commandCount = commands.length;
             let pos = 0;
             for (let commandIndex = 0; commandIndex < commandCount; commandIndex++) {

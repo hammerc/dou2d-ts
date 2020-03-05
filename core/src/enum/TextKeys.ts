@@ -1,0 +1,46 @@
+namespace dou2d {
+    /**
+     * 文本属性
+     * @author wizardc
+     */
+    export const enum TextKeys {
+        fontSize,
+        lineSpacing,
+        textColor,
+        textFieldWidth,
+        textFieldHeight,
+        textWidth,
+        textHeight,
+        textDrawWidth,
+        fontFamily,
+        textAlign,
+        verticalAlign,
+        textColorString,
+        fontString,
+        text,
+        measuredWidths,
+        bold,
+        italic,
+        fontStringChanged,
+        textLinesChanged,
+        wordWrap,
+        displayAsPassword,
+        maxChars,
+        selectionActivePosition,
+        selectionAnchorPosition,
+        type,
+        strokeColor,
+        strokeColorString,
+        stroke,
+        scrollV,
+        numLines,
+        multiline,
+        border,
+        borderColor,
+        background,
+        backgroundColor,
+        restrictAnd,
+        restrictNot,
+        inputType,
+    }
+}

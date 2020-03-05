@@ -62,9 +62,38 @@ namespace dou2d {
         }
 
         /**
+         * 根据样式测量指定样式文本的宽度
+         */
+        export function measureTextByStyle(text: string, values: any, style?: ITextStyle): number {
+            style = style || <ITextStyle>{};
+            let italic: boolean = !style.italic ? values[TextKeys.italic] : style.italic;
+            let bold: boolean = !style.bold ? values[TextKeys.bold] : style.bold;
+            let size: number = !style.size ? values[TextKeys.fontSize] : style.size;
+            let fontFamily: string = style.fontFamily || values[TextKeys.fontFamily] || TextField.default_fontFamily;
+            return HtmlUtil.measureText(text, fontFamily, size, bold, italic);
+        }
+
+        /**
+         * 测量指定样式文本的宽度
+         */
+        export function measureText(text: string, fontFamily: string, fontSize: number, bold: boolean, italic: boolean): number {
+            let font: string = "";
+            if (italic) {
+                font += "italic ";
+            }
+            if (bold) {
+                font += "bold ";
+            }
+            font += (fontSize || 12) + "px ";
+            font += (fontFamily || "Arial");
+            context2D.font = font;
+            return measureTextWidth(context2D, text);
+        }
+
+        /**
          * 测量文本的宽度
          */
-        export function measureTextWith(context: CanvasRenderingContext2D, text: string): number {
+        export function measureTextWidth(context: CanvasRenderingContext2D, text: string): number {
             return context.measureText(text).width;
         }
 
@@ -102,6 +131,17 @@ namespace dou2d {
                 }
             }
             return "";
+        }
+
+        export function getFontString(node: TextNode, format: TextFormat): string {
+            let italic: boolean = format.italic == null ? node.italic : format.italic;
+            let bold: boolean = format.bold == null ? node.bold : format.bold;
+            let size: number = format.size == null ? node.size : format.size;
+            let fontFamily: string = format.fontFamily || node.fontFamily;
+            let font: string = italic ? "italic " : "normal ";
+            font += bold ? "bold " : "normal ";
+            font += size + "px " + fontFamily;
+            return font;
         }
     }
 }

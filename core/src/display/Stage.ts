@@ -97,6 +97,11 @@ namespace dou2d {
             return this._maxTouches;
         }
 
+        public $setStageSize(width: number, height: number): void {
+            this._stageWidth = width;
+            this._stageHeight = height;
+        }
+
         /**
          * 设置分辨率尺寸
          */

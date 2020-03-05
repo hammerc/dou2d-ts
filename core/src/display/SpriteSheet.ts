@@ -7,27 +7,34 @@ namespace dou2d {
         /**
          * 表示这个 SpriteSheet 的位图区域在 bitmapData 上的起始位置 x
          */
-        private _bitmapX: number = 0;
+        protected _bitmapX: number = 0;
 
         /**
          * 表示这个 SpriteSheet 的位图区域在 bitmapData 上的起始位置 y
          */
-        private _bitmapY: number = 0;
+        protected _bitmapY: number = 0;
 
         /**
          * 共享的位图数据
          */
-        private _texture: Texture;
+        protected _texture: Texture;
 
         /**
          * 纹理缓存字典
          */
-        private _textureMap: { [key: string]: Texture } = {};
+        protected _textureMap: { [key: string]: Texture } = {};
 
         public constructor(texture: Texture) {
             this._texture = texture;
             this._bitmapX = texture.bitmapX - texture.offsetX;
             this._bitmapY = texture.bitmapY - texture.offsetY;
+        }
+
+        /**
+         * 共享的位图数据
+         */
+        public get texture(): Texture {
+            return this._texture;
         }
 
         /**

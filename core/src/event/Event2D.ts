@@ -1,3 +1,27 @@
+declare module dou {
+    interface EventDispatcher {
+        /**
+         * 抛出 2D 事件
+         */
+        dispatchEvent2D(type: string, data?: any, bubbles?: boolean, cancelable?: boolean): boolean;
+    }
+}
+
+(function () {
+    Object.defineProperties(dou.EventDispatcher, {
+        dispatchEvent2D: {
+            value: function (type: string, data?: any, bubbles?: boolean, cancelable?: boolean): boolean {
+                let event = dou.recyclable(dou2d.Event2D);
+                event.$initEvent2D(type, data, bubbles, cancelable);
+                let result = this.dispatchEvent(event);
+                event.recycle();
+                return result;
+            },
+            enumerable: false
+        }
+    });
+})();
+
 namespace dou2d {
     /**
      * 2D 事件
@@ -17,17 +41,16 @@ namespace dou2d {
 
         public static RESIZE: string = "resize";
 
+        public static FOCUS_IN: string = "focusIn";
+        public static FOCUS_OUT: string = "focusOut";
+
+        public static UPDATE_TEXT: string = "updateText";
+
+        public static LINK: string = "link";
+
         private _bubbles: boolean = false;
         private _currentTarget: dou.IEventDispatcher;
         private _isPropagationStopped: boolean = false;
-
-        public static dispatch(target: dou.IEventDispatcher, type: string, data?: any, bubbles?: boolean, cancelable?: boolean): boolean {
-            let event = dou.recyclable(Event2D);
-            event.initEvent(type, data, bubbles, cancelable);
-            let result = target.dispatchEvent(event);
-            event.recycle();
-            return result;
-        }
 
         public get bubbles(): boolean {
             return this._bubbles;
@@ -37,8 +60,8 @@ namespace dou2d {
             return this._currentTarget;
         }
 
-        public initEvent(type: string, data?: any, bubbles?: boolean, cancelable?: boolean): void {
-            this.init(type, data, cancelable);
+        public $initEvent2D(type: string, data?: any, bubbles?: boolean, cancelable?: boolean): void {
+            this.$initEvent(type, data, cancelable);
             this._bubbles = bubbles;
         }
 
