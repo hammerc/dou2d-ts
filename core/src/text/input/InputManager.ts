@@ -18,8 +18,8 @@ namespace dou2d.input {
 
         private _inputElement: any;
 
-        private _stageDelegateDiv;
-        private _canvas;
+        private _stageDelegateDiv: any;
+        private _canvas: any;
 
         public isInputOn(): boolean {
             return this._stageText != null;
@@ -37,10 +37,10 @@ namespace dou2d.input {
             dom.style.padding = "0";
         }
 
-        public initStageDelegateDiv(container, canvas): any {
+        public initStageDelegateDiv(container: any, canvas: any): any {
             this._canvas = canvas;
             let self = this;
-            let stageDelegateDiv;
+            let stageDelegateDiv: any;
             if (!stageDelegateDiv) {
                 stageDelegateDiv = document.createElement("div");
                 this._stageDelegateDiv = stageDelegateDiv;
@@ -74,21 +74,20 @@ namespace dou2d.input {
             }
         }
 
-        //初始化输入框
         private initInputElement(multiline: boolean): void {
             let self = this;
-            //增加1个空的textarea
+            // 增加 1 个空的 textarea
             let inputElement: any;
             if (multiline) {
                 inputElement = document.createElement("textarea");
                 inputElement.style["resize"] = "none";
                 self._multiElement = inputElement;
-                inputElement.id = "egretTextarea";
+                inputElement.id = "douTextarea";
             }
             else {
                 inputElement = document.createElement("input");
                 self._simpleElement = inputElement;
-                inputElement.id = "egretInput";
+                inputElement.id = "douInput";
             }
             inputElement.type = "text";
             self.inputDIV.appendChild(inputElement);
@@ -100,7 +99,7 @@ namespace dou2d.input {
             inputElement.style.background = "none";
             inputElement.style.overflow = "hidden";
             inputElement.style.wordBreak = "break-all";
-            //隐藏输入框
+            // 隐藏输入框
             inputElement.style.opacity = 0;
             inputElement.oninput = function () {
                 if (self._stageText) {
@@ -125,24 +124,24 @@ namespace dou2d.input {
         public show(): void {
             let self = this;
             let inputElement = self._inputElement;
-            //隐藏输入框
+            // 隐藏输入框
             callLater(function () {
                 inputElement.style.opacity = 1;
             }, self);
         }
 
-        public getInputElement(stageText): any {
+        public getInputElement(stageText: HtmlText): any {
             let self = this;
             self.clearInputElement();
             self._stageText = stageText;
-            this._canvas['userTyping'] = true;
+            this._canvas["userTyping"] = true;
             if (self._stageText.textfield.multiline) {
                 self._inputElement = self._multiElement;
             }
             else {
                 self._inputElement = self._simpleElement;
             }
-            let otherElement;
+            let otherElement: any;
             if (self._simpleElement == self._inputElement) {
                 otherElement = self._multiElement;
             }
@@ -153,7 +152,7 @@ namespace dou2d.input {
             return self._inputElement;
         }
 
-        public disconnectStageText(stageText): void {
+        public disconnectStageText(stageText: HtmlText): void {
             if (this._stageText == null || this._stageText == stageText) {
                 if (this._inputElement) {
                     this._inputElement.blur();
@@ -174,7 +173,7 @@ namespace dou2d.input {
                 self._inputElement.style.left = "0px";
                 self._inputElement.style.top = "0px";
                 self._inputElement.style.opacity = 0;
-                let otherElement;
+                let otherElement: any;
                 if (self._simpleElement == self._inputElement) {
                     otherElement = self._multiElement;
                 }
@@ -190,7 +189,7 @@ namespace dou2d.input {
             if (self._stageText) {
                 self._stageText.onDisconnect();
                 self._stageText = null;
-                this._canvas['userTyping'] = false;
+                this._canvas["userTyping"] = false;
             }
         }
     }

@@ -130,25 +130,25 @@ namespace dou2d {
             switch (this.type) {
                 case gl.FLOAT:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniform1f(this.location, value);
                     };
                     break;
                 case gl.FLOAT_VEC2:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniform2f(this.location, value[0], value[1]);
                     };
                     break;
                 case gl.FLOAT_VEC3:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniform3f(this.location, value[0], value[1], value[2]);
                     };
                     break;
                 case gl.FLOAT_VEC4:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniform4f(this.location, value[0], value[1], value[2], value[3]);
                     };
                     break;
@@ -157,46 +157,46 @@ namespace dou2d {
                 case gl.BOOL:
                 case gl.INT:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniform1i(this.location, value);
                     };
                     break;
                 case gl.BOOL_VEC2:
                 case gl.INT_VEC2:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniform2i(this.location, value[0], value[1]);
                     };
                     break;
                 case gl.BOOL_VEC3:
                 case gl.INT_VEC3:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniform3i(this.location, value[0], value[1], value[2]);
                     };
                     break;
                 case gl.BOOL_VEC4:
                 case gl.INT_VEC4:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniform4i(this.location, value[0], value[1], value[2], value[3]);
                     };
                     break;
                 case gl.FLOAT_MAT2:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniformMatrix2fv(this.location, false, value);
                     };
                     break;
                 case gl.FLOAT_MAT3:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniformMatrix3fv(this.location, false, value);
                     };
                     break;
                 case gl.FLOAT_MAT4:
                     this.upload = () => {
-                        var value = this.value;
+                        let value = this.value;
                         gl.uniformMatrix4fv(this.location, false, value);
                     };
                     break;

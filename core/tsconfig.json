@@ -69,8 +69,6 @@
     "src/geom/Rectangle.ts",
 
     "src/core/Ticker.ts",
-    "src/core/TouchHandler.ts",
-    "src/core/TouchHandlerImpl.ts",
     "src/core/Player.ts",
 
     "src/debug/Stat.ts",
@@ -79,7 +77,6 @@
     "src/display/DisplayObjectContainer.ts",
     "src/display/Shape.ts",
     "src/display/Sprite.ts",
-    "src/display/BufferContainer.ts",
     "src/display/Stage.ts",
     "src/display/BitmapData.ts",
     "src/display/Bitmap.ts",
@@ -162,6 +159,9 @@
     "src/text/BitmapText.ts",
     "src/text/HtmlTextParser.ts",
 
+    "src/touch/TouchHandler.ts",
+    "src/touch/TouchHandlerImpl.ts",
+
     "src/utils/callLater.ts",
     "src/utils/setTimeout.ts",
     "src/utils/setInterval.ts",
@@ -173,6 +173,7 @@
     "src/utils/Capabilities.ts",
     "src/utils/toColorString.ts",
     "src/utils/TextFieldUtil.ts",
+    "src/utils/UUID.ts",
 
     "src/Engine.ts"
   ]

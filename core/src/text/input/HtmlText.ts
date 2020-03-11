@@ -80,12 +80,6 @@ namespace dou2d.input {
             this._gscaleY = scaleY * cY;
         }
 
-        public hide(): void {
-            if (this._htmlInput) {
-                this._htmlInput.disconnectStageText(this);
-            }
-        }
-
         public setText(value: string): boolean {
             this._textValue = value;
             this.resetText();
@@ -254,6 +248,12 @@ namespace dou2d.input {
                 if (this._styleInfoes[style] != value) {
                     this._inputElement.style[style] = value;
                 }
+            }
+        }
+
+        public hide(): void {
+            if (this._htmlInput) {
+                this._htmlInput.disconnectStageText(this);
             }
         }
 

@@ -8,7 +8,7 @@ namespace dou2d {
          * 获取第一行绘制的行数, 从 0 开始
          */
         export function getStartLine(textfield: TextField): number {
-            let values = textfield.$TextField;
+            let values = textfield.$propertyMap;
             let textHeight = TextFieldUtil.getTextHeight(textfield);
             let startLine = 0;
             let textFieldHeight: number = values[TextKeys.textFieldHeight];
@@ -37,13 +37,13 @@ namespace dou2d {
         export function getHalign(textfield: TextField): number {
             let lineArr = textfield.$getLinesArr();
             let halign = 0;
-            if (textfield.$TextField[TextKeys.textAlign] == HorizontalAlign.center) {
+            if (textfield.$propertyMap[TextKeys.textAlign] == HorizontalAlign.center) {
                 halign = 0.5;
             }
-            else if (textfield.$TextField[TextKeys.textAlign] == HorizontalAlign.right) {
+            else if (textfield.$propertyMap[TextKeys.textAlign] == HorizontalAlign.right) {
                 halign = 1;
             }
-            if (textfield.$TextField[TextKeys.type] == TextFieldType.input && !textfield.$TextField[TextKeys.multiline] && lineArr.length > 1) {
+            if (textfield.$propertyMap[TextKeys.type] == TextFieldType.input && !textfield.$propertyMap[TextKeys.multiline] && lineArr.length > 1) {
                 halign = 0;
             }
             return halign;
@@ -53,10 +53,10 @@ namespace dou2d {
          * 获取文本高度
          */
         export function getTextHeight(textfield: TextField): number {
-            if (TextFieldType.input == textfield.$TextField[TextKeys.type] && !textfield.$TextField[TextKeys.multiline]) {
-                return textfield.$TextField[TextKeys.fontSize]
+            if (TextFieldType.input == textfield.$propertyMap[TextKeys.type] && !textfield.$propertyMap[TextKeys.multiline]) {
+                return textfield.$propertyMap[TextKeys.fontSize]
             }
-            return textfield.$TextField[TextKeys.textHeight] + (textfield.$TextField[TextKeys.numLines] - 1) * textfield.$TextField[TextKeys.lineSpacing]
+            return textfield.$propertyMap[TextKeys.textHeight] + (textfield.$propertyMap[TextKeys.numLines] - 1) * textfield.$propertyMap[TextKeys.lineSpacing]
         }
 
         /**
@@ -64,15 +64,15 @@ namespace dou2d {
          */
         export function getValign(textfield: TextField): number {
             let textHeight = TextFieldUtil.getTextHeight(textfield);
-            let textFieldHeight: number = textfield.$TextField[TextKeys.textFieldHeight];
+            let textFieldHeight: number = textfield.$propertyMap[TextKeys.textFieldHeight];
             if (!isNaN(textFieldHeight)) {
                 // 最大高度比需要显示的高度小
                 if (textHeight < textFieldHeight) {
                     let valign = 0;
-                    if (textfield.$TextField[TextKeys.verticalAlign] == VerticalAlign.middle) {
+                    if (textfield.$propertyMap[TextKeys.verticalAlign] == VerticalAlign.middle) {
                         valign = 0.5;
                     }
-                    else if (textfield.$TextField[TextKeys.verticalAlign] == VerticalAlign.bottom) {
+                    else if (textfield.$propertyMap[TextKeys.verticalAlign] == VerticalAlign.bottom) {
                         valign = 1;
                     }
                     return valign;
@@ -99,13 +99,13 @@ namespace dou2d {
         export function getHit(textfield: TextField, x: number, y: number): IHitTextElement {
             let lineArr = textfield.$getLinesArr();
             // 文本可点击区域
-            if (textfield.$TextField[TextKeys.textFieldWidth] == 0) {
+            if (textfield.$propertyMap[TextKeys.textFieldWidth] == 0) {
                 return null;
             }
             let line = 0;
             let textHeight = TextFieldUtil.getTextHeight(textfield);
             let startY = 0;
-            let textFieldHeight = textfield.$TextField[TextKeys.textFieldHeight];
+            let textFieldHeight = textfield.$propertyMap[TextKeys.textFieldHeight];
             if (!isNaN(textFieldHeight) && textFieldHeight > textHeight) {
                 let valign = TextFieldUtil.getValign(textfield);
                 startY = valign * (textFieldHeight - textHeight);
@@ -126,16 +126,16 @@ namespace dou2d {
                 else {
                     lineH += lineEle.height;
                 }
-                if (lineH + textfield.$TextField[TextKeys.lineSpacing] > y) {
+                if (lineH + textfield.$propertyMap[TextKeys.lineSpacing] > y) {
                     return null;
                 }
-                lineH += textfield.$TextField[TextKeys.lineSpacing];
+                lineH += textfield.$propertyMap[TextKeys.lineSpacing];
             }
             if (line == 0) {
                 return null;
             }
             let lineElement = lineArr[line - 1];
-            let textFieldWidth = textfield.$TextField[TextKeys.textFieldWidth];
+            let textFieldWidth = textfield.$propertyMap[TextKeys.textFieldWidth];
             if (isNaN(textFieldWidth)) {
                 textFieldWidth = textfield.textWidth;
             }
@@ -159,7 +159,7 @@ namespace dou2d {
          */
         export function getScrollNum(textfield: TextField): number {
             let scrollNum = 1;
-            if (textfield.$TextField[TextKeys.multiline]) {
+            if (textfield.$propertyMap[TextKeys.multiline]) {
                 let height = textfield.height;
                 let size = textfield.size;
                 let lineSpacing = textfield.lineSpacing;

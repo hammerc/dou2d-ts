@@ -17,7 +17,7 @@ namespace dou2d {
             textureScaleFactor: number;
         };
 
-        private _touchHandler: TouchHandler;
+        private _touchHandler: touch.TouchHandler;
         private _input: input.InputManager;
 
         /**
@@ -59,7 +59,7 @@ namespace dou2d {
 
             player = new Player(renderBuffer, stage, options.rootClass);
             player.start();
-            this._touchHandler = new TouchHandler(stage, canvas);
+            this._touchHandler = new touch.TouchHandler(stage, canvas);
             this._input = new input.InputManager();
 
             ticker = new Ticker();
@@ -167,7 +167,7 @@ namespace dou2d {
         }
 
         public updateMaxTouches(maxTouches: number): void {
-            this._touchHandler.$updateMaxTouches();
+            this._touchHandler.updateMaxTouches();
         }
     }
 

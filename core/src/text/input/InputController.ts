@@ -95,7 +95,7 @@ namespace dou2d.input {
         }
 
         private updateTextHandler(event: Event): void {
-            let values = this._text.$TextField;
+            let values = this._text.$propertyMap;
             let textValue = this._stageText.getText();
             let isChanged = false;
             let reg: RegExp;
@@ -142,7 +142,7 @@ namespace dou2d.input {
                 this.updateInput();
                 return;
             }
-            this._stageText.setText(this._text.$TextField[TextKeys.text]);
+            this._stageText.setText(this._text.$propertyMap[TextKeys.text]);
             //整体修改
             this._stageText.resetStageText();
             this.updateInput();

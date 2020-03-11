@@ -1,128 +1,87 @@
 namespace dou2d {
     /**
-     * 
+     * 投影滤镜
      * @author wizardc
      */
     export class DropShadowFilter extends GlowFilter {
-        constructor(distance:number = 4.0, angle:number = 45, color:number = 0, alpha:number = 1.0, blurX:number = 4.0, blurY:number = 4.0, strength:number = 1.0, quality:number = 1, inner:boolean = false, knockout:boolean = false, hideObject:boolean = false) {
-            super(color, alpha, blurX, blurY, strength, quality, inner, knockout);
-            let self = this;
-            self.$distance = distance;
-            self.$angle = angle;
-            self.$hideObject = hideObject;
+        protected _distance: number;
+        protected _angle: number;
+        protected _hideObject: boolean;
 
-            self.$uniforms.dist = distance;
-            self.$uniforms.angle = angle / 180 * Math.PI;
-            self.$uniforms.hideObject = hideObject ? 1 : 0;
-            self.onPropertyChange();
+        /**
+         * @param distance 阴影的偏移距离
+         * @param angle 阴影的角度
+         * @param color 光晕颜色
+         * @param alpha 透明度
+         * @param blurX 水平模糊, 有效值为 0 到 255
+         * @param blurY 垂直模糊, 有效值为 0 到 255
+         * @param strength 强度, 有效值为 0 到 255
+         * @param inner 是否为内发光
+         * @param knockout 是否具有挖空效果
+         * @param hideObject 是否隐藏对象
+         */
+        public constructor(distance: number = 4, angle: number = 45, color: number = 0, alpha: number = 1, blurX: number = 4, blurY: number = 4, strength: number = 1, inner: boolean = false, knockout: boolean = false, hideObject: boolean = false) {
+            super(color, alpha, blurX, blurY, strength, inner, knockout);
+            this._distance = distance;
+            this._angle = angle;
+            this._hideObject = hideObject;
+            this.$uniforms.dist = distance;
+            this.$uniforms.angle = angle / 180 * Math.PI;
+            this.$uniforms.hideObject = hideObject ? 1 : 0;
+            this.onPropertyChange();
         }
 
         /**
-         * @private
+         * 阴影的偏移距离
          */
-        public $distance:number;
-
-        /**
-         * The offset distance of the bevel.
-         * @version Egret 3.1.4
-         * @platform Web
-         * @language en_US
-         */
-        /**
-         * 阴影的偏移距离，以像素为单位。
-         * @version Egret 3.1.4
-         * @platform Web
-         * @language zh_CN
-         */
-        public get distance():number {
-            return this.$distance;
-        }
-
-        public set distance(value:number) {
-            let self = this;
-            if(self.$distance == value) {
+        public set distance(value: number) {
+            if (this._distance == value) {
                 return;
             }
-            self.$distance = value;
-            self.$uniforms.dist = value;
-            self.onPropertyChange();
+            this._distance = value;
+            this.$uniforms.dist = value;
+            this.onPropertyChange();
+        }
+        public get distance(): number {
+            return this._distance;
         }
 
         /**
-         * @private
+         * 阴影的角度
          */
-        public $angle:number;
-
-        /**
-         * The angle of the bevel.
-         * @version Egret 3.1.4
-         * @platform Web
-         * @language en_US
-         */
-        /**
-         * 阴影的角度。
-         * @version Egret 3.1.4
-         * @platform Web
-         * @language zh_CN
-         */
-        public get angle():number {
-            return this.$angle;
-        }
-
-        public set angle(value:number) {
-            let self = this;
-            if(self.$angle == value) {
+        public set angle(value: number) {
+            if (this._angle == value) {
                 return;
             }
-            self.$angle = value;
-            self.$uniforms.angle = value / 180 * Math.PI;
-            self.onPropertyChange();
+            this._angle = value;
+            this.$uniforms.angle = value / 180 * Math.PI;
+            this.onPropertyChange();
+        }
+        public get angle(): number {
+            return this._angle;
         }
 
         /**
-         * @private
+         * 是否隐藏对象
          */
-        public $hideObject:boolean;
-
-        /**
-         * Indicates whether or not the object is hidden.
-         * @version Egret 3.1.4
-         * @platform Web
-         * @language en_US
-         */
-        /**
-         * 表示是否隐藏对象。
-         * @version Egret 3.1.4
-         * @platform Web
-         * @language zh_CN
-         */
-        public get hideObject():boolean {
-            return this.$hideObject;
-        }
-
-        public set hideObject(value:boolean) {
-            if(this.$hideObject == value) {
+        public set hideObject(value: boolean) {
+            if (this._hideObject == value) {
                 return;
             }
-            this.$hideObject = value;
+            this._hideObject = value;
             this.$uniforms.hideObject = value ? 1 : 0;
         }
-
-        /**
-         * @private
-         */
-        public $toJson():string {
-            return '{"distance": ' + this.$distance + ', "angle": ' + this.$angle + ', "color": ' + this.$color + ', "red": ' + this.$red + ', "green": ' + this.$green + ', "blue": ' + this.$blue + ', "alpha": ' + this.$alpha + ', "blurX": ' + this.$blurX + ', "blurY": ' + this.blurY + ', "strength": ' + this.$strength + ', "quality": ' + this.$quality + ', "inner": ' + this.$inner + ', "knockout": ' + this.$knockout + ', "hideObject": ' + this.$hideObject + '}';
+        public get hideObject(): boolean {
+            return this._hideObject;
         }
 
-        protected updatePadding():void {
-            let self = this;
-            self.paddingLeft = self.blurX;
-            self.paddingRight = self.blurX;
-            self.paddingTop = self.blurY;
-            self.paddingBottom = self.blurY;
-            let distance: number = self.distance || 0;
-            let angle: number = self.angle || 0;
+        protected updatePadding(): void {
+            this._paddingLeft = this._blurX;
+            this._paddingRight = this._blurX;
+            this._paddingTop = this._blurY;
+            this._paddingBottom = this._blurY;
+            let distance = this._distance || 0;
+            let angle = this._angle || 0;
             let distanceX = 0;
             let distanceY = 0;
             if (distance != 0) {
@@ -140,10 +99,10 @@ namespace dou2d {
                 else {
                     distanceY = Math.floor(distanceY);
                 }
-                self.paddingLeft += distanceX;
-                self.paddingRight += distanceX;
-                self.paddingTop += distanceY;
-                self.paddingBottom += distanceY;
+                this._paddingLeft += distanceX;
+                this._paddingRight += distanceX;
+                this._paddingTop += distanceY;
+                this._paddingBottom += distanceY;
             }
         }
     }

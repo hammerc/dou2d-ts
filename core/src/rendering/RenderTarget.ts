@@ -94,13 +94,13 @@ namespace dou2d {
             height = height || 1;
             if (width < 1) {
                 if (DEBUG) {
-                    console.warn('WebGLRenderTarget _resize width = ' + width);
+                    console.warn("WebGLRenderTarget _resize width = " + width);
                 }
                 width = 1;
             }
             if (height < 1) {
                 if (DEBUG) {
-                    console.warn('WebGLRenderTarget _resize height = ' + height);
+                    console.warn("WebGLRenderTarget _resize height = " + height);
                 }
                 height = 1;
             }

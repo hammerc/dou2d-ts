@@ -1,39 +1,35 @@
 namespace dou2d {
     /**
-     * 
+     * 滤镜基类
      * @author wizardc
      */
-    export class Filter {
-        public type: string = null;
+    export abstract class Filter {
+        private _type: string;
 
-        public $id: number = null;
+        protected _paddingTop: number = 0;
+        protected _paddingBottom: number = 0;
+        protected _paddingLeft: number = 0;
+        protected _paddingRight: number = 0;
 
+        /**
+         * 会传递到片段着色器中的数据集合
+         */
         public $uniforms: any;
 
-        protected paddingTop: number = 0;
-
-        protected paddingBottom: number = 0;
-
-        protected paddingLeft: number = 0;
-
-        protected paddingRight: number = 0;
-
-        public $obj: any;
-
-        constructor() {
+        public constructor(type: string) {
+            this._type = type;
             this.$uniforms = {};
         }
 
-        public $toJson(): string {
-            return '';
-        }
-
-        protected updatePadding(): void {
+        public get type(): string {
+            return this._type;
         }
 
         public onPropertyChange(): void {
-            let self = this;
-            self.updatePadding();
+            this.updatePadding();
+        }
+
+        protected updatePadding(): void {
         }
     }
 }

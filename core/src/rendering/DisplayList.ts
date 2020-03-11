@@ -121,8 +121,8 @@ namespace dou2d {
             let oldOffsetX = this.offsetX;
             let oldOffsetY = this.offsetY;
             let bounds = this.root.$getOriginalBounds();
-            var scaleX = this.$canvasScaleX;
-            var scaleY = this.$canvasScaleY;
+            let scaleX = this.$canvasScaleX;
+            let scaleY = this.$canvasScaleY;
             this.offsetX = -bounds.x;
             this.offsetY = -bounds.y;
             this._offsetMatrix.set(this._offsetMatrix.a, 0, 0, this._offsetMatrix.d, this.offsetX, this.offsetY);

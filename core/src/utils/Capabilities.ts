@@ -7,32 +7,32 @@ namespace dou2d {
         /**
          * 引擎版本
          */
-        export var engineVersion: string = "0.1.0";
+        export let engineVersion: string = "0.1.0";
 
         /**
          * 当前的操作系统
          */
-        export var os: "Unknown" | "iOS" | "Android" | "Windows Phone" | "Windows PC" | "Mac OS" = "Unknown";
+        export let os: "Unknown" | "iOS" | "Android" | "Windows Phone" | "Windows PC" | "Mac OS" = "Unknown";
 
         /**
          * 系统的语言代码
          */
-        export var language: string;
+        export let language: string;
 
         /**
          * 是否处于移动环境
          */
-        export var isMobile: boolean;
+        export let isMobile: boolean;
 
         /**
          * 客户端边界宽度
          */
-        export var boundingClientWidth: number;
+        export let boundingClientWidth: number;
 
         /**
          * 客户端边界高度
          */
-        export var boundingClientHeight: number;
+        export let boundingClientHeight: number;
 
         export function init(): void {
             let userAgent = navigator.userAgent.toLowerCase();

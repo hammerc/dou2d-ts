@@ -1,10 +1,10 @@
 namespace dou2d {
-    export let enterFrameCallBackList: DisplayObject[] = [];
-    export let enterFrameOnceCallBackList: DisplayObject[] = [];
-    export let renderCallBackList: DisplayObject[] = [];
-    export let renderOnceCallBackList: DisplayObject[] = [];
+    export const enterFrameCallBackList: DisplayObject[] = [];
+    export const enterFrameOnceCallBackList: DisplayObject[] = [];
+    export const renderCallBackList: DisplayObject[] = [];
+    export const renderOnceCallBackList: DisplayObject[] = [];
 
-    let tempRect: Rectangle = new Rectangle();
+    const tempRect: Rectangle = new Rectangle();
 
     /**
      * 显示对象

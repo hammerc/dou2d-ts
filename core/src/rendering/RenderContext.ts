@@ -742,13 +742,13 @@ namespace dou2d {
             let originInput = input, temp: RenderBuffer, width: number = input.renderTarget.width, height: number = input.renderTarget.height;
             // 模糊滤镜分别处理 blurX 与 blurY, 如果两个方向都设定了模糊量则这里先预先处理 blurX 的模糊, blurY 的模糊加入渲染命令等待后续渲染
             if (filter.type == "blur") {
-                let blurXFilter = (<BlurFilter>filter).blurXFilter;
-                let blurYFilter = (<BlurFilter>filter).blurYFilter;
+                let blurXFilter = (<BlurFilter>filter).$blurXFilter;
+                let blurYFilter = (<BlurFilter>filter).$blurYFilter;
                 if (blurXFilter.blurX != 0 && blurYFilter.blurY != 0) {
                     temp = RenderBuffer.get(width, height);
                     temp.setTransform(1, 0, 0, 1, 0, 0);
                     temp.globalAlpha = 1;
-                    this.drawToRenderTarget((<BlurFilter>filter).blurXFilter, input, temp);
+                    this.drawToRenderTarget((<BlurFilter>filter).$blurXFilter, input, temp);
                     if (input != originInput) {
                         RenderBuffer.put(input);
                     }

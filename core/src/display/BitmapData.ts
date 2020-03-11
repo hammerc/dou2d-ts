@@ -17,18 +17,18 @@ namespace dou2d {
                 base64 = data as string;
             }
             let imageType = "image/png";
-            if (base64.charAt(0) === '/') {
+            if (base64.charAt(0) === "/") {
                 imageType = "image/jpeg";
             }
-            else if (base64.charAt(0) === 'R') {
+            else if (base64.charAt(0) === "R") {
                 imageType = "image/gif";
             }
-            else if (base64.charAt(0) === 'i') {
+            else if (base64.charAt(0) === "i") {
                 imageType = "image/png";
             }
             let img = new Image();
             img.src = "data:" + imageType + ";base64," + base64;
-            img.crossOrigin = '*';
+            img.crossOrigin = "*";
             let bitmapData = new BitmapData(img);
             img.onload = function () {
                 img.onload = undefined;

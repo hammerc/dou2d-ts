@@ -13,7 +13,7 @@ namespace dou2d {
             let buffer = RenderBuffer._renderBufferPool.pop();
             if (buffer) {
                 buffer.resize(width, height);
-                var matrix = buffer.globalMatrix;
+                let matrix = buffer.globalMatrix;
                 matrix.a = 1;
                 matrix.b = 0;
                 matrix.c = 0;
