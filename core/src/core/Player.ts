@@ -54,14 +54,12 @@ namespace dou2d {
         }
 
         /**
-         * 渲染屏幕
+         * 渲染
          */
-        public render(passedTime: number): void {
+        public render(passedTime: number): number {
             let stage = this._stage;
-            let t1 = dou.getTimer();
             let drawCalls = stage.$displayList.drawToSurface();
-            let t2 = dou.getTimer();
-            // TODO : FPS 等性能面板
+            return drawCalls;
         }
 
         /**

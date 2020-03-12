@@ -55,4 +55,9 @@ namespace dou2d {
      * 文本输入管理
      */
     export let inputManager: input.InputManager;
+
+    /**
+     * 性能统计
+     */
+    export let stat: Stat;
 }
