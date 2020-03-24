@@ -338,7 +338,7 @@ var dou;
     }
 })(dou || (dou = {}));
 (function () {
-    Object.defineProperties(dou.EventDispatcher, {
+    Object.defineProperties(dou.EventDispatcher.prototype, {
         dispatchEvent: {
             value: function (type, data, cancelable) {
                 let event = dou.recyclable(dou.Event);
@@ -409,7 +409,7 @@ var dou;
     dou.Event = Event;
 })(dou || (dou = {}));
 (function () {
-    Object.defineProperties(dou.EventDispatcher, {
+    Object.defineProperties(dou.EventDispatcher.prototype, {
         dispatchIOErrorEvent: {
             value: function (type, msg, cancelable) {
                 let event = dou.recyclable(dou.IOErrorEvent);
@@ -445,7 +445,7 @@ var dou;
     dou.IOErrorEvent = IOErrorEvent;
 })(dou || (dou = {}));
 (function () {
-    Object.defineProperties(dou.EventDispatcher, {
+    Object.defineProperties(dou.EventDispatcher.prototype, {
         dispatchProgressEvent: {
             value: function (type, loaded, total, cancelable) {
                 let event = dou.recyclable(dou.ProgressEvent);

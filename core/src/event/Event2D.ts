@@ -8,7 +8,7 @@ declare module dou {
 }
 
 (function () {
-    Object.defineProperties(dou.EventDispatcher, {
+    Object.defineProperties(dou.EventDispatcher.prototype, {
         dispatchEvent2D: {
             value: function (type: string, data?: any, bubbles?: boolean, cancelable?: boolean): boolean {
                 let event = dou.recyclable(dou2d.Event2D);

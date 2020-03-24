@@ -43,11 +43,6 @@ namespace dou2d {
             let options = this._options = this.readOptions(rootClass, runOptions);
 
             stage = new Stage(this);
-            stage.scaleMode = <any>options.scaleMode;
-            stage.orientation = <any>options.orientation;
-            stage.maxTouches = options.maxTouches;
-            stage.frameRate = options.frameRate;
-            stage.textureScaleFactor = options.textureScaleFactor;
 
             screenAdapter = options.screenAdapter;
             renderer = new Renderer();
@@ -57,13 +52,22 @@ namespace dou2d {
 
             context2D = HtmlUtil.get2DContext(HtmlUtil.createCanvas(2, 2));
 
-            player = new Player(renderBuffer, stage, options.rootClass);
-            player.start();
             this._touchHandler = new touch.TouchHandler(stage, canvas);
             this._input = new input.InputManager();
 
+            player = new Player(renderBuffer, stage, options.rootClass);
+            player.start();
+
             ticker = new Ticker();
             this.startTicker();
+
+            stage.scaleMode = <any>options.scaleMode;
+            stage.orientation = <any>options.orientation;
+            stage.maxTouches = options.maxTouches;
+            stage.frameRate = options.frameRate;
+            stage.textureScaleFactor = options.textureScaleFactor;
+
+            stat = new Stat();
         }
 
         private readOptions(rootClass: any, runOptions?: RunOptions) {

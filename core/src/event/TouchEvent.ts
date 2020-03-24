@@ -8,7 +8,7 @@ declare module dou {
 }
 
 (function () {
-    Object.defineProperties(dou.EventDispatcher, {
+    Object.defineProperties(dou.EventDispatcher.prototype, {
         dispatchTouchEvent: {
             value: function (type: string, stageX: number, stageY: number, touchPointID?: number, touchDown?: boolean, bubbles?: boolean, cancelable?: boolean): boolean {
                 let event = dou.recyclable(dou2d.TouchEvent);
