@@ -24,7 +24,7 @@ class Main {
     private async start(originPath: string, targetPath: string): Promise<void> {
         let list = FileUtil.getAllFile(originPath, "glsl", true);
         let shaderCode: string[] = [];
-        shaderCode.push("namespace dou2d {");
+        shaderCode.push("namespace dou2d.rendering {");
         shaderCode.push("    /**");
         shaderCode.push("     * 着色器库");
         shaderCode.push("     * @author GLSLPacker");

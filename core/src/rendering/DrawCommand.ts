@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 绘制指令管理类
      * @author wizardc
@@ -61,7 +61,7 @@ namespace dou2d {
          * 贴图绘制的 smoothing 属性改变时需要压入一个新的绘制指令
          */
         public pushChangeSmoothing(texture: WebGLTexture, smoothing: boolean): void {
-            texture[SMOOTHING] = smoothing;
+            texture[sys.SMOOTHING] = smoothing;
             let data = this.drawData[this.drawDataLen] || <IDrawData>{};
             data.type = DrawableType.smoothing;
             data.texture = texture;

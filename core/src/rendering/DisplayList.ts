@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 显示列表
      * @author wizardc
@@ -90,7 +90,7 @@ namespace dou2d {
             }
             let buffer = this.renderBuffer;
             buffer.clear();
-            drawCalls = renderer.render(this.root, buffer, this._offsetMatrix);
+            drawCalls = sys.renderer.render(this.root, buffer, this._offsetMatrix);
             // 对非舞台画布要保存渲染节点
             if (!this._isStage) {
                 let surface = buffer.surface;

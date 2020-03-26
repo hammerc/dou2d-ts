@@ -40,7 +40,7 @@ namespace dou2d {
             return gl as WebGLRenderingContext;
         }
 
-        export function resizeContext(renderContext: RenderContext, width: number, height: number, useMaxSize?: boolean): void {
+        export function resizeContext(renderContext: rendering.RenderContext, width: number, height: number, useMaxSize?: boolean): void {
             let surface = renderContext.surface;
             if (useMaxSize) {
                 if (surface.width < width) {
@@ -66,10 +66,10 @@ namespace dou2d {
          */
         export function measureTextByStyle(text: string, values: any, style?: ITextStyle): number {
             style = style || <ITextStyle>{};
-            let italic: boolean = !style.italic ? values[TextKeys.italic] : style.italic;
-            let bold: boolean = !style.bold ? values[TextKeys.bold] : style.bold;
-            let size: number = !style.size ? values[TextKeys.fontSize] : style.size;
-            let fontFamily: string = style.fontFamily || values[TextKeys.fontFamily] || TextField.default_fontFamily;
+            let italic: boolean = !style.italic ? values[sys.TextKeys.italic] : style.italic;
+            let bold: boolean = !style.bold ? values[sys.TextKeys.bold] : style.bold;
+            let size: number = !style.size ? values[sys.TextKeys.fontSize] : style.size;
+            let fontFamily: string = style.fontFamily || values[sys.TextKeys.fontFamily] || TextField.default_fontFamily;
             return HtmlUtil.measureText(text, fontFamily, size, bold, italic);
         }
 
@@ -86,8 +86,8 @@ namespace dou2d {
             }
             font += (fontSize || 12) + "px ";
             font += (fontFamily || "Arial");
-            context2D.font = font;
-            return measureTextWidth(context2D, text);
+            sys.context2D.font = font;
+            return measureTextWidth(sys.context2D, text);
         }
 
         /**
@@ -133,7 +133,7 @@ namespace dou2d {
             return "";
         }
 
-        export function getFontString(node: TextNode, format: TextFormat): string {
+        export function getFontString(node: rendering.TextNode, format: rendering.TextFormat): string {
             let italic: boolean = format.italic == null ? node.italic : format.italic;
             let bold: boolean = format.bold == null ? node.bold : format.bold;
             let size: number = format.size == null ? node.size : format.size;
@@ -142,6 +142,23 @@ namespace dou2d {
             font += bold ? "bold " : "normal ";
             font += size + "px " + fontFamily;
             return font;
+        }
+
+        export function toColorString(value: number): string {
+            if (value < 0) {
+                value = 0;
+            }
+            if (value > 16777215) {
+                value = 16777215;
+            }
+            let color = value.toString(16).toUpperCase();
+            while (color.length > 6) {
+                color = color.slice(1, color.length);
+            }
+            while (color.length < 6) {
+                color = "0" + color;
+            }
+            return "#" + color;
         }
     }
 }

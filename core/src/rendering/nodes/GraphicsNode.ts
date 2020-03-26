@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     export let CAPS_STYLES = ["none", "round", "square"];
     export let JOINT_STYLES = ["bevel", "miter", "round"];
 

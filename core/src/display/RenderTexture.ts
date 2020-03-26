@@ -5,11 +5,11 @@ namespace dou2d {
      * @author wizardc
      */
     export class RenderTexture extends Texture {
-        public $renderBuffer: RenderBuffer;
+        public $renderBuffer: rendering.RenderBuffer;
 
         public constructor() {
             super();
-            this.$renderBuffer = new RenderBuffer();
+            this.$renderBuffer = new rendering.RenderBuffer();
             let bitmapData = new BitmapData(this.$renderBuffer.surface);
             bitmapData.deleteSource = false;
             this.$setBitmapData(bitmapData);
@@ -29,7 +29,7 @@ namespace dou2d {
             if (bounds.width == 0 || bounds.height == 0) {
                 return false;
             }
-            scale /= textureScaleFactor;
+            scale /= sys.textureScaleFactor;
             let width = (bounds.x + bounds.width) * scale;
             let height = (bounds.y + bounds.height) * scale;
             if (clipBounds) {
@@ -49,7 +49,7 @@ namespace dou2d {
             if (clipBounds) {
                 matrix.translate(-clipBounds.x, -clipBounds.y);
             }
-            renderer.render(displayObject, renderBuffer, matrix);
+            sys.renderer.render(displayObject, renderBuffer, matrix);
             matrix.recycle();
             // 设置纹理参数
             this.$initData(0, 0, width, height, 0, 0, width, height, width, height);
@@ -59,7 +59,7 @@ namespace dou2d {
         public getPixel32(x: number, y: number): number[] {
             let data: number[];
             if (this.$renderBuffer) {
-                let scale = textureScaleFactor;
+                let scale = sys.textureScaleFactor;
                 x = Math.round(x / scale);
                 y = Math.round(y / scale);
                 data = this.$renderBuffer.getPixels(x, y, 1, 1);

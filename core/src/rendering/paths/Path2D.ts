@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 2D路径
      * @author wizardc

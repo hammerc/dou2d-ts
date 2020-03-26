@@ -71,7 +71,7 @@ namespace dou2d {
         }
 
         public $getScaleBitmapWidth(): number {
-            return this.bitmapWidth * textureScaleFactor;
+            return this.bitmapWidth * sys.textureScaleFactor;
         }
 
         /**
@@ -86,7 +86,7 @@ namespace dou2d {
         }
 
         public $getScaleBitmapHeight(): number {
-            return this.bitmapHeight * textureScaleFactor;
+            return this.bitmapHeight * sys.textureScaleFactor;
         }
 
         public set bitmapData(value: BitmapData) {
@@ -98,7 +98,7 @@ namespace dou2d {
 
         public $setBitmapData(value: BitmapData) {
             this._bitmapData = value;
-            let scale = textureScaleFactor;
+            let scale = sys.textureScaleFactor;
             let w = value.width * scale;
             let h = value.height * scale;
             this.$initData(0, 0, w, h, 0, 0, w, h, value.width, value.height);
@@ -109,7 +109,7 @@ namespace dou2d {
         }
 
         public $initData(bitmapX: number, bitmapY: number, bitmapWidth: number, bitmapHeight: number, offsetX: number, offsetY: number, textureWidth: number, textureHeight: number, sourceWidth: number, sourceHeight: number, rotated: boolean = false): void {
-            let scale = textureScaleFactor;
+            let scale = sys.textureScaleFactor;
             this.bitmapX = bitmapX / scale;
             this.bitmapY = bitmapY / scale;
             this.bitmapWidth = bitmapWidth / scale;

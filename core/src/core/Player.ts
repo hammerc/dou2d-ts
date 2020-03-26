@@ -1,10 +1,10 @@
-namespace dou2d {
+namespace dou2d.sys {
     /**
      * 播放器
      * @author wizardc
      */
     export class Player {
-        private _screenDisplayList: DisplayList;
+        private _screenDisplayList: rendering.DisplayList;
 
         private _stage: Stage;
 
@@ -13,14 +13,14 @@ namespace dou2d {
 
         private _isPlaying: boolean = false;
 
-        public constructor(buffer: RenderBuffer, stage: Stage, rootClass: any) {
+        public constructor(buffer: rendering.RenderBuffer, stage: Stage, rootClass: any) {
             this._screenDisplayList = this.createDisplayList(stage, buffer);
             this._stage = stage;
             this._rootClass = rootClass;
         }
 
-        private createDisplayList(stage: Stage, buffer: RenderBuffer): DisplayList {
-            let displayList = new DisplayList(stage);
+        private createDisplayList(stage: Stage, buffer: rendering.RenderBuffer): rendering.DisplayList {
+            let displayList = new rendering.DisplayList(stage);
             displayList.renderBuffer = buffer;
             stage.$displayList = displayList;
             return displayList;

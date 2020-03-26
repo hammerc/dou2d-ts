@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 渲染节点基类
      * @author wizardc

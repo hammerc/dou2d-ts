@@ -101,8 +101,8 @@ namespace dou2d.input {
             let reg: RegExp;
             let result: string[];
             // 内匹配
-            if (values[TextKeys.restrictAnd] != null) {
-                reg = new RegExp("[" + values[TextKeys.restrictAnd] + "]", "g");
+            if (values[sys.TextKeys.restrictAnd] != null) {
+                reg = new RegExp("[" + values[sys.TextKeys.restrictAnd] + "]", "g");
                 result = textValue.match(reg);
                 if (result) {
                     textValue = result.join("");
@@ -113,8 +113,8 @@ namespace dou2d.input {
                 isChanged = true;
             }
             // 外匹配
-            if (values[TextKeys.restrictNot] != null) {
-                reg = new RegExp("[^" + values[TextKeys.restrictNot] + "]", "g");
+            if (values[sys.TextKeys.restrictNot] != null) {
+                reg = new RegExp("[^" + values[sys.TextKeys.restrictNot] + "]", "g");
                 result = textValue.match(reg);
                 if (result) {
                     textValue = result.join("");
@@ -142,7 +142,7 @@ namespace dou2d.input {
                 this.updateInput();
                 return;
             }
-            this._stageText.setText(this._text.$propertyMap[TextKeys.text]);
+            this._stageText.setText(this._text.$propertyMap[sys.TextKeys.text]);
             //整体修改
             this._stageText.resetStageText();
             this.updateInput();

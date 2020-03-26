@@ -25,10 +25,10 @@ namespace dou2d {
          * 舞台的帧速率
          */
         public set frameRate(value: number) {
-            ticker.frameRate = value;
+            sys.ticker.frameRate = value;
         }
         public get frameRate(): number {
-            return ticker.frameRate;
+            return sys.ticker.frameRate;
         }
 
         /**
@@ -77,10 +77,10 @@ namespace dou2d {
          * 绘制纹理的缩放比率
          */
         public set textureScaleFactor(value: number) {
-            textureScaleFactor = value;
+            sys.textureScaleFactor = value;
         }
         public get textureScaleFactor(): number {
-            return textureScaleFactor;
+            return sys.textureScaleFactor;
         }
 
         /**
@@ -113,21 +113,21 @@ namespace dou2d {
          * 调用该方法后, 在显示列表下次呈现时, 会向每个已注册侦听 Event.RENDER 事件的显示对象发送一个 Event.RENDER 事件
          */
         public invalidate(): void {
-            invalidateRenderFlag = true;
+            sys.invalidateRenderFlag = true;
         }
     }
 
-    markCannotUse(Stage, "alpha", 1);
-    markCannotUse(Stage, "visible", true);
-    markCannotUse(Stage, "x", 0);
-    markCannotUse(Stage, "y", 0);
-    markCannotUse(Stage, "scaleX", 1);
-    markCannotUse(Stage, "scaleY", 1);
-    markCannotUse(Stage, "rotation", 0);
-    markCannotUse(Stage, "cacheAsBitmap", false);
-    markCannotUse(Stage, "scrollRect", null);
-    markCannotUse(Stage, "filters", null);
-    markCannotUse(Stage, "blendMode", null);
-    markCannotUse(Stage, "touchEnabled", true);
-    markCannotUse(Stage, "matrix", null);
+    sys.markCannotUse(Stage, "alpha", 1);
+    sys.markCannotUse(Stage, "visible", true);
+    sys.markCannotUse(Stage, "x", 0);
+    sys.markCannotUse(Stage, "y", 0);
+    sys.markCannotUse(Stage, "scaleX", 1);
+    sys.markCannotUse(Stage, "scaleY", 1);
+    sys.markCannotUse(Stage, "rotation", 0);
+    sys.markCannotUse(Stage, "cacheAsBitmap", false);
+    sys.markCannotUse(Stage, "scrollRect", null);
+    sys.markCannotUse(Stage, "filters", null);
+    sys.markCannotUse(Stage, "blendMode", null);
+    sys.markCannotUse(Stage, "touchEnabled", true);
+    sys.markCannotUse(Stage, "matrix", null);
 }

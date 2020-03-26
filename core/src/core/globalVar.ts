@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.sys {
     /**
      * 画布
      */
@@ -27,12 +27,12 @@ namespace dou2d {
     /**
      * 渲染对象
      */
-    export let renderer: Renderer;
+    export let renderer: rendering.Renderer;
 
     /**
      * 用于碰撞检测的渲染缓冲
      */
-    export let hitTestBuffer: RenderBuffer;
+    export let hitTestBuffer: rendering.RenderBuffer;
 
     /**
      * 2D 渲染上下文
@@ -60,4 +60,9 @@ namespace dou2d {
      * 性能统计
      */
     export let stat: Stat;
+
+    export let enterFrameCallBackList: DisplayObject[] = [];
+    export let enterFrameOnceCallBackList: DisplayObject[] = [];
+    export let renderCallBackList: DisplayObject[] = [];
+    export let renderOnceCallBackList: DisplayObject[] = [];
 }

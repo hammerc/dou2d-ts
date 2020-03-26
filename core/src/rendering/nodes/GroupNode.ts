@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 组渲染节点, 用于组合多个渲染节点
      * @author wizardc

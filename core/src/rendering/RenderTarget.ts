@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 指定渲染目标
      * * 可以是帧缓冲或者屏幕缓冲

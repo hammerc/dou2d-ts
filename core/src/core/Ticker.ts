@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.sys {
     /**
      * 心跳计时器
      * @author wizardc
@@ -74,9 +74,9 @@ namespace dou2d {
         }
 
         private broadcastDelay(passedTime: number): void {
-            $updateCallLater();
-            $updateInterval(passedTime);
-            $updateTimeout(passedTime);
+            sys.updateCallLater();
+            sys.updateInterval(passedTime);
+            sys.updateTimeout(passedTime);
         }
 
         private broadcastTick(passedTime: number): void {

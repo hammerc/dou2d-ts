@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.sys {
     /**
      * 渲染上下文
      */

@@ -8,7 +8,7 @@
 
 })();
 
-namespace dou2d {
+namespace dou2d.sys {
     /**
      * 标记指定属性不可用
      */

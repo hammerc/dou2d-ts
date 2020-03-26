@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 顶点数据管理类
      * ```
@@ -98,7 +98,7 @@ namespace dou2d {
             alpha = Math.min(alpha, 1.0);
             let globalTintColor = buffer.globalTintColor || 0xFFFFFF;
             let currentTexture = buffer.currentTexture;
-            if (alpha < 1.0 && currentTexture && currentTexture[UNPACK_PREMULTIPLY_ALPHA_WEBGL]) {
+            if (alpha < 1.0 && currentTexture && currentTexture[sys.UNPACK_PREMULTIPLY_ALPHA_WEBGL]) {
                 alpha = WebGLUtil.premultiplyTint(globalTintColor, alpha);
             }
             else {

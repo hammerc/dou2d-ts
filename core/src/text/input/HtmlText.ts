@@ -25,7 +25,7 @@ namespace dou2d.input {
         }
 
         public addToStage(): void {
-            this._htmlInput = inputManager;
+            this._htmlInput = sys.inputManager;
         }
 
         public show(): void {
@@ -107,7 +107,7 @@ namespace dou2d.input {
 
         private resetColor(): void {
             if (this._inputElement) {
-                this.setElementStyle("color", toColorString(this._colorValue));
+                this.setElementStyle("color", HtmlUtil.toColorString(this._colorValue));
             }
         }
 
@@ -178,7 +178,7 @@ namespace dou2d.input {
                 this.setElementStyle("fontWeight", textfield.bold ? "bold" : "normal");
                 this.setElementStyle("textAlign", textfield.textAlign);
                 this.setElementStyle("fontSize", textfield.size * this._gscaleY + "px");
-                this.setElementStyle("color", toColorString(textfield.textColor));
+                this.setElementStyle("color", HtmlUtil.toColorString(textfield.textColor));
                 let tw: number;
                 if (textfield.stage) {
                     tw = textfield.localToGlobal(0, 0).x;

@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 普通位图渲染节点
      * @author wizardc
@@ -8,7 +8,7 @@ namespace dou2d {
             if (!image) {
                 return;
             }
-            let scale = textureScaleFactor;
+            let scale = sys.textureScaleFactor;
             node.smoothing = smoothing;
             node.image = image;
             node.imageWidth = sourceWidth;

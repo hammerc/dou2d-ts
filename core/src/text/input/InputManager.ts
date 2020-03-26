@@ -112,8 +112,8 @@ namespace dou2d.input {
             if (!this._canvas) {
                 return;
             }
-            this.scaleX = DisplayList.$canvasScaleX;
-            this.scaleY = DisplayList.$canvasScaleY;
+            this.scaleX = rendering.DisplayList.$canvasScaleX;
+            this.scaleY = rendering.DisplayList.$canvasScaleY;
             this._stageDelegateDiv.style.left = this._canvas.style.left;
             this._stageDelegateDiv.style.top = this._canvas.style.top;
             let transformKey = HtmlUtil.getStyleName("transform");

@@ -4,7 +4,7 @@ namespace dou2d {
      * @author wizardc
      */
     export class Graphics {
-        private _renderNode: GraphicsNode;
+        private _renderNode: rendering.GraphicsNode;
         private _targetDisplay: DisplayObject;
 
         /**
@@ -20,12 +20,12 @@ namespace dou2d {
         /**
          * 当前正在绘制的填充
          */
-        private _fillPath: Path2D;
+        private _fillPath: rendering.Path2D;
 
         /**
          * 当前正在绘制的线条
          */
-        private _strokePath: StrokePath;
+        private _strokePath: rendering.StrokePath;
 
         /**
          * 线条的左上方宽度
@@ -48,7 +48,7 @@ namespace dou2d {
         private _maxY: number = -Infinity;
 
         public constructor() {
-            this._renderNode = new GraphicsNode();
+            this._renderNode = new rendering.GraphicsNode();
         }
 
         /**

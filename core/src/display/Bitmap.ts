@@ -32,10 +32,10 @@ namespace dou2d {
 
         public constructor(value?: Texture) {
             super();
-            this.$renderNode = new NormalBitmapNode();
+            this.$renderNode = new rendering.NormalBitmapNode();
             this.$setTexture(value);
             if (value) {
-                (<NormalBitmapNode>this.$renderNode).rotated = value.rotated;
+                (<rendering.NormalBitmapNode>this.$renderNode).rotated = value.rotated;
             }
         }
 
@@ -45,7 +45,7 @@ namespace dou2d {
         public set texture(value: Texture) {
             this.$setTexture(value);
             if (value && this.$renderNode) {
-                (<BitmapNode>this.$renderNode).rotated = value.rotated;
+                (<rendering.BitmapNode>this.$renderNode).rotated = value.rotated;
             }
         }
         public get texture(): Texture {
@@ -195,7 +195,7 @@ namespace dou2d {
                 return;
             }
             this._smoothing = value;
-            (<BitmapNode>this.$renderNode).smoothing = value;
+            (<rendering.BitmapNode>this.$renderNode).smoothing = value;
             let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
@@ -305,16 +305,16 @@ namespace dou2d {
                 let destH = !isNaN(this._explicitBitmapHeight) ? this._explicitBitmapHeight : this._textureHeight;
                 let scale9Grid = this.scale9Grid;
                 if (scale9Grid) {
-                    if (this.$renderNode instanceof NormalBitmapNode) {
-                        this.$renderNode = new BitmapNode();
+                    if (this.$renderNode instanceof rendering.NormalBitmapNode) {
+                        this.$renderNode = new rendering.BitmapNode();
                     }
-                    BitmapNode.updateTextureDataWithScale9Grid(<BitmapNode>this.$renderNode, this.$bitmapData, scale9Grid, this._bitmapX, this._bitmapY, this._bitmapWidth, this._bitmapHeight, this._offsetX, this._offsetY, this._textureWidth, this._textureHeight, destW, destH, this._sourceWidth, this._sourceHeight, this._smoothing);
+                    rendering.BitmapNode.updateTextureDataWithScale9Grid(<rendering.BitmapNode>this.$renderNode, this.$bitmapData, scale9Grid, this._bitmapX, this._bitmapY, this._bitmapWidth, this._bitmapHeight, this._offsetX, this._offsetY, this._textureWidth, this._textureHeight, destW, destH, this._sourceWidth, this._sourceHeight, this._smoothing);
                 }
                 else {
-                    if (this.fillMode == BitmapFillMode.repeat && this.$renderNode instanceof NormalBitmapNode) {
-                        this.$renderNode = new BitmapNode();
+                    if (this.fillMode == BitmapFillMode.repeat && this.$renderNode instanceof rendering.NormalBitmapNode) {
+                        this.$renderNode = new rendering.BitmapNode();
                     }
-                    NormalBitmapNode.updateTextureData(<NormalBitmapNode>this.$renderNode, this.$bitmapData, this._bitmapX, this._bitmapY, this._bitmapWidth, this._bitmapHeight, this._offsetX, this._offsetY, this._textureWidth, this._textureHeight, destW, destH, this._sourceWidth, this._sourceHeight, this._fillMode, this._smoothing);
+                    rendering.NormalBitmapNode.updateTextureData(<rendering.NormalBitmapNode>this.$renderNode, this.$bitmapData, this._bitmapX, this._bitmapY, this._bitmapWidth, this._bitmapHeight, this._offsetX, this._offsetY, this._textureWidth, this._textureHeight, destW, destH, this._sourceWidth, this._sourceHeight, this._fillMode, this._smoothing);
                 }
             }
         }

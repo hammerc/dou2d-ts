@@ -171,7 +171,6 @@
     "src/utils/Base64Util.ts",
     "src/utils/Implementation.ts",
     "src/utils/Capabilities.ts",
-    "src/utils/toColorString.ts",
     "src/utils/TextFieldUtil.ts",
     "src/utils/UUID.ts",
 

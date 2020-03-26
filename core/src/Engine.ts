@@ -42,32 +42,32 @@ namespace dou2d {
 
             let options = this._options = this.readOptions(rootClass, runOptions);
 
-            stage = new Stage(this);
+            sys.stage = new Stage(this);
 
-            screenAdapter = options.screenAdapter;
-            renderer = new Renderer();
+            sys.screenAdapter = options.screenAdapter;
+            sys.renderer = new rendering.Renderer();
 
-            let renderBuffer = new RenderBuffer(undefined, undefined, true);
-            canvas = renderBuffer.surface as HTMLCanvasElement;
+            let renderBuffer = new rendering.RenderBuffer(undefined, undefined, true);
+            sys.canvas = renderBuffer.surface as HTMLCanvasElement;
 
-            context2D = HtmlUtil.get2DContext(HtmlUtil.createCanvas(2, 2));
+            sys.context2D = HtmlUtil.get2DContext(HtmlUtil.createCanvas(2, 2));
 
-            this._touchHandler = new touch.TouchHandler(stage, canvas);
+            this._touchHandler = new touch.TouchHandler(sys.stage, sys.canvas);
             this._input = new input.InputManager();
 
-            player = new Player(renderBuffer, stage, options.rootClass);
-            player.start();
+            sys.player = new sys.Player(renderBuffer, sys.stage, options.rootClass);
+            sys.player.start();
 
-            ticker = new Ticker();
+            sys.ticker = new sys.Ticker();
             this.startTicker();
 
-            stage.scaleMode = <any>options.scaleMode;
-            stage.orientation = <any>options.orientation;
-            stage.maxTouches = options.maxTouches;
-            stage.frameRate = options.frameRate;
-            stage.textureScaleFactor = options.textureScaleFactor;
+            sys.stage.scaleMode = <any>options.scaleMode;
+            sys.stage.orientation = <any>options.orientation;
+            sys.stage.maxTouches = options.maxTouches;
+            sys.stage.frameRate = options.frameRate;
+            sys.stage.textureScaleFactor = options.textureScaleFactor;
 
-            stat = new Stat();
+            sys.stat = new sys.Stat();
         }
 
         private readOptions(rootClass: any, runOptions?: RunOptions) {
@@ -84,14 +84,14 @@ namespace dou2d {
                 frameRate: runOptions.frameRate || 60,
                 antialias: runOptions.antialias || false,
                 screenAdapter: runOptions.screenAdapter || new DefaultScreenAdapter(),
-                textureScaleFactor: runOptions.canvasScaleFactor ? runOptions.canvasScaleFactor(canvas.getContext("2d")) : 1
+                textureScaleFactor: runOptions.canvasScaleFactor ? runOptions.canvasScaleFactor(sys.canvas.getContext("2d")) : 1
             };
         }
 
         private startTicker(): void {
             requestAnimationFrame(onTick);
             function onTick() {
-                ticker.update();
+                sys.ticker.update();
                 requestAnimationFrame(onTick);
             }
         }
@@ -104,7 +104,7 @@ namespace dou2d {
         }
 
         public updateScreenSize(): void {
-            let canvas = dou2d.canvas;
+            let canvas = sys.canvas;
             let option = this._options;
             let screenRect = canvas.getBoundingClientRect();
             let top = 0;
@@ -118,7 +118,7 @@ namespace dou2d {
                 top = -screenRect.top;
             }
             let shouldRotate = false;
-            let orientation = stage.orientation;
+            let orientation = sys.stage.orientation;
             if (orientation != OrientationMode.auto) {
                 shouldRotate = orientation != OrientationMode.portrait && boundingClientHeight > boundingClientWidth || orientation == OrientationMode.portrait && boundingClientWidth > boundingClientHeight;
             }
@@ -126,7 +126,7 @@ namespace dou2d {
             let screenHeight = shouldRotate ? boundingClientWidth : boundingClientHeight;
             Capabilities.boundingClientWidth = screenWidth;
             Capabilities.boundingClientHeight = screenHeight;
-            let stageSize = screenAdapter.calculateStageSize(stage.scaleMode, screenWidth, screenHeight, option.contentWidth, option.contentHeight);
+            let stageSize = sys.screenAdapter.calculateStageSize(sys.stage.scaleMode, screenWidth, screenHeight, option.contentWidth, option.contentHeight);
             let stageWidth = stageSize.stageWidth;
             let stageHeight = stageSize.stageHeight;
             let displayWidth = stageSize.displayWidth;
@@ -156,18 +156,18 @@ namespace dou2d {
                 canvas.style.left = (boundingClientWidth - displayWidth) / 2 + "px";
             }
             let scalex = displayWidth / stageWidth, scaley = displayHeight / stageHeight;
-            let canvasScaleX = scalex * DisplayList.$canvasScaleFactor;
-            let canvasScaleY = scaley * DisplayList.$canvasScaleFactor;
+            let canvasScaleX = scalex * rendering.DisplayList.$canvasScaleFactor;
+            let canvasScaleY = scaley * rendering.DisplayList.$canvasScaleFactor;
             let matrix = dou.recyclable(Matrix);
             matrix.scale(scalex / canvasScaleX, scaley / canvasScaleY);
             matrix.rotate(rotation * Math.PI / 180);
             let transform = `matrix(${matrix.a},${matrix.b},${matrix.c},${matrix.d},${matrix.tx},${matrix.ty})`;
             matrix.recycle();
             canvas.style[HtmlUtil.getStyleName("transform")] = transform;
-            DisplayList.$setCanvasScale(canvasScaleX, canvasScaleY);
+            rendering.DisplayList.$setCanvasScale(canvasScaleX, canvasScaleY);
             this._touchHandler.updateScaleMode(scalex, scaley, rotation);
             this._input.updateSize();
-            player.updateStageSize(stageWidth, stageHeight);
+            sys.player.updateStageSize(stageWidth, stageHeight);
         }
 
         public updateMaxTouches(maxTouches: number): void {

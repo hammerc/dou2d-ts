@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.sys {
     /**
      * 应用统计信息
      * @author wizardc

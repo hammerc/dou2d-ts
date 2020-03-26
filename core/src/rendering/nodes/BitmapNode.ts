@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 位图渲染节点
      * @author wizardc
@@ -14,14 +14,14 @@ namespace dou2d {
             node.imageHeight = sourceHeight;
             let imageWidth = bitmapWidth;
             let imageHeight = bitmapHeight;
-            destW = destW - (textureWidth - bitmapWidth * textureScaleFactor);
-            destH = destH - (textureHeight - bitmapHeight * textureScaleFactor);
+            destW = destW - (textureWidth - bitmapWidth * sys.textureScaleFactor);
+            destH = destH - (textureHeight - bitmapHeight * sys.textureScaleFactor);
             let targetW0 = scale9Grid.x - offsetX;
             let targetH0 = scale9Grid.y - offsetY;
-            let sourceW0 = targetW0 / textureScaleFactor;
-            let sourceH0 = targetH0 / textureScaleFactor;
-            let sourceW1 = scale9Grid.width / textureScaleFactor;
-            let sourceH1 = scale9Grid.height / textureScaleFactor;
+            let sourceW0 = targetW0 / sys.textureScaleFactor;
+            let sourceH0 = targetH0 / sys.textureScaleFactor;
+            let sourceW1 = scale9Grid.width / sys.textureScaleFactor;
+            let sourceH1 = scale9Grid.height / sys.textureScaleFactor;
             // 防止空心的情况出现
             if (sourceH1 == 0) {
                 sourceH1 = 1;
@@ -43,9 +43,9 @@ namespace dou2d {
             let sourceY1 = sourceY0 + sourceH0;
             let sourceY2 = sourceY1 + sourceH1;
             let sourceH2 = imageHeight - sourceH0 - sourceH1;
-            let targetW2 = sourceW2 * textureScaleFactor;
-            let targetH2 = sourceH2 * textureScaleFactor;
-            if ((sourceW0 + sourceW2) * textureScaleFactor > destW || (sourceH0 + sourceH2) * textureScaleFactor > destH) {
+            let targetW2 = sourceW2 * sys.textureScaleFactor;
+            let targetH2 = sourceH2 * sys.textureScaleFactor;
+            if ((sourceW0 + sourceW2) * sys.textureScaleFactor > destW || (sourceH0 + sourceH2) * sys.textureScaleFactor > destH) {
                 node.drawImage(bitmapX, bitmapY, bitmapWidth, bitmapHeight, offsetX, offsetY, destW, destH);
                 return;
             }

@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.sys {
     /**
      * 文本属性
      * @author wizardc

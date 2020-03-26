@@ -3,7 +3,7 @@ interface CanvasRenderingContext2D {
     $offsetY: number;
 }
 
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 画布渲染类
      * @author wizardc
@@ -25,8 +25,8 @@ namespace dou2d {
                 let textColor = format.textColor == null ? node.textColor : format.textColor;
                 let strokeColor = format.strokeColor == null ? node.strokeColor : format.strokeColor;
                 let stroke = format.stroke == null ? node.stroke : format.stroke;
-                context.fillStyle = toColorString(textColor);
-                context.strokeStyle = toColorString(strokeColor);
+                context.fillStyle = HtmlUtil.toColorString(textColor);
+                context.strokeStyle = HtmlUtil.toColorString(strokeColor);
                 if (stroke) {
                     context.lineWidth = stroke * 2;
                     context.strokeText(text, x + context.$offsetX, y + context.$offsetY);

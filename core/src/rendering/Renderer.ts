@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     let blendModes = ["source-over", "lighter", "destination-out"];
     let defaultCompositeOp = "source-over";
 

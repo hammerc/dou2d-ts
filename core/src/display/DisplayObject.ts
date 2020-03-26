@@ -1,9 +1,4 @@
 namespace dou2d {
-    export let enterFrameCallBackList: DisplayObject[] = [];
-    export let enterFrameOnceCallBackList: DisplayObject[] = [];
-    export let renderCallBackList: DisplayObject[] = [];
-    export let renderOnceCallBackList: DisplayObject[] = [];
-
     const tempRect: Rectangle = new Rectangle();
 
     /**
@@ -17,16 +12,16 @@ namespace dou2d {
         public static defaultTouchEnabled: boolean = false;
 
         public $useTranslate: boolean = false;
-        public $displayList: DisplayList;
+        public $displayList: rendering.DisplayList;
         public $cacheDirty: boolean = false;
 
         public $maskedObject: DisplayObject;
         public $mask: DisplayObject;
         public $maskRect: Rectangle;
 
-        public $renderNode: RenderNode;
+        public $renderNode: rendering.RenderNode;
         public $renderDirty: boolean = false;
-        public $renderMode: RenderMode;
+        public $renderMode: rendering.RenderMode;
 
         public $tintRGB: number = 0;
 
@@ -870,7 +865,7 @@ namespace dou2d {
                 return;
             }
             if (value) {
-                let displayList = DisplayList.create(this);
+                let displayList = rendering.DisplayList.create(this);
                 if (displayList) {
                     this.$displayList = displayList;
                     this.$cacheDirty = true;
@@ -1144,7 +1139,7 @@ namespace dou2d {
         /**
          * 获取渲染节点
          */
-        public $getRenderNode(): RenderNode {
+        public $getRenderNode(): rendering.RenderNode {
             let node = this.$renderNode;
             if (!node) {
                 return null;
@@ -1163,16 +1158,16 @@ namespace dou2d {
          */
         public $updateRenderMode(): void {
             if (!this._visible || this._alpha <= 0 || this.$maskedObject) {
-                this.$renderMode = RenderMode.none;
+                this.$renderMode = rendering.RenderMode.none;
             }
             else if (this.filters && this.filters.length > 0) {
-                this.$renderMode = RenderMode.filter;
+                this.$renderMode = rendering.RenderMode.filter;
             }
             else if (this._blendMode !== BlendMode.normal || (this.$mask && this.$mask._stage)) {
-                this.$renderMode = RenderMode.clip;
+                this.$renderMode = rendering.RenderMode.clip;
             }
             else if (this._scrollRect || this.$maskRect) {
-                this.$renderMode = RenderMode.scrollRect;
+                this.$renderMode = rendering.RenderMode.scrollRect;
             }
             else {
                 this.$renderMode = null;
@@ -1282,11 +1277,11 @@ namespace dou2d {
                     }
                 }
                 else {
-                    let buffer = hitTestBuffer;
+                    let buffer = sys.hitTestBuffer;
                     buffer.resize(3, 3);
                     let matrix = dou.recyclable(Matrix);
                     matrix.translate(1 - localX, 1 - localY);
-                    renderer.render(this, buffer, matrix);
+                    sys.renderer.render(this, buffer, matrix);
                     matrix.recycle();
                     try {
                         data = buffer.getPixels(1, 1);
@@ -1307,10 +1302,10 @@ namespace dou2d {
             if (type == Event2D.ENTER_FRAME || type == Event2D.RENDER) {
                 let list: DisplayObject[];
                 if (type == Event2D.ENTER_FRAME) {
-                    list = once ? enterFrameOnceCallBackList : enterFrameCallBackList;
+                    list = once ? sys.enterFrameOnceCallBackList : sys.enterFrameCallBackList;
                 }
                 else {
-                    list = once ? renderOnceCallBackList : renderCallBackList;
+                    list = once ? sys.renderOnceCallBackList : sys.renderCallBackList;
                 }
                 list.pushUnique(this);
             }
@@ -1368,12 +1363,12 @@ namespace dou2d {
                 let list: DisplayObject[];
                 let listOnce: DisplayObject[];
                 if (type == Event2D.ENTER_FRAME) {
-                    list = enterFrameCallBackList;
-                    listOnce = enterFrameOnceCallBackList;
+                    list = sys.enterFrameCallBackList;
+                    listOnce = sys.enterFrameOnceCallBackList;
                 }
                 else {
-                    list = renderCallBackList;
-                    listOnce = renderOnceCallBackList;
+                    list = sys.renderCallBackList;
+                    listOnce = sys.renderOnceCallBackList;
                 }
                 list.remove(this);
                 listOnce.remove(this);

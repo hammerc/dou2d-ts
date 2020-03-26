@@ -1,4 +1,4 @@
-declare namespace dou2d {
+declare namespace dou2d.sys {
     /**
      * 渲染上下文
      */
@@ -16,13 +16,13 @@ declare namespace dou2d {
      */
     const SMOOTHING = "smoothing";
 }
-declare namespace dou2d {
+declare namespace dou2d.sys {
     /**
      * 标记指定属性不可用
      */
     function markCannotUse(instance: any, property: string, defaultValue: any): void;
 }
-declare namespace dou2d {
+declare namespace dou2d.sys {
     /**
      * 画布
      */
@@ -46,11 +46,11 @@ declare namespace dou2d {
     /**
      * 渲染对象
      */
-    let renderer: Renderer;
+    let renderer: rendering.Renderer;
     /**
      * 用于碰撞检测的渲染缓冲
      */
-    let hitTestBuffer: RenderBuffer;
+    let hitTestBuffer: rendering.RenderBuffer;
     /**
      * 2D 渲染上下文
      */
@@ -73,6 +73,10 @@ declare namespace dou2d {
      * 性能统计
      */
     let stat: Stat;
+    let enterFrameCallBackList: DisplayObject[];
+    let enterFrameOnceCallBackList: DisplayObject[];
+    let renderCallBackList: DisplayObject[];
+    let renderOnceCallBackList: DisplayObject[];
 }
 declare namespace dou2d {
     /**
@@ -347,7 +351,7 @@ declare namespace dou2d {
         onRecycle(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.sys {
     /**
      * 心跳计时器
      * @author wizardc
@@ -377,7 +381,7 @@ declare namespace dou2d {
         private broadcastEnterFrame;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.sys {
     /**
      * 播放器
      * @author wizardc
@@ -388,7 +392,7 @@ declare namespace dou2d {
         private _rootClass;
         private _root;
         private _isPlaying;
-        constructor(buffer: RenderBuffer, stage: Stage, rootClass: any);
+        constructor(buffer: rendering.RenderBuffer, stage: Stage, rootClass: any);
         private createDisplayList;
         start(): void;
         private initialize;
@@ -403,7 +407,7 @@ declare namespace dou2d {
         updateStageSize(stageWidth: number, stageHeight: number): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.sys {
     /**
      * 应用统计信息
      * @author wizardc
@@ -416,10 +420,6 @@ declare namespace dou2d {
     }
 }
 declare namespace dou2d {
-    let enterFrameCallBackList: DisplayObject[];
-    let enterFrameOnceCallBackList: DisplayObject[];
-    let renderCallBackList: DisplayObject[];
-    let renderOnceCallBackList: DisplayObject[];
     /**
      * 显示对象
      * @author wizardc
@@ -430,14 +430,14 @@ declare namespace dou2d {
          */
         static defaultTouchEnabled: boolean;
         $useTranslate: boolean;
-        $displayList: DisplayList;
+        $displayList: rendering.DisplayList;
         $cacheDirty: boolean;
         $maskedObject: DisplayObject;
         $mask: DisplayObject;
         $maskRect: Rectangle;
-        $renderNode: RenderNode;
+        $renderNode: rendering.RenderNode;
         $renderDirty: boolean;
-        $renderMode: RenderMode;
+        $renderMode: rendering.RenderMode;
         $tintRGB: number;
         $sortDirty: boolean;
         $lastSortedIndex: number;
@@ -711,7 +711,7 @@ declare namespace dou2d {
         /**
          * 获取渲染节点
          */
-        $getRenderNode(): RenderNode;
+        $getRenderNode(): rendering.RenderNode;
         /**
          * 更新渲染模式
          */
@@ -1344,7 +1344,7 @@ declare namespace dou2d {
      * @author wizardc
      */
     class RenderTexture extends Texture {
-        $renderBuffer: RenderBuffer;
+        $renderBuffer: rendering.RenderBuffer;
         constructor();
         /**
          * 将指定显示对象绘制为一个纹理
@@ -1357,7 +1357,7 @@ declare namespace dou2d {
         dispose(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 绘制命令类型
      * @author wizardc
@@ -1376,7 +1376,7 @@ declare namespace dou2d {
         smoothing = 10
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 渲染模式
      * @author wizardc
@@ -1388,7 +1388,7 @@ declare namespace dou2d {
         scrollRect = 4
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 渲染节点类型
      * @author wizardc
@@ -1421,7 +1421,7 @@ declare namespace dou2d {
         clip = "clip"
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 路径类型
      * @author wizardc
@@ -1441,7 +1441,7 @@ declare namespace dou2d {
         stroke = 3
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 2D路径命令
      * @author wizardc
@@ -1632,7 +1632,7 @@ declare namespace dou2d {
         bottom = 2
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.sys {
     /**
      * 文本属性
      * @author wizardc
@@ -1991,7 +1991,7 @@ declare namespace dou2d {
         protected updatePadding(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 渲染节点基类
      * @author wizardc
@@ -2017,7 +2017,7 @@ declare namespace dou2d {
         cleanBeforeRender(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 普通位图渲染节点
      * @author wizardc
@@ -2061,7 +2061,7 @@ declare namespace dou2d {
         cleanBeforeRender(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 位图渲染节点
      * @author wizardc
@@ -2115,7 +2115,7 @@ declare namespace dou2d {
         cleanBeforeRender(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 文本渲染节点
      * @author wizardc
@@ -2216,7 +2216,7 @@ declare namespace dou2d {
         fontFamily?: string;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     let CAPS_STYLES: string[];
     let JOINT_STYLES: string[];
     /**
@@ -2278,7 +2278,7 @@ declare namespace dou2d {
         clean(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 组渲染节点, 用于组合多个渲染节点
      * @author wizardc
@@ -2294,7 +2294,7 @@ declare namespace dou2d {
         cleanBeforeRender(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 2D路径
      * @author wizardc
@@ -2407,7 +2407,7 @@ declare namespace dou2d {
         private arcToBezier;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 填充路径
      * @author wizardc
@@ -2424,7 +2424,7 @@ declare namespace dou2d {
         constructor();
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 线条路径
      * @author wizardc
@@ -2468,7 +2468,7 @@ declare namespace dou2d {
         constructor();
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 渐变填充路径
      * @author wizardc
@@ -2482,7 +2482,7 @@ declare namespace dou2d {
         constructor();
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 渲染缓冲
      * @author wizardc
@@ -2586,7 +2586,7 @@ declare namespace dou2d {
         destroy(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 指定渲染目标
      * * 可以是帧缓冲或者屏幕缓冲
@@ -2628,7 +2628,7 @@ declare namespace dou2d {
         dispose(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 渲染上下文
      * @author wizardcs
@@ -2845,7 +2845,7 @@ declare namespace dou2d {
         destroy(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 绘制数据接口
      * @author wizardc
@@ -2866,7 +2866,7 @@ declare namespace dou2d {
         y: number;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 绘制指令管理类
      * @author wizardc
@@ -2930,7 +2930,7 @@ declare namespace dou2d {
         clear(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 顶点数据管理类
      * ```
@@ -2995,7 +2995,7 @@ declare namespace dou2d {
         clear(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 显示列表
      * @author wizardc
@@ -3044,7 +3044,7 @@ declare namespace dou2d {
         changeSurfaceSize(): void;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 画布渲染缓冲
      * @author wizardc
@@ -3099,7 +3099,7 @@ interface CanvasRenderingContext2D {
     $offsetX: number;
     $offsetY: number;
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 画布渲染类
      * @author wizardc
@@ -3112,7 +3112,7 @@ declare namespace dou2d {
         private renderPath;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 核心渲染类
      * @author wizardc
@@ -3208,7 +3208,7 @@ declare namespace dou2d {
         calculateStageSize(scaleMode: string, screenWidth: number, screenHeight: number, contentWidth: number, contentHeight: number): StageDisplaySize;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 着色器库
      * @author GLSLPacker
@@ -3222,7 +3222,7 @@ declare namespace dou2d {
         const texture_fs = "precision lowp float;\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nuniform sampler2D uSampler;\nvoid main(){\ngl_FragColor=texture2D(uSampler,vTextureCoord)*vColor;\n}";
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 着色器程序
      * @author wizardc
@@ -3245,7 +3245,7 @@ declare namespace dou2d {
         private extractUniforms;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 着色器属性
      * @author wizardc
@@ -3262,7 +3262,7 @@ declare namespace dou2d {
         private initFormat;
     }
 }
-declare namespace dou2d {
+declare namespace dou2d.rendering {
     /**
      * 着色器参数
      * @author wizardc
@@ -3521,8 +3521,8 @@ declare namespace dou2d {
         $propertyMap: Object;
         $inputEnabled: boolean;
         protected _inputController: input.InputController;
-        protected _textNode: TextNode;
-        protected _graphicsNode: GraphicsNode;
+        protected _textNode: rendering.TextNode;
+        protected _graphicsNode: rendering.GraphicsNode;
         protected _isFlow: boolean;
         protected _textArr: ITextElement[];
         protected _linesArr: ILineElement[];
@@ -3916,14 +3916,16 @@ declare namespace dou2d.touch {
     }
 }
 declare namespace dou2d {
-    function $updateCallLater(): void;
     /**
      * 注册一个下次渲染之前执行的方法
      */
     function callLater(method: Function, thisObj: any, ...args: any[]): void;
+    namespace sys {
+        function updateCallLater(): void;
+        function callLater(method: Function, thisObj: any, ...args: any[]): void;
+    }
 }
 declare namespace dou2d {
-    function $updateTimeout(passedTime: number): void;
     /**
      * 添加超时计时器
      */
@@ -3932,9 +3934,13 @@ declare namespace dou2d {
      * 移除超时计时器
      */
     function clearTimeout(key: number): void;
+    namespace sys {
+        function updateTimeout(passedTime: number): void;
+        function setTimeout(method: Function, thisObj: any, delay: number, ...args: any[]): number;
+        function clearTimeout(key: number): void;
+    }
 }
 declare namespace dou2d {
-    function $updateInterval(passedTime: number): void;
     /**
      * 添加重复计时器
      */
@@ -3943,6 +3949,11 @@ declare namespace dou2d {
      * 移除重复计时器
      */
     function clearInterval(key: number): void;
+    namespace sys {
+        function updateInterval(passedTime: number): void;
+        function setInterval(method: Function, thisObj: any, delay: number, ...args: any[]): number;
+        function clearInterval(key: number): void;
+    }
 }
 declare namespace dou2d {
     /**
@@ -4004,7 +4015,7 @@ declare namespace dou2d {
         function createCanvas(width?: number, height?: number): HTMLCanvasElement;
         function get2DContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D;
         function getWebGLContext(canvas: HTMLCanvasElement, antialias?: boolean, stencil?: boolean): WebGLRenderingContext;
-        function resizeContext(renderContext: RenderContext, width: number, height: number, useMaxSize?: boolean): void;
+        function resizeContext(renderContext: rendering.RenderContext, width: number, height: number, useMaxSize?: boolean): void;
         /**
          * 根据样式测量指定样式文本的宽度
          */
@@ -4021,7 +4032,8 @@ declare namespace dou2d {
          * 获取样式属性的名称, 兼容多个浏览器
          */
         function getStyleName(name: string, element?: any): string;
-        function getFontString(node: TextNode, format: TextFormat): string;
+        function getFontString(node: rendering.TextNode, format: rendering.TextFormat): string;
+        function toColorString(value: number): string;
     }
 }
 declare namespace dou2d {
@@ -4030,8 +4042,8 @@ declare namespace dou2d {
      * @author wizardc
      */
     namespace WebGLUtil {
-        function createTexture(renderContext: RenderContext, source: TexImageSource): WebGLTexture;
-        function createTexture(renderContext: RenderContext, width: number, height: number, data: any): WebGLTexture;
+        function createTexture(renderContext: rendering.RenderContext, source: TexImageSource): WebGLTexture;
+        function createTexture(renderContext: rendering.RenderContext, width: number, height: number, data: any): WebGLTexture;
         function deleteTexture(texture: WebGLTexture): void;
         function premultiplyTint(tint: number, alpha: number): number;
     }
@@ -4094,12 +4106,6 @@ declare namespace dou2d {
         let boundingClientHeight: number;
         function init(): void;
     }
-}
-declare namespace dou2d {
-    /**
-     * 转换数字为颜色字符串
-     */
-    function toColorString(value: number): string;
 }
 declare namespace dou2d {
     /**

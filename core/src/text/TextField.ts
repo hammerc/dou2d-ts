@@ -27,8 +27,8 @@ namespace dou2d {
 
         protected _inputController: input.InputController;
 
-        protected _textNode: TextNode;
-        protected _graphicsNode: GraphicsNode;
+        protected _textNode: rendering.TextNode;
+        protected _graphicsNode: rendering.GraphicsNode;
 
         protected _isFlow: boolean = false;
         protected _textArr: ITextElement[];
@@ -37,7 +37,7 @@ namespace dou2d {
 
         public constructor() {
             super();
-            let textNode = new TextNode();
+            let textNode = new rendering.TextNode();
             textNode.fontFamily = TextField.default_fontFamily;
             this._textNode = textNode;
             this.$renderNode = textNode;
@@ -97,16 +97,16 @@ namespace dou2d {
 
         public $setFontFamily(value: string): boolean {
             let values = this.$propertyMap;
-            if (values[TextKeys.fontFamily] == value) {
+            if (values[sys.TextKeys.fontFamily] == value) {
                 return false;
             }
-            values[TextKeys.fontFamily] = value;
+            values[sys.TextKeys.fontFamily] = value;
             this.invalidateFontString();
             return true;
         }
 
         public $getFontFamily(): string {
-            return this.$propertyMap[TextKeys.fontFamily];
+            return this.$propertyMap[sys.TextKeys.fontFamily];
         }
 
         /**
@@ -121,16 +121,16 @@ namespace dou2d {
 
         public $setSize(value: number): boolean {
             let values = this.$propertyMap;
-            if (values[TextKeys.fontSize] == value) {
+            if (values[sys.TextKeys.fontSize] == value) {
                 return false;
             }
-            values[TextKeys.fontSize] = value;
+            values[sys.TextKeys.fontSize] = value;
             this.invalidateFontString();
             return true;
         }
 
         public $getSize(): number {
-            return this.$propertyMap[TextKeys.fontSize];
+            return this.$propertyMap[sys.TextKeys.fontSize];
         }
 
         /**
@@ -145,16 +145,16 @@ namespace dou2d {
 
         public $setBold(value: boolean): boolean {
             let values = this.$propertyMap;
-            if (value == values[TextKeys.bold]) {
+            if (value == values[sys.TextKeys.bold]) {
                 return false;
             }
-            values[TextKeys.bold] = value;
+            values[sys.TextKeys.bold] = value;
             this.invalidateFontString();
             return true;
         }
 
         public $getBold(): boolean {
-            return this.$propertyMap[TextKeys.bold];
+            return this.$propertyMap[sys.TextKeys.bold];
         }
 
         /**
@@ -169,16 +169,16 @@ namespace dou2d {
 
         public $setItalic(value: boolean): boolean {
             let values = this.$propertyMap;
-            if (value == values[TextKeys.italic]) {
+            if (value == values[sys.TextKeys.italic]) {
                 return false;
             }
-            values[TextKeys.italic] = value;
+            values[sys.TextKeys.italic] = value;
             this.invalidateFontString();
             return true;
         }
 
         public $getItalic(): boolean {
-            return this.$propertyMap[TextKeys.italic];
+            return this.$propertyMap[sys.TextKeys.italic];
         }
 
         /**
@@ -193,16 +193,16 @@ namespace dou2d {
 
         public $setTextAlign(value: HorizontalAlign): boolean {
             let values = this.$propertyMap;
-            if (values[TextKeys.textAlign] == value) {
+            if (values[sys.TextKeys.textAlign] == value) {
                 return false;
             }
-            values[TextKeys.textAlign] = value;
+            values[sys.TextKeys.textAlign] = value;
             this.$invalidateTextField();
             return true;
         }
 
         public $getTextAlign(): HorizontalAlign {
-            return this.$propertyMap[TextKeys.textAlign];
+            return this.$propertyMap[sys.TextKeys.textAlign];
         }
 
         /**
@@ -217,16 +217,16 @@ namespace dou2d {
 
         public $setVerticalAlign(value: VerticalAlign): boolean {
             let values = this.$propertyMap;
-            if (values[TextKeys.verticalAlign] == value) {
+            if (values[sys.TextKeys.verticalAlign] == value) {
                 return false;
             }
-            values[TextKeys.verticalAlign] = value;
+            values[sys.TextKeys.verticalAlign] = value;
             this.$invalidateTextField();
             return true;
         }
 
         public $getVerticalAlign(): VerticalAlign {
-            return this.$propertyMap[TextKeys.verticalAlign];
+            return this.$propertyMap[sys.TextKeys.verticalAlign];
         }
 
         /**
@@ -241,16 +241,16 @@ namespace dou2d {
 
         public $setLineSpacing(value: number): boolean {
             let values = this.$propertyMap;
-            if (values[TextKeys.lineSpacing] == value) {
+            if (values[sys.TextKeys.lineSpacing] == value) {
                 return false;
             }
-            values[TextKeys.lineSpacing] = value;
+            values[sys.TextKeys.lineSpacing] = value;
             this.$invalidateTextField();
             return true;
         }
 
         public $getLineSpacing(): number {
-            return this.$propertyMap[TextKeys.lineSpacing];
+            return this.$propertyMap[sys.TextKeys.lineSpacing];
         }
 
         /**
@@ -265,19 +265,19 @@ namespace dou2d {
 
         public $setTextColor(value: number): boolean {
             let values = this.$propertyMap;
-            if (values[TextKeys.textColor] == value) {
+            if (values[sys.TextKeys.textColor] == value) {
                 return false;
             }
-            values[TextKeys.textColor] = value;
+            values[sys.TextKeys.textColor] = value;
             if (this._inputController) {
-                this._inputController.setColor(this.$propertyMap[TextKeys.textColor]);
+                this._inputController.setColor(this.$propertyMap[sys.TextKeys.textColor]);
             }
             this.$invalidateTextField();
             return true;
         }
 
         public $getTextColor(): number {
-            return this.$propertyMap[TextKeys.textColor];
+            return this.$propertyMap[sys.TextKeys.textColor];
         }
 
         /**
@@ -292,18 +292,18 @@ namespace dou2d {
 
         public $setWordWrap(value: boolean): void {
             let values = this.$propertyMap;
-            if (value == values[TextKeys.wordWrap]) {
+            if (value == values[sys.TextKeys.wordWrap]) {
                 return;
             }
-            if (values[TextKeys.displayAsPassword]) {
+            if (values[sys.TextKeys.displayAsPassword]) {
                 return;
             }
-            values[TextKeys.wordWrap] = value;
+            values[sys.TextKeys.wordWrap] = value;
             this.$invalidateTextField();
         }
 
         public $getWordWrap(): boolean {
-            return this.$propertyMap[TextKeys.wordWrap];
+            return this.$propertyMap[sys.TextKeys.wordWrap];
         }
 
         /**
@@ -318,14 +318,14 @@ namespace dou2d {
 
         public $setType(value: TextFieldType): boolean {
             let values = this.$propertyMap;
-            if (values[TextKeys.type] != value) {
-                values[TextKeys.type] = value;
+            if (values[sys.TextKeys.type] != value) {
+                values[sys.TextKeys.type] = value;
                 if (value == TextFieldType.input) {
                     // input 如果没有设置过宽高则设置默认值为 100, 30
-                    if (isNaN(values[TextKeys.textFieldWidth])) {
+                    if (isNaN(values[sys.TextKeys.textFieldWidth])) {
                         this.$setWidth(100);
                     }
-                    if (isNaN(values[TextKeys.textFieldHeight])) {
+                    if (isNaN(values[sys.TextKeys.textFieldHeight])) {
                         this.$setHeight(30);
                     }
                     this.$setTouchEnabled(true);
@@ -352,7 +352,7 @@ namespace dou2d {
         }
 
         public $getType(): TextFieldType {
-            return this.$propertyMap[TextKeys.type];
+            return this.$propertyMap[sys.TextKeys.type];
         }
 
         /**
@@ -366,15 +366,15 @@ namespace dou2d {
         }
 
         public $setInputType(value: string): boolean {
-            if (this.$propertyMap[TextKeys.inputType] == value) {
+            if (this.$propertyMap[sys.TextKeys.inputType] == value) {
                 return false;
             }
-            this.$propertyMap[TextKeys.inputType] = value;
+            this.$propertyMap[sys.TextKeys.inputType] = value;
             return true;
         }
 
         public $getInputType(): string {
-            return this.$propertyMap[TextKeys.inputType];
+            return this.$propertyMap[sys.TextKeys.inputType];
         }
 
         /**
@@ -390,7 +390,7 @@ namespace dou2d {
         public $setText(value: string): boolean {
             let result = this.$setBaseText(value);
             if (this._inputController) {
-                this._inputController.setText(this.$propertyMap[TextKeys.text]);
+                this._inputController.setText(this.$propertyMap[sys.TextKeys.text]);
             }
             return result;
         }
@@ -398,11 +398,11 @@ namespace dou2d {
         public $setBaseText(value: string): boolean {
             this._isFlow = false;
             let values = this.$propertyMap;
-            if (values[TextKeys.text] != value) {
+            if (values[sys.TextKeys.text] != value) {
                 this.$invalidateTextField();
-                values[TextKeys.text] = value;
+                values[sys.TextKeys.text] = value;
                 let text = "";
-                if (values[TextKeys.displayAsPassword]) {
+                if (values[sys.TextKeys.displayAsPassword]) {
                     text = this.changeToPassText(value);
                 }
                 else {
@@ -415,10 +415,10 @@ namespace dou2d {
         }
 
         public $getText(): string {
-            if (this.$propertyMap[TextKeys.type] == TextFieldType.input) {
+            if (this.$propertyMap[sys.TextKeys.type] == TextFieldType.input) {
                 return this._inputController.getText();
             }
-            return this.$propertyMap[TextKeys.text];
+            return this.$propertyMap[sys.TextKeys.text];
         }
 
         /**
@@ -433,15 +433,15 @@ namespace dou2d {
 
         public $setDisplayAsPassword(value: boolean): boolean {
             let values = this.$propertyMap;
-            if (values[TextKeys.displayAsPassword] != value) {
-                values[TextKeys.displayAsPassword] = value;
+            if (values[sys.TextKeys.displayAsPassword] != value) {
+                values[sys.TextKeys.displayAsPassword] = value;
                 this.$invalidateTextField();
                 let text = "";
                 if (value) {
-                    text = this.changeToPassText(values[TextKeys.text]);
+                    text = this.changeToPassText(values[sys.TextKeys.text]);
                 }
                 else {
-                    text = values[TextKeys.text];
+                    text = values[sys.TextKeys.text];
                 }
                 this.setMiddleStyle([<ITextElement>{ text: text }]);
                 return true;
@@ -450,7 +450,7 @@ namespace dou2d {
         }
 
         public $getDisplayAsPassword(): boolean {
-            return this.$propertyMap[TextKeys.displayAsPassword];
+            return this.$propertyMap[sys.TextKeys.displayAsPassword];
         }
 
         /**
@@ -465,17 +465,17 @@ namespace dou2d {
 
         public $setStrokeColor(value: number): boolean {
             let values = this.$propertyMap;
-            if (values[TextKeys.strokeColor] != value) {
+            if (values[sys.TextKeys.strokeColor] != value) {
                 this.$invalidateTextField();
-                values[TextKeys.strokeColor] = value;
-                values[TextKeys.strokeColorString] = toColorString(value);
+                values[sys.TextKeys.strokeColor] = value;
+                values[sys.TextKeys.strokeColorString] = HtmlUtil.toColorString(value);
                 return true;
             }
             return false;
         }
 
         public $getStrokeColor(): number {
-            return this.$propertyMap[TextKeys.strokeColor];
+            return this.$propertyMap[sys.TextKeys.strokeColor];
         }
 
         /**
@@ -489,16 +489,16 @@ namespace dou2d {
         }
 
         public $setStroke(value: number): boolean {
-            if (this.$propertyMap[TextKeys.stroke] != value) {
+            if (this.$propertyMap[sys.TextKeys.stroke] != value) {
                 this.$invalidateTextField();
-                this.$propertyMap[TextKeys.stroke] = value;
+                this.$propertyMap[sys.TextKeys.stroke] = value;
                 return true;
             }
             return false;
         }
 
         public $getStroke(): number {
-            return this.$propertyMap[TextKeys.stroke];
+            return this.$propertyMap[sys.TextKeys.stroke];
         }
 
         /**
@@ -512,15 +512,15 @@ namespace dou2d {
         }
 
         public $setMaxChars(value: number): boolean {
-            if (this.$propertyMap[TextKeys.maxChars] != value) {
-                this.$propertyMap[TextKeys.maxChars] = value;
+            if (this.$propertyMap[sys.TextKeys.maxChars] != value) {
+                this.$propertyMap[sys.TextKeys.maxChars] = value;
                 return true;
             }
             return false;
         }
 
         public $getMaxChars(): number {
-            return this.$propertyMap[TextKeys.maxChars];
+            return this.$propertyMap[sys.TextKeys.maxChars];
         }
 
         /**
@@ -535,16 +535,16 @@ namespace dou2d {
 
         public $setScrollV(value: number): boolean {
             value = Math.max(value, 1);
-            if (value == this.$propertyMap[TextKeys.scrollV]) {
+            if (value == this.$propertyMap[sys.TextKeys.scrollV]) {
                 return false;
             }
-            this.$propertyMap[TextKeys.scrollV] = value;
+            this.$propertyMap[sys.TextKeys.scrollV] = value;
             this.$invalidateTextField();
             return true;
         }
 
         public $getScrollV(): number {
-            return Math.min(Math.max(this.$propertyMap[TextKeys.scrollV], 1), this.maxScrollV);
+            return Math.min(Math.max(this.$propertyMap[sys.TextKeys.scrollV], 1), this.maxScrollV);
         }
 
         /**
@@ -556,7 +556,7 @@ namespace dou2d {
 
         public $getMaxScrollV(): number {
             this.$getLinesArr();
-            return Math.max(this.$propertyMap[TextKeys.numLines] - TextFieldUtil.getScrollNum(this) + 1, 1);
+            return Math.max(this.$propertyMap[sys.TextKeys.numLines] - TextFieldUtil.getScrollNum(this) + 1, 1);
         }
 
         /**
@@ -564,7 +564,7 @@ namespace dou2d {
          */
         public get numLines(): number {
             this.$getLinesArr();
-            return this.$propertyMap[TextKeys.numLines];
+            return this.$propertyMap[sys.TextKeys.numLines];
         }
 
         /**
@@ -578,16 +578,16 @@ namespace dou2d {
         }
 
         public $setMultiline(value: boolean): boolean {
-            if (this.$propertyMap[TextKeys.multiline] == value) {
+            if (this.$propertyMap[sys.TextKeys.multiline] == value) {
                 return false;
             }
-            this.$propertyMap[TextKeys.multiline] = value;
+            this.$propertyMap[sys.TextKeys.multiline] = value;
             this.$invalidateTextField();
             return true;
         }
 
         public $getMultiline(): boolean {
-            return this.$propertyMap[TextKeys.multiline];
+            return this.$propertyMap[sys.TextKeys.multiline];
         }
 
         /**
@@ -607,8 +607,8 @@ namespace dou2d {
         public $setRestrict(value: string): boolean {
             let values = this.$propertyMap;
             if (value == null) {
-                values[TextKeys.restrictAnd] = null;
-                values[TextKeys.restrictNot] = null;
+                values[sys.TextKeys.restrictAnd] = null;
+                values[sys.TextKeys.restrictNot] = null;
                 return false;
             }
             let index = -1;
@@ -628,16 +628,16 @@ namespace dou2d {
                 }
             }
             if (index == 0) {
-                values[TextKeys.restrictAnd] = null;
-                values[TextKeys.restrictNot] = value.substring(index + 1);
+                values[sys.TextKeys.restrictAnd] = null;
+                values[sys.TextKeys.restrictNot] = value.substring(index + 1);
             }
             else if (index > 0) {
-                values[TextKeys.restrictAnd] = value.substring(0, index);
-                values[TextKeys.restrictNot] = value.substring(index + 1);
+                values[sys.TextKeys.restrictAnd] = value.substring(0, index);
+                values[sys.TextKeys.restrictNot] = value.substring(index + 1);
             }
             else {
-                values[TextKeys.restrictAnd] = value;
-                values[TextKeys.restrictNot] = null;
+                values[sys.TextKeys.restrictAnd] = value;
+                values[sys.TextKeys.restrictNot] = null;
             }
             return true;
         }
@@ -645,14 +645,14 @@ namespace dou2d {
         public $getRestrict(): string {
             let values = this.$propertyMap;
             let str: string;
-            if (values[TextKeys.restrictAnd] != null) {
-                str = values[TextKeys.restrictAnd];
+            if (values[sys.TextKeys.restrictAnd] != null) {
+                str = values[sys.TextKeys.restrictAnd];
             }
-            if (values[TextKeys.restrictNot] != null) {
+            if (values[sys.TextKeys.restrictNot] != null) {
                 if (str == null) {
                     str = "";
                 }
-                str += "^" + values[TextKeys.restrictNot];
+                str += "^" + values[sys.TextKeys.restrictNot];
             }
             return str;
         }
@@ -668,16 +668,16 @@ namespace dou2d {
         }
 
         public $setBorder(value: boolean): boolean {
-            if (this.$propertyMap[TextKeys.border] == value) {
+            if (this.$propertyMap[sys.TextKeys.border] == value) {
                 return false;
             }
-            this.$propertyMap[TextKeys.border] = value;
+            this.$propertyMap[sys.TextKeys.border] = value;
             this.$invalidateTextField();
             return true;
         }
 
         public $getBorder(): boolean {
-            return this.$propertyMap[TextKeys.border];
+            return this.$propertyMap[sys.TextKeys.border];
         }
 
         /**
@@ -691,16 +691,16 @@ namespace dou2d {
         }
 
         public $setBorderColor(value: number): boolean {
-            if (this.$propertyMap[TextKeys.borderColor] == value) {
+            if (this.$propertyMap[sys.TextKeys.borderColor] == value) {
                 return false;
             }
-            this.$propertyMap[TextKeys.borderColor] = value;
+            this.$propertyMap[sys.TextKeys.borderColor] = value;
             this.$invalidateTextField();
             return true;
         }
 
         public $getBorderColor(): number {
-            return this.$propertyMap[TextKeys.borderColor];
+            return this.$propertyMap[sys.TextKeys.borderColor];
         }
 
         /**
@@ -714,16 +714,16 @@ namespace dou2d {
         }
 
         public $setBackground(value: boolean): boolean {
-            if (this.$propertyMap[TextKeys.background] == value) {
+            if (this.$propertyMap[sys.TextKeys.background] == value) {
                 return false;
             }
-            this.$propertyMap[TextKeys.background] = value;
+            this.$propertyMap[sys.TextKeys.background] = value;
             this.$invalidateTextField();
             return true;
         }
 
         public $getBackground(): boolean {
-            return this.$propertyMap[TextKeys.background];
+            return this.$propertyMap[sys.TextKeys.background];
         }
 
         /**
@@ -737,16 +737,16 @@ namespace dou2d {
         }
 
         public $setBackgroundColor(value: number): boolean {
-            if (this.$propertyMap[TextKeys.backgroundColor] == value) {
+            if (this.$propertyMap[sys.TextKeys.backgroundColor] == value) {
                 return false;
             }
-            this.$propertyMap[TextKeys.backgroundColor] = value;
+            this.$propertyMap[sys.TextKeys.backgroundColor] = value;
             this.$invalidateTextField();
             return true;
         }
 
         public $getBackgroundColor(): number {
-            return this.$propertyMap[TextKeys.backgroundColor];
+            return this.$propertyMap[sys.TextKeys.backgroundColor];
         }
 
         /**
@@ -769,11 +769,11 @@ namespace dou2d {
                 let element = textArr[i];
                 text += element.text;
             }
-            if (this.$propertyMap[TextKeys.displayAsPassword]) {
+            if (this.$propertyMap[sys.TextKeys.displayAsPassword]) {
                 this.$setBaseText(text);
             }
             else {
-                this.$propertyMap[TextKeys.text] = text;
+                this.$propertyMap[sys.TextKeys.text] = text;
                 this.setMiddleStyle(textArr);
             }
             return true;
@@ -788,7 +788,7 @@ namespace dou2d {
          */
         public get textWidth(): number {
             this.$getLinesArr();
-            return this.$propertyMap[TextKeys.textWidth];
+            return this.$propertyMap[sys.TextKeys.textWidth];
         }
 
         /**
@@ -802,16 +802,16 @@ namespace dou2d {
         public $setWidth(value: number): boolean {
             let values = this.$propertyMap;
             if (isNaN(value)) {
-                if (isNaN(values[TextKeys.textFieldWidth])) {
+                if (isNaN(values[sys.TextKeys.textFieldWidth])) {
                     return false;
                 }
-                values[TextKeys.textFieldWidth] = NaN;
+                values[sys.TextKeys.textFieldWidth] = NaN;
             }
             else {
-                if (values[TextKeys.textFieldWidth] == value) {
+                if (values[sys.TextKeys.textFieldWidth] == value) {
                     return false;
                 }
-                values[TextKeys.textFieldWidth] = value;
+                values[sys.TextKeys.textFieldWidth] = value;
             }
             value = +value;
             if (value < 0) {
@@ -823,22 +823,22 @@ namespace dou2d {
 
         public $getWidth(): number {
             let values = this.$propertyMap;
-            return isNaN(values[TextKeys.textFieldWidth]) ? this.$getContentBounds().width : values[TextKeys.textFieldWidth];
+            return isNaN(values[sys.TextKeys.textFieldWidth]) ? this.$getContentBounds().width : values[sys.TextKeys.textFieldWidth];
         }
 
         public $setHeight(value: number): boolean {
             let values = this.$propertyMap;
             if (isNaN(value)) {
-                if (isNaN(values[TextKeys.textFieldHeight])) {
+                if (isNaN(values[sys.TextKeys.textFieldHeight])) {
                     return false;
                 }
-                values[TextKeys.textFieldHeight] = NaN;
+                values[sys.TextKeys.textFieldHeight] = NaN;
             }
             else {
-                if (values[TextKeys.textFieldHeight] == value) {
+                if (values[sys.TextKeys.textFieldHeight] == value) {
                     return false;
                 }
-                values[TextKeys.textFieldHeight] = value;
+                values[sys.TextKeys.textFieldHeight] = value;
             }
             value = +value;
             if (value < 0) {
@@ -850,21 +850,21 @@ namespace dou2d {
 
         public $getHeight(): number {
             let values = this.$propertyMap;
-            return isNaN(values[TextKeys.textFieldHeight]) ? this.$getContentBounds().height : values[TextKeys.textFieldHeight];
+            return isNaN(values[sys.TextKeys.textFieldHeight]) ? this.$getContentBounds().height : values[sys.TextKeys.textFieldHeight];
         }
 
         public $getLineHeight(): number {
-            return this.$propertyMap[TextKeys.lineSpacing] + this.$propertyMap[TextKeys.fontSize];
+            return this.$propertyMap[sys.TextKeys.lineSpacing] + this.$propertyMap[sys.TextKeys.fontSize];
         }
 
         private invalidateFontString(): void {
-            this.$propertyMap[TextKeys.fontStringChanged] = true;
+            this.$propertyMap[sys.TextKeys.fontStringChanged] = true;
             this.$invalidateTextField();
         }
 
         public $invalidateTextField(): void {
             this.$renderDirty = true;
-            this.$propertyMap[TextKeys.textLinesChanged] = true;
+            this.$propertyMap[sys.TextKeys.textLinesChanged] = true;
             let p = this._parent;
             if (p && !p.$cacheDirty) {
                 p.$cacheDirty = true;
@@ -881,11 +881,11 @@ namespace dou2d {
             let bounds = this.$getContentBounds();
             let tmpBounds = dou.recyclable(Rectangle);
             tmpBounds.copy(bounds);
-            if (this.$propertyMap[TextKeys.border]) {
+            if (this.$propertyMap[sys.TextKeys.border]) {
                 tmpBounds.width += 2;
                 tmpBounds.height += 2;
             }
-            let _strokeDouble = this.$propertyMap[TextKeys.stroke] * 2;
+            let _strokeDouble = this.$propertyMap[sys.TextKeys.stroke] * 2;
             if (_strokeDouble > 0) {
                 tmpBounds.width += _strokeDouble * 2;
                 tmpBounds.height += _strokeDouble * 2;
@@ -899,7 +899,7 @@ namespace dou2d {
         }
 
         private changeToPassText(text: string): string {
-            if (this.$propertyMap[TextKeys.displayAsPassword]) {
+            if (this.$propertyMap[sys.TextKeys.displayAsPassword]) {
                 let passText: string = "";
                 for (let i: number = 0, num = text.length; i < num; i++) {
                     switch (text.charAt(i)) {
@@ -918,7 +918,7 @@ namespace dou2d {
         }
 
         private setMiddleStyle(textArr: ITextElement[]): void {
-            this.$propertyMap[TextKeys.textLinesChanged] = true;
+            this.$propertyMap[sys.TextKeys.textLinesChanged] = true;
             this._textArr = textArr;
             this.$invalidateTextField();
         }
@@ -943,12 +943,12 @@ namespace dou2d {
          * 添加一段带样式的文本
          */
         public appendElement(element: ITextElement): void {
-            let text = this.$propertyMap[TextKeys.text] + element.text;
-            if (this.$propertyMap[TextKeys.displayAsPassword]) {
+            let text = this.$propertyMap[sys.TextKeys.text] + element.text;
+            if (this.$propertyMap[sys.TextKeys.displayAsPassword]) {
                 this.$setBaseText(text);
             }
             else {
-                this.$propertyMap[TextKeys.text] = text;
+                this.$propertyMap[sys.TextKeys.text] = text;
                 this._textArr.push(element);
                 this.setMiddleStyle(this._textArr);
             }
@@ -956,18 +956,18 @@ namespace dou2d {
 
         public $getLinesArr(): ILineElement[] {
             let values = this.$propertyMap;
-            if (!values[TextKeys.textLinesChanged]) {
+            if (!values[sys.TextKeys.textLinesChanged]) {
                 return this._linesArr;
             }
-            values[TextKeys.textLinesChanged] = false;
+            values[sys.TextKeys.textLinesChanged] = false;
             let text2Arr = this._textArr;
             this._linesArr.length = 0;
-            values[TextKeys.textHeight] = 0;
-            values[TextKeys.textWidth] = 0;
-            let textFieldWidth: number = values[TextKeys.textFieldWidth];
+            values[sys.TextKeys.textHeight] = 0;
+            values[sys.TextKeys.textWidth] = 0;
+            let textFieldWidth: number = values[sys.TextKeys.textFieldWidth];
             // 宽度被设置为 0
             if (!isNaN(textFieldWidth) && textFieldWidth == 0) {
-                values[TextKeys.numLines] = 0;
+                values[sys.TextKeys.numLines] = 0;
                 return [{ width: 0, height: 0, charNum: 0, elements: [], hasNextLine: false }];
             }
             let linesArr = this._linesArr;
@@ -984,8 +984,8 @@ namespace dou2d {
                         lineElement.width = lineW;
                         lineElement.height = lineH;
                         lineElement.charNum = lineCharNum;
-                        values[TextKeys.textWidth] = Math.max(values[TextKeys.textWidth], lineW);
-                        values[TextKeys.textHeight] += lineH;
+                        values[sys.TextKeys.textWidth] = Math.max(values[sys.TextKeys.textWidth], lineW);
+                        values[sys.TextKeys.textHeight] += lineH;
                     }
                     continue;
                 }
@@ -1000,11 +1000,11 @@ namespace dou2d {
                         lineH = 0;
                         lineCharNum = 0;
                     }
-                    if (values[TextKeys.type] == TextFieldType.input) {
-                        lineH = values[TextKeys.fontSize];
+                    if (values[sys.TextKeys.type] == TextFieldType.input) {
+                        lineH = values[sys.TextKeys.fontSize];
                     }
                     else {
-                        lineH = Math.max(lineH, element.style.size || values[TextKeys.fontSize]);
+                        lineH = Math.max(lineH, element.style.size || values[sys.TextKeys.fontSize]);
                     }
                     let isNextLine = true;
                     if (textArr[j] == "") {
@@ -1046,7 +1046,7 @@ namespace dou2d {
                                 let ww = 0;
                                 let word = textArr[j];
                                 let words: string[];
-                                if (values[TextKeys.wordWrap]) {
+                                if (values[sys.TextKeys.wordWrap]) {
                                     words = word.split(SplitRegex);
                                 }
                                 else {
@@ -1151,8 +1151,8 @@ namespace dou2d {
                         lineElement.width = lineW;
                         lineElement.height = lineH;
                         lineElement.charNum = lineCharNum;
-                        values[TextKeys.textWidth] = Math.max(values[TextKeys.textWidth], lineW);
-                        values[TextKeys.textHeight] += lineH;
+                        values[sys.TextKeys.textWidth] = Math.max(values[sys.TextKeys.textWidth], lineW);
+                        values[sys.TextKeys.textHeight] += lineH;
                         lineCount++;
                     }
                 }
@@ -1160,11 +1160,11 @@ namespace dou2d {
                     lineElement.width = lineW;
                     lineElement.height = lineH;
                     lineElement.charNum = lineCharNum;
-                    values[TextKeys.textWidth] = Math.max(values[TextKeys.textWidth], lineW);
-                    values[TextKeys.textHeight] += lineH;
+                    values[sys.TextKeys.textWidth] = Math.max(values[sys.TextKeys.textWidth], lineW);
+                    values[sys.TextKeys.textHeight] += lineH;
                 }
             }
-            values[TextKeys.numLines] = linesArr.length;
+            values[sys.TextKeys.numLines] = linesArr.length;
             return linesArr;
         }
 
@@ -1181,13 +1181,13 @@ namespace dou2d {
         }
 
         private isInput(): boolean {
-            return this.$propertyMap[TextKeys.type] == TextFieldType.input;
+            return this.$propertyMap[sys.TextKeys.type] == TextFieldType.input;
         }
 
         public $onAddToStage(stage: Stage, nestLevel: number): void {
             super.$onAddToStage(stage, nestLevel);
             this.addEvent();
-            if (this.$propertyMap[TextKeys.type] == TextFieldType.input) {
+            if (this.$propertyMap[sys.TextKeys.type] == TextFieldType.input) {
                 this._inputController.addStageText();
             }
         }
@@ -1195,7 +1195,7 @@ namespace dou2d {
         public $onRemoveFromStage(): void {
             super.$onRemoveFromStage();
             this.removeEvent();
-            if (this.$propertyMap[TextKeys.type] == TextFieldType.input) {
+            if (this.$propertyMap[sys.TextKeys.type] == TextFieldType.input) {
                 this._inputController.removeStageText();
             }
             if (this._textNode) {
@@ -1212,7 +1212,7 @@ namespace dou2d {
         }
 
         private onTapHandler(e: TouchEvent): void {
-            if (this.$propertyMap[TextKeys.type] == TextFieldType.input) {
+            if (this.$propertyMap[sys.TextKeys.type] == TextFieldType.input) {
                 return;
             }
             let ele = TextFieldUtil.getTextElement(this, e.localX, e.localY);
@@ -1235,20 +1235,20 @@ namespace dou2d {
             this.$getLinesArr();
             let w = 0;
             let h = 0;
-            w = !isNaN(this.$propertyMap[TextKeys.textFieldWidth]) ? this.$propertyMap[TextKeys.textFieldWidth] : this.$propertyMap[TextKeys.textWidth];
-            h = !isNaN(this.$propertyMap[TextKeys.textFieldHeight]) ? this.$propertyMap[TextKeys.textFieldHeight] : TextFieldUtil.getTextHeight(this);
+            w = !isNaN(this.$propertyMap[sys.TextKeys.textFieldWidth]) ? this.$propertyMap[sys.TextKeys.textFieldWidth] : this.$propertyMap[sys.TextKeys.textWidth];
+            h = !isNaN(this.$propertyMap[sys.TextKeys.textFieldHeight]) ? this.$propertyMap[sys.TextKeys.textFieldHeight] : TextFieldUtil.getTextHeight(this);
             bounds.set(0, 0, w, h);
         }
 
         public $updateRenderNode(): void {
-            if (this.$propertyMap[TextKeys.type] == TextFieldType.input) {
+            if (this.$propertyMap[sys.TextKeys.type] == TextFieldType.input) {
                 this._inputController.updateProperties();
                 if (this._isTyping) {
                     this.fillBackground();
                     return;
                 }
             }
-            else if (this.$propertyMap[TextKeys.textFieldWidth] == 0) {
+            else if (this.$propertyMap[sys.TextKeys.textFieldWidth] == 0) {
                 let graphics = this._graphicsNode;
                 if (graphics) {
                     graphics.clear();
@@ -1272,30 +1272,30 @@ namespace dou2d {
                 graphics.clear();
             }
             let values = this.$propertyMap;
-            if (values[TextKeys.background] || values[TextKeys.border] || (lines && lines.length > 0)) {
+            if (values[sys.TextKeys.background] || values[sys.TextKeys.border] || (lines && lines.length > 0)) {
                 if (!graphics) {
-                    graphics = this._graphicsNode = new GraphicsNode();
-                    let groupNode = new GroupNode();
+                    graphics = this._graphicsNode = new rendering.GraphicsNode();
+                    let groupNode = new rendering.GroupNode();
                     groupNode.addNode(graphics);
                     groupNode.addNode(this._textNode);
                     this.$renderNode = groupNode;
                 }
-                let fillPath: Path2D;
-                let strokePath: Path2D;
+                let fillPath: rendering.Path2D;
+                let strokePath: rendering.Path2D;
                 // 渲染背景
-                if (values[TextKeys.background]) {
-                    fillPath = graphics.beginFill(values[TextKeys.backgroundColor]);
+                if (values[sys.TextKeys.background]) {
+                    fillPath = graphics.beginFill(values[sys.TextKeys.backgroundColor]);
                     fillPath.drawRect(0, 0, this.$getWidth(), this.$getHeight());
                 }
                 // 渲染边框
-                if (values[TextKeys.border]) {
-                    strokePath = graphics.lineStyle(1, values[TextKeys.borderColor]);
+                if (values[sys.TextKeys.border]) {
+                    strokePath = graphics.lineStyle(1, values[sys.TextKeys.borderColor]);
                     // 1 像素和 3 像素线条宽度的情况, 会向右下角偏移 0.5 像素绘制, 少画一像素宽度, 正好能不超出文本测量边界
                     strokePath.drawRect(0, 0, this.$getWidth() - 1, this.$getHeight() - 1);
                 }
                 // 渲染下划线
                 if (lines && lines.length > 0) {
-                    let textColor = values[TextKeys.textColor];
+                    let textColor = values[sys.TextKeys.textColor];
                     let lastColor = -1;
                     let length = lines.length;
                     for (let i = 0; i < length; i += 4) {
@@ -1329,23 +1329,23 @@ namespace dou2d {
             let node = this._textNode;
             let values = this.$propertyMap;
             // 更新文本样式
-            node.bold = values[TextKeys.bold];
-            node.fontFamily = values[TextKeys.fontFamily] || TextField.default_fontFamily;
-            node.italic = values[TextKeys.italic];
-            node.size = values[TextKeys.fontSize];
-            node.stroke = values[TextKeys.stroke];
-            node.strokeColor = values[TextKeys.strokeColor];
-            node.textColor = values[TextKeys.textColor];
+            node.bold = values[sys.TextKeys.bold];
+            node.fontFamily = values[sys.TextKeys.fontFamily] || TextField.default_fontFamily;
+            node.italic = values[sys.TextKeys.italic];
+            node.size = values[sys.TextKeys.fontSize];
+            node.stroke = values[sys.TextKeys.stroke];
+            node.strokeColor = values[sys.TextKeys.strokeColor];
+            node.textColor = values[sys.TextKeys.textColor];
             // 先算出需要的数值
             let lines = this.$getLinesArr();
-            if (values[TextKeys.textWidth] == 0) {
+            if (values[sys.TextKeys.textWidth] == 0) {
                 return [];
             }
-            let maxWidth = !isNaN(values[TextKeys.textFieldWidth]) ? values[TextKeys.textFieldWidth] : values[TextKeys.textWidth];
+            let maxWidth = !isNaN(values[sys.TextKeys.textFieldWidth]) ? values[sys.TextKeys.textFieldWidth] : values[sys.TextKeys.textWidth];
             let textHeight = TextFieldUtil.getTextHeight(this);
             let drawY = 0;
             let startLine = TextFieldUtil.getStartLine(this);
-            let textFieldHeight = values[TextKeys.textFieldHeight];
+            let textFieldHeight = values[sys.TextKeys.textFieldHeight];
             if (!isNaN(textFieldHeight) && textFieldHeight > textHeight) {
                 let vAlign = TextFieldUtil.getValign(this);
                 drawY += vAlign * (textFieldHeight - textHeight);
@@ -1354,12 +1354,12 @@ namespace dou2d {
             let hAlign = TextFieldUtil.getHalign(this);
             let drawX = 0;
             let underLineData: number[] = [];
-            for (let i = startLine, numLinesLength = values[TextKeys.numLines]; i < numLinesLength; i++) {
+            for (let i = startLine, numLinesLength = values[sys.TextKeys.numLines]; i < numLinesLength; i++) {
                 let line = lines[i];
                 let h = line.height;
                 drawY += h / 2;
                 if (i != startLine) {
-                    if (values[TextKeys.type] == TextFieldType.input && !values[TextKeys.multiline]) {
+                    if (values[sys.TextKeys.type] == TextFieldType.input && !values[sys.TextKeys.multiline]) {
                         break;
                     }
                     if (!isNaN(textFieldHeight) && drawY > textFieldHeight) {
@@ -1369,7 +1369,7 @@ namespace dou2d {
                 drawX = Math.round((maxWidth - line.width) * hAlign);
                 for (let j = 0, elementsLength = line.elements.length; j < elementsLength; j++) {
                     let element: IWTextElement = line.elements[j];
-                    let size = element.style.size || values[TextKeys.fontSize];
+                    let size = element.style.size || values[sys.TextKeys.fontSize];
                     node.drawText(drawX, drawY + (h - size) / 2, element.text, element.style);
                     if (element.style.underline) {
                         underLineData.push(
@@ -1381,7 +1381,7 @@ namespace dou2d {
                     }
                     drawX += element.width;
                 }
-                drawY += h / 2 + values[TextKeys.lineSpacing];
+                drawY += h / 2 + values[sys.TextKeys.lineSpacing];
             }
             return underLineData;
         }

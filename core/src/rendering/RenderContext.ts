@@ -1,4 +1,4 @@
-namespace dou2d {
+namespace dou2d.rendering {
     /**
      * 渲染上下文
      * @author wizardcs
@@ -266,7 +266,7 @@ namespace dou2d {
                     }
                 }
                 if (bitmapData.webGLTexture) {
-                    bitmapData.webGLTexture[SMOOTHING] = true;
+                    bitmapData.webGLTexture[sys.SMOOTHING] = true;
                 }
             }
             return bitmapData.webGLTexture;
@@ -328,7 +328,7 @@ namespace dou2d {
             if (this._vertexData.reachMaxSize()) {
                 this.draw();
             }
-            if (smoothing != undefined && texture[SMOOTHING] != smoothing) {
+            if (smoothing != undefined && texture[sys.SMOOTHING] != smoothing) {
                 this.drawCommand.pushChangeSmoothing(texture, smoothing);
             }
             // 应用 filter, 因为只可能是 colorMatrixFilter, 最后两个参数可不传

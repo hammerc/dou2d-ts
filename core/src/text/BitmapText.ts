@@ -38,7 +38,7 @@ namespace dou2d {
 
         public constructor() {
             super();
-            this.$renderNode = new BitmapNode();
+            this.$renderNode = new rendering.BitmapNode();
             this._textLines = [];
             this._lineHeights = [];
         }
@@ -287,7 +287,7 @@ namespace dou2d {
             }
             let textLinesWidth = this._textLinesWidth;
             let bitmapFont = this._font;
-            let node = <BitmapNode>this.$renderNode;
+            let node = <rendering.BitmapNode>this.$renderNode;
             if (bitmapFont.texture) {
                 node.image = bitmapFont.texture.bitmapData;
             }
