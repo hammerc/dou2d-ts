@@ -2003,6 +2003,17 @@ declare namespace dou2d {
         protected updatePadding(): void;
     }
 }
+declare namespace dou2d {
+    /**
+     * 图片加载器
+     * @author wizardc
+     */
+    class ImageAnalyzer implements dou.IAnalyzer {
+        load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
+        private createTexture;
+        release(data: Texture): boolean;
+    }
+}
 declare namespace dou2d.rendering {
     /**
      * 渲染节点基类

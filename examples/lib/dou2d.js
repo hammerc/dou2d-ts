@@ -4808,6 +4808,40 @@ var dou2d;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
+    /**
+     * 图片加载器
+     * @author wizardc
+     */
+    class ImageAnalyzer {
+        load(url, callback, thisObj) {
+            let loader = new dou.ImageLoader();
+            loader.crossOrigin = true;
+            loader.on(dou.Event.COMPLETE, () => {
+                callback.call(thisObj, url, this.createTexture(loader.data));
+            });
+            loader.on(dou.IOErrorEvent.IO_ERROR, () => {
+                callback.call(thisObj, url);
+            });
+            loader.load(url);
+        }
+        createTexture(img) {
+            let bitmapData = new dou2d.BitmapData(img);
+            let texture = new dou2d.Texture();
+            texture.$setBitmapData(bitmapData);
+            return texture;
+        }
+        release(data) {
+            if (data) {
+                data.dispose();
+                return true;
+            }
+            return false;
+        }
+    }
+    dou2d.ImageAnalyzer = ImageAnalyzer;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
     var rendering;
     (function (rendering) {
         /**

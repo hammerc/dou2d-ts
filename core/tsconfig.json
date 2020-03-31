@@ -113,6 +113,8 @@
     "src/filters/GlowFilter.ts",
     "src/filters/DropShadowFilter.ts",
 
+    "src/load/analyzer/ImageAnalyzer.ts",
+
     "src/rendering/nodes/RenderNode.ts",
     "src/rendering/nodes/NormalBitmapNode.ts",
     "src/rendering/nodes/BitmapNode.ts",
