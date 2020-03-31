@@ -25,6 +25,11 @@ namespace dou2d.sys {
     export let screenAdapter: IScreenAdapter;
 
     /**
+     * 2D 渲染上下文
+     */
+    export let context2D: CanvasRenderingContext2D;
+
+    /**
      * 渲染对象
      */
     export let renderer: rendering.Renderer;
@@ -35,21 +40,11 @@ namespace dou2d.sys {
     export let hitTestBuffer: rendering.RenderBuffer;
 
     /**
-     * 2D 渲染上下文
-     */
-    export let context2D: CanvasRenderingContext2D;
-
-    /**
      * 贴图缩放系数
      * * 为了解决图片和字体发虚所引入的机制, 它底层实现的原理是创建更大的画布去绘制
      * * 之所以出现发虚这个问题, 是因为普通屏幕的 1 个像素点就是 1 个物理像素点, 而高清屏的 1 个像素点是 4 个物理像素点, 仅高清手机屏会出现该问题
      */
     export let textureScaleFactor: number = 1;
-
-    /**
-     * 是否派发 Event.RENDER 事件
-     */
-    export let invalidateRenderFlag: boolean = false;
 
     /**
      * 文本输入管理
@@ -61,8 +56,28 @@ namespace dou2d.sys {
      */
     export let stat: Stat;
 
+    /**
+     * 进入帧回调对象列表
+     */
     export let enterFrameCallBackList: DisplayObject[] = [];
+
+    /**
+     * 仅一次进入帧回调对象列表
+     */
     export let enterFrameOnceCallBackList: DisplayObject[] = [];
+
+    /**
+     * 是否派发 Event.RENDER 事件
+     */
+    export let invalidateRenderFlag: boolean = false;
+
+    /**
+     * 渲染回调对象列表
+     */
     export let renderCallBackList: DisplayObject[] = [];
+
+    /**
+     * 仅一次渲染回调对象列表
+     */
     export let renderOnceCallBackList: DisplayObject[] = [];
 }

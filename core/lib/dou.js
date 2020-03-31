@@ -276,6 +276,10 @@ var dou;
             return this._eventMap.hasOwnProperty(type) && this._eventMap[type].length > 0;
         }
         dispatch(event) {
+            event.$setTarget(this._eventTarget || this);
+            return this.$notify(event);
+        }
+        $notify(event) {
             let map = this._eventMap;
             if (!map.hasOwnProperty(event.type)) {
                 return true;
@@ -284,7 +288,6 @@ var dou;
             if (list.length == 0) {
                 return true;
             }
-            event.$setTarget(this._eventTarget || this);
             let currentIndex = 0;
             for (var i = 0, len = list.length; i < len; i++) {
                 let bin = list[i];

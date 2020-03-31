@@ -1350,7 +1350,7 @@ namespace dou2d {
             for (let i = 0, len = list.length; i < len; i++) {
                 let currentTarget = list[i];
                 event.$setCurrentTarget(currentTarget);
-                currentTarget.dispatch(event);
+                currentTarget.$notify(event);
                 if (event.$isPropagationStopped()) {
                     break;
                 }

@@ -56,7 +56,7 @@ namespace dou2d.rendering {
 
         public constructor(root: DisplayObject) {
             this.root = root;
-            this._isStage = (root instanceof Stage);
+            this._isStage = root instanceof Stage;
             this.$renderNode = new BitmapNode();
             this._offsetMatrix = new Matrix();
         }

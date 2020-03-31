@@ -127,6 +127,7 @@ declare namespace dou {
         protected addEventListener(type: string, listener: Function, thisObj: any, once: boolean): boolean;
         has(type: string): boolean;
         dispatch(event: Event): boolean;
+        $notify(event: Event): boolean;
         off(type: string, listener: Function, thisObj?: any): void;
     }
 }

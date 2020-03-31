@@ -17,6 +17,7 @@ namespace dou2d {
             textureScaleFactor: number;
         };
 
+        private _container: HTMLElement;
         private _touchHandler: touch.TouchHandler;
         private _input: input.InputManager;
 
@@ -39,6 +40,7 @@ namespace dou2d {
                 div.style.height = "100%";
                 document.body.appendChild(div);
             }
+            this._container = div;
 
             let options = this._options = this.readOptions(rootClass, runOptions);
 
@@ -49,6 +51,8 @@ namespace dou2d {
 
             let renderBuffer = new rendering.RenderBuffer(undefined, undefined, true);
             sys.canvas = renderBuffer.surface as HTMLCanvasElement;
+
+            this.attachCanvas(this._container, sys.canvas);
 
             sys.context2D = HtmlUtil.get2DContext(HtmlUtil.createCanvas(2, 2));
 
@@ -66,6 +70,13 @@ namespace dou2d {
             sys.stage.maxTouches = options.maxTouches;
             sys.stage.frameRate = options.frameRate;
             sys.stage.textureScaleFactor = options.textureScaleFactor;
+
+            this.updateScreenSize();
+            window.addEventListener("resize", () => {
+                window.setTimeout(() => {
+                    this.updateScreenSize();
+                }, 300);
+            });
 
             sys.stat = new sys.Stat();
         }
@@ -88,6 +99,20 @@ namespace dou2d {
             };
         }
 
+        private attachCanvas(container: HTMLElement, canvas: HTMLCanvasElement): void {
+            let style = canvas.style;
+            style.cursor = "inherit";
+            style.position = "absolute";
+            style.top = "0";
+            style.bottom = "0";
+            style.left = "0";
+            style.right = "0";
+            container.appendChild(canvas);
+            style = container.style;
+            style.overflow = "hidden";
+            style.position = "absolute";
+        }
+
         private startTicker(): void {
             requestAnimationFrame(onTick);
             function onTick() {
@@ -106,7 +131,7 @@ namespace dou2d {
         public updateScreenSize(): void {
             let canvas = sys.canvas;
             let option = this._options;
-            let screenRect = canvas.getBoundingClientRect();
+            let screenRect = this._container.getBoundingClientRect();
             let top = 0;
             let boundingClientWidth = screenRect.width;
             let boundingClientHeight = screenRect.height;

@@ -13,7 +13,7 @@ declare module dou {
             value: function (type: string, data?: any, bubbles?: boolean, cancelable?: boolean): boolean {
                 let event = dou.recyclable(dou2d.Event2D);
                 event.$initEvent2D(type, data, bubbles, cancelable);
-                let result = this.dispatchEvent(event);
+                let result = this.dispatch(event);
                 event.recycle();
                 return result;
             },

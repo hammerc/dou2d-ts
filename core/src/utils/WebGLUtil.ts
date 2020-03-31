@@ -17,7 +17,7 @@ namespace dou2d {
             texture[sys.glContext] = gl;
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
-            texture[sys.UNPACK_PREMULTIPLY_ALPHA_WEBGL] = true;
+            texture[sys.unpackPremultiplyAlphaWebgl] = true;
             if (typeof sourceOrWidth == "number") {
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sourceOrWidth, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
             }
@@ -33,9 +33,9 @@ namespace dou2d {
 
         export function deleteTexture(texture: WebGLTexture): void {
             // 引擎默认的空白纹理不允许删除
-            if (texture[sys.engine_default_empty_texture]) {
+            if (texture[sys.engineDefaultEmptyTexture]) {
                 if (DEBUG) {
-                    console.warn("Can not delete WebGLTexture: " + sys.engine_default_empty_texture);
+                    console.warn("Can not delete WebGLTexture: " + sys.engineDefaultEmptyTexture);
                 }
                 return;
             }

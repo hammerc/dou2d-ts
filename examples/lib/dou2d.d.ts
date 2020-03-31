@@ -6,15 +6,15 @@ declare namespace dou2d.sys {
     /**
      * 是否预乘 Alpha
      */
-    const UNPACK_PREMULTIPLY_ALPHA_WEBGL = "UNPACK_PREMULTIPLY_ALPHA_WEBGL";
+    const unpackPremultiplyAlphaWebgl = "unpackPremultiplyAlphaWebgl";
     /**
      * 引擎默认空白贴图
      */
-    const engine_default_empty_texture = "engine_default_empty_texture";
+    const engineDefaultEmptyTexture = "engineDefaultEmptyTexture";
     /**
      * 是否抗锯齿
      */
-    const SMOOTHING = "smoothing";
+    const smoothing = "smoothing";
 }
 declare namespace dou2d.sys {
     /**
@@ -44,6 +44,10 @@ declare namespace dou2d.sys {
      */
     let screenAdapter: IScreenAdapter;
     /**
+     * 2D 渲染上下文
+     */
+    let context2D: CanvasRenderingContext2D;
+    /**
      * 渲染对象
      */
     let renderer: rendering.Renderer;
@@ -52,19 +56,11 @@ declare namespace dou2d.sys {
      */
     let hitTestBuffer: rendering.RenderBuffer;
     /**
-     * 2D 渲染上下文
-     */
-    let context2D: CanvasRenderingContext2D;
-    /**
      * 贴图缩放系数
      * * 为了解决图片和字体发虚所引入的机制, 它底层实现的原理是创建更大的画布去绘制
      * * 之所以出现发虚这个问题, 是因为普通屏幕的 1 个像素点就是 1 个物理像素点, 而高清屏的 1 个像素点是 4 个物理像素点, 仅高清手机屏会出现该问题
      */
     let textureScaleFactor: number;
-    /**
-     * 是否派发 Event.RENDER 事件
-     */
-    let invalidateRenderFlag: boolean;
     /**
      * 文本输入管理
      */
@@ -73,9 +69,25 @@ declare namespace dou2d.sys {
      * 性能统计
      */
     let stat: Stat;
+    /**
+     * 进入帧回调对象列表
+     */
     let enterFrameCallBackList: DisplayObject[];
+    /**
+     * 仅一次进入帧回调对象列表
+     */
     let enterFrameOnceCallBackList: DisplayObject[];
+    /**
+     * 是否派发 Event.RENDER 事件
+     */
+    let invalidateRenderFlag: boolean;
+    /**
+     * 渲染回调对象列表
+     */
     let renderCallBackList: DisplayObject[];
+    /**
+     * 仅一次渲染回调对象列表
+     */
     let renderOnceCallBackList: DisplayObject[];
 }
 declare namespace dou2d {
@@ -3060,20 +3072,18 @@ declare namespace dou2d.rendering {
          */
         surface: HTMLCanvasElement;
         /**
-         * 渲染缓冲的宽度，以像素为单位。
-         * @readOnly
+         * 渲染缓冲的宽度
          */
         readonly width: number;
         /**
-         * 渲染缓冲的高度，以像素为单位。
-         * @readOnly
+         * 渲染缓冲的高度
          */
         readonly height: number;
         /**
          * 改变渲染缓冲的大小并清空缓冲区
          * @param width 改变后的宽
          * @param height 改变后的高
-         * @param useMaxSize 若传入true，则将改变后的尺寸与已有尺寸对比，保留较大的尺寸。
+         * @param useMaxSize 若传入 true, 则将改变后的尺寸与已有尺寸对比, 保留较大的尺寸
          */
         resize(width: number, height: number, useMaxSize?: boolean): void;
         /**
@@ -3081,8 +3091,8 @@ declare namespace dou2d.rendering {
          */
         getPixels(x: number, y: number, width?: number, height?: number): number[];
         /**
-         * 转换成base64字符串，如果图片（或者包含的图片）跨域，则返回null
-         * @param type 转换的类型，如: "image/png","image/jpeg"
+         * 转换成 Base64 字符串, 如果图片 (或者包含的图片) 跨域, 则返回 null
+         * @param type 转换的类型, 如: "image/png", "image/jpeg"
          */
         toDataURL(type?: string, encoderOptions?: number): string;
         /**
@@ -4162,6 +4172,7 @@ declare namespace dou2d {
      */
     class Engine {
         private _options;
+        private _container;
         private _touchHandler;
         private _input;
         /**
@@ -4172,6 +4183,7 @@ declare namespace dou2d {
         constructor(rootClass: any, div?: HTMLDivElement, runOptions?: RunOptions);
         private init;
         private readOptions;
+        private attachCanvas;
         private startTicker;
         setContentSize(width: number, height: number): void;
         updateScreenSize(): void;

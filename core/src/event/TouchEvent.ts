@@ -13,7 +13,7 @@ declare module dou {
             value: function (type: string, stageX: number, stageY: number, touchPointID?: number, touchDown?: boolean, bubbles?: boolean, cancelable?: boolean): boolean {
                 let event = dou.recyclable(dou2d.TouchEvent);
                 event.$initTouchEvent(type, stageX, stageY, touchPointID, touchDown, bubbles, cancelable);
-                let result = this.dispatchEvent(event);
+                let result = this.dispatch(event);
                 event.recycle();
                 return result;
             },

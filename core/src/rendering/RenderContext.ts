@@ -266,7 +266,7 @@ namespace dou2d.rendering {
                     }
                 }
                 if (bitmapData.webGLTexture) {
-                    bitmapData.webGLTexture[sys.SMOOTHING] = true;
+                    bitmapData.webGLTexture[sys.smoothing] = true;
                 }
             }
             return bitmapData.webGLTexture;
@@ -328,7 +328,7 @@ namespace dou2d.rendering {
             if (this._vertexData.reachMaxSize()) {
                 this.draw();
             }
-            if (smoothing != undefined && texture[sys.SMOOTHING] != smoothing) {
+            if (smoothing != undefined && texture[sys.smoothing] != smoothing) {
                 this.drawCommand.pushChangeSmoothing(texture, smoothing);
             }
             // 应用 filter, 因为只可能是 colorMatrixFilter, 最后两个参数可不传
@@ -419,7 +419,7 @@ namespace dou2d.rendering {
             for (let i = 0; i < length; i++) {
                 let data = this.drawCommand.drawData[i];
                 offset = this.drawData(data, offset);
-                // 计算draw call
+                // 计算 draw call
                 if (data.type == DrawableType.actBuffer) {
                     this.activatedBuffer = data.buffer;
                 }

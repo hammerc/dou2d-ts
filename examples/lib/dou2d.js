@@ -9,15 +9,15 @@ var dou2d;
         /**
          * 是否预乘 Alpha
          */
-        sys.UNPACK_PREMULTIPLY_ALPHA_WEBGL = "UNPACK_PREMULTIPLY_ALPHA_WEBGL";
+        sys.unpackPremultiplyAlphaWebgl = "unpackPremultiplyAlphaWebgl";
         /**
          * 引擎默认空白贴图
          */
-        sys.engine_default_empty_texture = "engine_default_empty_texture";
+        sys.engineDefaultEmptyTexture = "engineDefaultEmptyTexture";
         /**
          * 是否抗锯齿
          */
-        sys.SMOOTHING = "smoothing";
+        sys.smoothing = "smoothing";
     })(sys = dou2d.sys || (dou2d.sys = {}));
 })(dou2d || (dou2d = {}));
 (function () {
@@ -61,12 +61,24 @@ var dou2d;
          */
         sys.textureScaleFactor = 1;
         /**
+         * 进入帧回调对象列表
+         */
+        sys.enterFrameCallBackList = [];
+        /**
+         * 仅一次进入帧回调对象列表
+         */
+        sys.enterFrameOnceCallBackList = [];
+        /**
          * 是否派发 Event.RENDER 事件
          */
         sys.invalidateRenderFlag = false;
-        sys.enterFrameCallBackList = [];
-        sys.enterFrameOnceCallBackList = [];
+        /**
+         * 渲染回调对象列表
+         */
         sys.renderCallBackList = [];
+        /**
+         * 仅一次渲染回调对象列表
+         */
         sys.renderOnceCallBackList = [];
     })(sys = dou2d.sys || (dou2d.sys = {}));
 })(dou2d || (dou2d = {}));
@@ -2230,7 +2242,7 @@ var dou2d;
             for (let i = 0, len = list.length; i < len; i++) {
                 let currentTarget = list[i];
                 event.$setCurrentTarget(currentTarget);
-                currentTarget.dispatch(event);
+                currentTarget.$notify(event);
                 if (event.$isPropagationStopped()) {
                     break;
                 }
@@ -4155,7 +4167,7 @@ var dou2d;
             value: function (type, data, bubbles, cancelable) {
                 let event = dou.recyclable(dou2d.Event2D);
                 event.$initEvent2D(type, data, bubbles, cancelable);
-                let result = this.dispatchEvent(event);
+                let result = this.dispatch(event);
                 event.recycle();
                 return result;
             },
@@ -4223,7 +4235,7 @@ var dou2d;
             value: function (type, stageX, stageY, touchPointID, touchDown, bubbles, cancelable) {
                 let event = dou.recyclable(dou2d.TouchEvent);
                 event.$initTouchEvent(type, stageX, stageY, touchPointID, touchDown, bubbles, cancelable);
-                let result = this.dispatchEvent(event);
+                let result = this.dispatch(event);
                 event.recycle();
                 return result;
             },
@@ -6171,7 +6183,7 @@ var dou2d;
                         }
                     }
                     if (bitmapData.webGLTexture) {
-                        bitmapData.webGLTexture[dou2d.sys.SMOOTHING] = true;
+                        bitmapData.webGLTexture[dou2d.sys.smoothing] = true;
                     }
                 }
                 return bitmapData.webGLTexture;
@@ -6230,7 +6242,7 @@ var dou2d;
                 if (this._vertexData.reachMaxSize()) {
                     this.draw();
                 }
-                if (smoothing != undefined && texture[dou2d.sys.SMOOTHING] != smoothing) {
+                if (smoothing != undefined && texture[dou2d.sys.smoothing] != smoothing) {
                     this.drawCommand.pushChangeSmoothing(texture, smoothing);
                 }
                 // 应用 filter, 因为只可能是 colorMatrixFilter, 最后两个参数可不传
@@ -6315,7 +6327,7 @@ var dou2d;
                 for (let i = 0; i < length; i++) {
                     let data = this.drawCommand.drawData[i];
                     offset = this.drawData(data, offset);
-                    // 计算draw call
+                    // 计算 draw call
                     if (data.type == 7 /* actBuffer */) {
                         this.activatedBuffer = data.buffer;
                     }
@@ -6771,7 +6783,7 @@ var dou2d;
              * 贴图绘制的 smoothing 属性改变时需要压入一个新的绘制指令
              */
             pushChangeSmoothing(texture, smoothing) {
-                texture[dou2d.sys.SMOOTHING] = smoothing;
+                texture[dou2d.sys.smoothing] = smoothing;
                 let data = this.drawData[this.drawDataLen] || {};
                 data.type = 10 /* smoothing */;
                 data.texture = texture;
@@ -7000,7 +7012,7 @@ var dou2d;
                 alpha = Math.min(alpha, 1.0);
                 let globalTintColor = buffer.globalTintColor || 0xFFFFFF;
                 let currentTexture = buffer.currentTexture;
-                if (alpha < 1.0 && currentTexture && currentTexture[dou2d.sys.UNPACK_PREMULTIPLY_ALPHA_WEBGL]) {
+                if (alpha < 1.0 && currentTexture && currentTexture[dou2d.sys.unpackPremultiplyAlphaWebgl]) {
                     alpha = dou2d.WebGLUtil.premultiplyTint(globalTintColor, alpha);
                 }
                 else {
@@ -7163,7 +7175,7 @@ var dou2d;
                 this.$canvasScaleY = 1;
                 this._isStage = false;
                 this.root = root;
-                this._isStage = (root instanceof dou2d.Stage);
+                this._isStage = root instanceof dou2d.Stage;
                 this.$renderNode = new rendering.BitmapNode();
                 this._offsetMatrix = new dou2d.Matrix();
             }
@@ -7286,15 +7298,13 @@ var dou2d;
                 this.resize(width, height);
             }
             /**
-             * 渲染缓冲的宽度，以像素为单位。
-             * @readOnly
+             * 渲染缓冲的宽度
              */
             get width() {
                 return this.surface.width;
             }
             /**
-             * 渲染缓冲的高度，以像素为单位。
-             * @readOnly
+             * 渲染缓冲的高度
              */
             get height() {
                 return this.surface.height;
@@ -7303,7 +7313,7 @@ var dou2d;
              * 改变渲染缓冲的大小并清空缓冲区
              * @param width 改变后的宽
              * @param height 改变后的高
-             * @param useMaxSize 若传入true，则将改变后的尺寸与已有尺寸对比，保留较大的尺寸。
+             * @param useMaxSize 若传入 true, 则将改变后的尺寸与已有尺寸对比, 保留较大的尺寸
              */
             resize(width, height, useMaxSize) {
                 let canvasRenderBuffer = this;
@@ -7318,7 +7328,7 @@ var dou2d;
                         surface.height = height;
                         change = true;
                     }
-                    //尺寸没有变化时,将绘制属性重置
+                    // 尺寸没有变化时, 将绘制属性重置
                     if (!change) {
                         canvasRenderBuffer.context.globalCompositeOperation = "source-over";
                         canvasRenderBuffer.context.setTransform(1, 0, 0, 1, 0, 0);
@@ -7342,8 +7352,8 @@ var dou2d;
                 return this.context.getImageData(x, y, width, height).data;
             }
             /**
-             * 转换成base64字符串，如果图片（或者包含的图片）跨域，则返回null
-             * @param type 转换的类型，如: "image/png","image/jpeg"
+             * 转换成 Base64 字符串, 如果图片 (或者包含的图片) 跨域, 则返回 null
+             * @param type 转换的类型, 如: "image/png", "image/jpeg"
              */
             toDataURL(type, encoderOptions) {
                 return this.surface.toDataURL(type, encoderOptions);
@@ -11865,7 +11875,7 @@ var dou2d;
             texture[dou2d.sys.glContext] = gl;
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
-            texture[dou2d.sys.UNPACK_PREMULTIPLY_ALPHA_WEBGL] = true;
+            texture[dou2d.sys.unpackPremultiplyAlphaWebgl] = true;
             if (typeof sourceOrWidth == "number") {
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, sourceOrWidth, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
             }
@@ -11881,9 +11891,9 @@ var dou2d;
         WebGLUtil.createTexture = createTexture;
         function deleteTexture(texture) {
             // 引擎默认的空白纹理不允许删除
-            if (texture[dou2d.sys.engine_default_empty_texture]) {
+            if (texture[dou2d.sys.engineDefaultEmptyTexture]) {
                 if (DEBUG) {
-                    console.warn("Can not delete WebGLTexture: " + dou2d.sys.engine_default_empty_texture);
+                    console.warn("Can not delete WebGLTexture: " + dou2d.sys.engineDefaultEmptyTexture);
                 }
                 return;
             }
@@ -12288,12 +12298,14 @@ var dou2d;
                 div.style.height = "100%";
                 document.body.appendChild(div);
             }
+            this._container = div;
             let options = this._options = this.readOptions(rootClass, runOptions);
             dou2d.sys.stage = new dou2d.Stage(this);
             dou2d.sys.screenAdapter = options.screenAdapter;
             dou2d.sys.renderer = new dou2d.rendering.Renderer();
             let renderBuffer = new dou2d.rendering.RenderBuffer(undefined, undefined, true);
             dou2d.sys.canvas = renderBuffer.surface;
+            this.attachCanvas(this._container, dou2d.sys.canvas);
             dou2d.sys.context2D = dou2d.HtmlUtil.get2DContext(dou2d.HtmlUtil.createCanvas(2, 2));
             this._touchHandler = new dou2d.touch.TouchHandler(dou2d.sys.stage, dou2d.sys.canvas);
             this._input = new dou2d.input.InputManager();
@@ -12306,6 +12318,12 @@ var dou2d;
             dou2d.sys.stage.maxTouches = options.maxTouches;
             dou2d.sys.stage.frameRate = options.frameRate;
             dou2d.sys.stage.textureScaleFactor = options.textureScaleFactor;
+            this.updateScreenSize();
+            window.addEventListener("resize", () => {
+                window.setTimeout(() => {
+                    this.updateScreenSize();
+                }, 300);
+            });
             dou2d.sys.stat = new dou2d.sys.Stat();
         }
         readOptions(rootClass, runOptions) {
@@ -12325,6 +12343,19 @@ var dou2d;
                 textureScaleFactor: runOptions.canvasScaleFactor ? runOptions.canvasScaleFactor(dou2d.sys.canvas.getContext("2d")) : 1
             };
         }
+        attachCanvas(container, canvas) {
+            let style = canvas.style;
+            style.cursor = "inherit";
+            style.position = "absolute";
+            style.top = "0";
+            style.bottom = "0";
+            style.left = "0";
+            style.right = "0";
+            container.appendChild(canvas);
+            style = container.style;
+            style.overflow = "hidden";
+            style.position = "absolute";
+        }
         startTicker() {
             requestAnimationFrame(onTick);
             function onTick() {
@@ -12341,7 +12372,7 @@ var dou2d;
         updateScreenSize() {
             let canvas = dou2d.sys.canvas;
             let option = this._options;
-            let screenRect = canvas.getBoundingClientRect();
+            let screenRect = this._container.getBoundingClientRect();
             let top = 0;
             let boundingClientWidth = screenRect.width;
             let boundingClientHeight = screenRect.height;

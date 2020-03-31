@@ -98,7 +98,7 @@ namespace dou2d.rendering {
             alpha = Math.min(alpha, 1.0);
             let globalTintColor = buffer.globalTintColor || 0xFFFFFF;
             let currentTexture = buffer.currentTexture;
-            if (alpha < 1.0 && currentTexture && currentTexture[sys.UNPACK_PREMULTIPLY_ALPHA_WEBGL]) {
+            if (alpha < 1.0 && currentTexture && currentTexture[sys.unpackPremultiplyAlphaWebgl]) {
                 alpha = WebGLUtil.premultiplyTint(globalTintColor, alpha);
             }
             else {
