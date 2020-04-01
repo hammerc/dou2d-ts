@@ -1166,7 +1166,7 @@ var dou2d;
                 matrix = this._concatenatedMatrix = new dou2d.Matrix();
             }
             if (this._parent) {
-                this._parent.$getConcatenatedMatrix().premultiply(this.$getMatrix(), matrix);
+                matrix.premultiply(this._parent.$getConcatenatedMatrix(), this.$getMatrix());
             }
             else {
                 matrix.copy(this.$getMatrix());
@@ -1177,13 +1177,13 @@ var dou2d;
             if (rect) {
                 let temp = dou.recyclable(dou2d.Matrix);
                 temp.set(1, 0, 0, 1, -rect.x - offsetX, -rect.y - offsetY);
-                matrix.premultiply(temp, matrix);
+                matrix.premultiply(matrix, temp);
                 temp.recycle();
             }
             else if (offsetX != 0 || offsetY != 0) {
                 let temp = dou.recyclable(dou2d.Matrix);
                 temp.set(1, 0, 0, 1, -offsetX, -offsetY);
-                matrix.premultiply(temp, matrix);
+                matrix.premultiply(matrix, temp);
                 temp.recycle();
             }
             return this._concatenatedMatrix;
@@ -1195,7 +1195,7 @@ var dou2d;
             if (!this._invertedConcatenatedMatrix) {
                 this._invertedConcatenatedMatrix = new dou2d.Matrix();
             }
-            this.$getConcatenatedMatrix().inverse(this._invertedConcatenatedMatrix);
+            this._invertedConcatenatedMatrix.inverse(this.$getConcatenatedMatrix());
             return this._invertedConcatenatedMatrix;
         }
         /**
@@ -1903,7 +1903,7 @@ var dou2d;
             if (targetCoordinateSpace) {
                 let m = dou.recyclable(dou2d.Matrix);
                 let invertedTargetMatrix = targetCoordinateSpace.$getInvertedConcatenatedMatrix();
-                invertedTargetMatrix.premultiply(this.$getConcatenatedMatrix(), m);
+                m.premultiply(invertedTargetMatrix, this.$getConcatenatedMatrix());
                 m.transformBounds(result);
                 m.recycle();
             }
@@ -2097,7 +2097,7 @@ var dou2d;
                 }
             }
             else {
-                invertMatrix.premultiply(matrix, matrix);
+                matrix.premultiply(invertMatrix, matrix);
             }
         }
         /**
@@ -2913,7 +2913,6 @@ var dou2d;
              * webgl纹理生成后，是否删掉原始图像数据
              */
             this.deleteSource = true;
-            this.source = source;
             this.source = source;
             if (this.source) {
                 this.width = +source.width;
@@ -4857,7 +4856,7 @@ var dou2d;
                 this.drawData = [];
             }
             get renderCount() {
-                return this.renderCount;
+                return this._renderCount;
             }
             /**
              * 自动清空自身的绘制数据
@@ -7205,12 +7204,12 @@ var dou2d;
             constructor(root) {
                 this.offsetX = 0;
                 this.offsetY = 0;
-                this.$canvasScaleX = 1;
-                this.$canvasScaleY = 1;
+                this.canvasScaleX = 1;
+                this.canvasScaleY = 1;
                 this._isStage = false;
                 this.root = root;
                 this._isStage = root instanceof dou2d.Stage;
-                this.$renderNode = new rendering.BitmapNode();
+                this.renderNode = new rendering.BitmapNode();
                 this._offsetMatrix = new dou2d.Matrix();
             }
             /**
@@ -7228,31 +7227,25 @@ var dou2d;
                 displayList.root = target;
                 return displayList;
             }
-            static $setCanvasScale(x, y) {
-                DisplayList.$canvasScaleX = x;
-                DisplayList.$canvasScaleY = y;
-            }
-            /**
-             * 获取渲染节点
-             */
-            $getRenderNode() {
-                return this.$renderNode;
+            static setCanvasScale(x, y) {
+                DisplayList.canvasScaleX = x;
+                DisplayList.canvasScaleY = y;
             }
             /**
              * 设置剪裁边界, 不再绘制完整目标对象, 画布尺寸由外部决定, 超过边界的节点将跳过绘制
              */
             setClipRect(width, height) {
-                width *= DisplayList.$canvasScaleX;
-                height *= DisplayList.$canvasScaleY;
+                width *= DisplayList.canvasScaleX;
+                height *= DisplayList.canvasScaleY;
                 this.renderBuffer.resize(width, height);
             }
             /**
-             * 绘制根节点显示对象到目标画布, 返回draw的次数
+             * 绘制根节点显示对象到目标画布, 返回 draw 的次数
              */
             drawToSurface() {
                 let drawCalls = 0;
-                this.$canvasScaleX = this._offsetMatrix.a = DisplayList.$canvasScaleX;
-                this.$canvasScaleY = this._offsetMatrix.d = DisplayList.$canvasScaleY;
+                this.canvasScaleX = this._offsetMatrix.a = DisplayList.canvasScaleX;
+                this.canvasScaleY = this._offsetMatrix.d = DisplayList.canvasScaleY;
                 // 对非舞台画布要根据目标显示对象尺寸改变而改变
                 if (!this._isStage) {
                     this.changeSurfaceSize();
@@ -7263,7 +7256,7 @@ var dou2d;
                 // 对非舞台画布要保存渲染节点
                 if (!this._isStage) {
                     let surface = buffer.surface;
-                    let renderNode = this.$renderNode;
+                    let renderNode = this.renderNode;
                     renderNode.drawData.length = 0;
                     let width = surface.width;
                     let height = surface.height;
@@ -7278,7 +7271,7 @@ var dou2d;
                     renderNode.image = this._bitmapData;
                     renderNode.imageWidth = width;
                     renderNode.imageHeight = height;
-                    renderNode.drawImage(0, 0, width, height, -this.offsetX, -this.offsetY, width / this.$canvasScaleX, height / this.$canvasScaleY);
+                    renderNode.drawImage(0, 0, width, height, -this.offsetX, -this.offsetY, width / this.canvasScaleX, height / this.canvasScaleY);
                 }
                 return drawCalls;
             }
@@ -7289,8 +7282,8 @@ var dou2d;
                 let oldOffsetX = this.offsetX;
                 let oldOffsetY = this.offsetY;
                 let bounds = this.root.$getOriginalBounds();
-                let scaleX = this.$canvasScaleX;
-                let scaleY = this.$canvasScaleY;
+                let scaleX = this.canvasScaleX;
+                let scaleY = this.canvasScaleY;
                 this.offsetX = -bounds.x;
                 this.offsetY = -bounds.y;
                 this._offsetMatrix.set(this._offsetMatrix.a, 0, 0, this._offsetMatrix.d, this.offsetX, this.offsetY);
@@ -7307,9 +7300,9 @@ var dou2d;
                 buffer.resize(width, height);
             }
         }
-        DisplayList.$canvasScaleFactor = 1;
-        DisplayList.$canvasScaleX = 1;
-        DisplayList.$canvasScaleY = 1;
+        DisplayList.canvasScaleFactor = 1;
+        DisplayList.canvasScaleX = 1;
+        DisplayList.canvasScaleY = 1;
         rendering.DisplayList = DisplayList;
     })(rendering = dou2d.rendering || (dou2d.rendering = {}));
 })(dou2d || (dou2d = {}));
@@ -7543,8 +7536,8 @@ var dou2d;
 (function (dou2d) {
     var rendering;
     (function (rendering) {
-        let blendModes = ["source-over", "lighter", "destination-out"];
-        let defaultCompositeOp = "source-over";
+        const blendModes = ["source-over", "lighter", "destination-out"];
+        const defaultCompositeOp = "source-over";
         /**
          * 核心渲染类
          * @author wizardc
@@ -7582,7 +7575,7 @@ var dou2d;
                 invert.recycle();
                 this._nestLevel--;
                 if (this._nestLevel === 0) {
-                    //最大缓存6个渲染缓冲
+                    // 最大缓存 6 个渲染缓冲
                     if (this._renderBufferPool.length > 6) {
                         this._renderBufferPool.length = 6;
                     }
@@ -7602,11 +7595,11 @@ var dou2d;
                 let displayList = displayObject.$displayList;
                 if (displayList && !isStage) {
                     if (displayObject.$cacheDirty || displayObject.$renderDirty ||
-                        displayList.$canvasScaleX != rendering.DisplayList.$canvasScaleX ||
-                        displayList.$canvasScaleY != rendering.DisplayList.$canvasScaleY) {
+                        displayList.canvasScaleX != rendering.DisplayList.canvasScaleX ||
+                        displayList.canvasScaleY != rendering.DisplayList.canvasScaleY) {
                         drawCalls += displayList.drawToSurface();
                     }
-                    node = displayList.$renderNode;
+                    node = displayList.renderNode;
                 }
                 else {
                     if (displayObject.$renderDirty) {
@@ -8115,8 +8108,8 @@ var dou2d;
                 if (width <= 0 || height <= 0 || !width || !height || node.drawData.length == 0) {
                     return;
                 }
-                let canvasScaleX = rendering.DisplayList.$canvasScaleX;
-                let canvasScaleY = rendering.DisplayList.$canvasScaleY;
+                let canvasScaleX = rendering.DisplayList.canvasScaleX;
+                let canvasScaleY = rendering.DisplayList.canvasScaleY;
                 let maxTextureSize = buffer.context.maxTextureSize;
                 if (width * canvasScaleX > maxTextureSize) {
                     canvasScaleX *= maxTextureSize / (width * canvasScaleX);
@@ -8189,8 +8182,8 @@ var dou2d;
                 if (width <= 0 || height <= 0 || !width || !height || node.drawData.length == 0) {
                     return;
                 }
-                let canvasScaleX = rendering.DisplayList.$canvasScaleX;
-                let canvasScaleY = rendering.DisplayList.$canvasScaleY;
+                let canvasScaleX = rendering.DisplayList.canvasScaleX;
+                let canvasScaleY = rendering.DisplayList.canvasScaleY;
                 if (width * canvasScaleX < 1 || height * canvasScaleY < 1) {
                     canvasScaleX = canvasScaleY = 1;
                 }
@@ -8806,7 +8799,9 @@ var dou2d;
                         this._inputElement.type = this.textfield.inputType;
                     }
                     else {
-                        this._inputElement.type = "text";
+                        if (this._inputElement instanceof HTMLInputElement) {
+                            this._inputElement.type = "text";
+                        }
                     }
                     this._inputDiv = this._htmlInput.inputDIV;
                 }
@@ -9263,7 +9258,9 @@ var dou2d;
                     self._simpleElement = inputElement;
                     inputElement.id = "douInput";
                 }
-                inputElement.type = "text";
+                if (inputElement instanceof HTMLInputElement) {
+                    inputElement.type = "text";
+                }
                 self.inputDIV.appendChild(inputElement);
                 inputElement.setAttribute("tabindex", "-1");
                 inputElement.style.width = "1px";
@@ -9285,8 +9282,8 @@ var dou2d;
                 if (!this._canvas) {
                     return;
                 }
-                this.scaleX = dou2d.rendering.DisplayList.$canvasScaleX;
-                this.scaleY = dou2d.rendering.DisplayList.$canvasScaleY;
+                this.scaleX = dou2d.rendering.DisplayList.canvasScaleX;
+                this.scaleY = dou2d.rendering.DisplayList.canvasScaleY;
                 this._stageDelegateDiv.style.left = this._canvas.style.left;
                 this._stageDelegateDiv.style.top = this._canvas.style.top;
                 let transformKey = dou2d.HtmlUtil.getStyleName("transform");
@@ -12342,7 +12339,8 @@ var dou2d;
             this.attachCanvas(this._container, dou2d.sys.canvas);
             dou2d.sys.context2D = dou2d.HtmlUtil.get2DContext(dou2d.HtmlUtil.createCanvas(2, 2));
             this._touchHandler = new dou2d.touch.TouchHandler(dou2d.sys.stage, dou2d.sys.canvas);
-            this._input = new dou2d.input.InputManager();
+            dou2d.sys.inputManager = new dou2d.input.InputManager();
+            dou2d.sys.inputManager.initStageDelegateDiv(this._container, dou2d.sys.canvas);
             dou2d.sys.player = new dou2d.sys.Player(renderBuffer, dou2d.sys.stage, options.rootClass);
             dou2d.sys.player.start();
             dou2d.sys.ticker = new dou2d.sys.Ticker();
@@ -12456,17 +12454,17 @@ var dou2d;
                 canvas.style.left = (boundingClientWidth - displayWidth) / 2 + "px";
             }
             let scalex = displayWidth / stageWidth, scaley = displayHeight / stageHeight;
-            let canvasScaleX = scalex * dou2d.rendering.DisplayList.$canvasScaleFactor;
-            let canvasScaleY = scaley * dou2d.rendering.DisplayList.$canvasScaleFactor;
+            let canvasScaleX = scalex * dou2d.rendering.DisplayList.canvasScaleFactor;
+            let canvasScaleY = scaley * dou2d.rendering.DisplayList.canvasScaleFactor;
             let matrix = dou.recyclable(dou2d.Matrix);
             matrix.scale(scalex / canvasScaleX, scaley / canvasScaleY);
             matrix.rotate(rotation * Math.PI / 180);
             let transform = `matrix(${matrix.a},${matrix.b},${matrix.c},${matrix.d},${matrix.tx},${matrix.ty})`;
             matrix.recycle();
             canvas.style[dou2d.HtmlUtil.getStyleName("transform")] = transform;
-            dou2d.rendering.DisplayList.$setCanvasScale(canvasScaleX, canvasScaleY);
+            dou2d.rendering.DisplayList.setCanvasScale(canvasScaleX, canvasScaleY);
             this._touchHandler.updateScaleMode(scalex, scaley, rotation);
-            this._input.updateSize();
+            dou2d.sys.inputManager.updateSize();
             dou2d.sys.player.updateStageSize(stageWidth, stageHeight);
         }
         updateMaxTouches(maxTouches) {

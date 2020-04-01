@@ -24,10 +24,10 @@ namespace dou2d {
          * @param inner 是否为内发光
          * @param knockout 是否具有挖空效果
          */
-        public constructor(color: number = 0xFF0000, alpha: number = 1, blurX: number = 6, blurY: number = 6, strength: number = 2, inner: boolean = false, knockout: boolean = false) {
+        public constructor(color: number = 0xff0000, alpha: number = 1, blurX: number = 6, blurY: number = 6, strength: number = 2, inner: boolean = false, knockout: boolean = false) {
             super("glow");
             this._color = color;
-            this._blue = color & 0x0000FF;
+            this._blue = color & 0x0000ff;
             this._green = (color & 0x00ff00) >> 8;
             this._red = color >> 16;
             this._alpha = alpha;
@@ -57,7 +57,7 @@ namespace dou2d {
                 return;
             }
             this._color = value;
-            this._blue = value & 0x0000FF;
+            this._blue = value & 0x0000ff;
             this._green = (value & 0x00ff00) >> 8;
             this._red = value >> 16;
             this.$uniforms.color.x = this._red / 255;

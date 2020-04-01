@@ -187,7 +187,7 @@ namespace dou2d {
                 matrix = this._concatenatedMatrix = new Matrix();
             }
             if (this._parent) {
-                this._parent.$getConcatenatedMatrix().premultiply(this.$getMatrix(), matrix);
+                matrix.premultiply(this._parent.$getConcatenatedMatrix(), this.$getMatrix());
             }
             else {
                 matrix.copy(this.$getMatrix());
@@ -198,13 +198,13 @@ namespace dou2d {
             if (rect) {
                 let temp = dou.recyclable(Matrix);
                 temp.set(1, 0, 0, 1, -rect.x - offsetX, -rect.y - offsetY);
-                matrix.premultiply(temp, matrix);
+                matrix.premultiply(matrix, temp);
                 temp.recycle();
             }
             else if (offsetX != 0 || offsetY != 0) {
                 let temp = dou.recyclable(Matrix);
                 temp.set(1, 0, 0, 1, -offsetX, -offsetY);
-                matrix.premultiply(temp, matrix);
+                matrix.premultiply(matrix, temp);
                 temp.recycle();
             }
             return this._concatenatedMatrix;
@@ -217,7 +217,7 @@ namespace dou2d {
             if (!this._invertedConcatenatedMatrix) {
                 this._invertedConcatenatedMatrix = new Matrix();
             }
-            this.$getConcatenatedMatrix().inverse(this._invertedConcatenatedMatrix);
+            this._invertedConcatenatedMatrix.inverse(this.$getConcatenatedMatrix());
             return this._invertedConcatenatedMatrix;
         }
 
@@ -994,7 +994,7 @@ namespace dou2d {
             if (targetCoordinateSpace) {
                 let m = dou.recyclable(Matrix);
                 let invertedTargetMatrix = targetCoordinateSpace.$getInvertedConcatenatedMatrix();
-                invertedTargetMatrix.premultiply(this.$getConcatenatedMatrix(), m);
+                m.premultiply(invertedTargetMatrix, this.$getConcatenatedMatrix());
                 m.transformBounds(result);
                 m.recycle();
             } else {
@@ -1197,7 +1197,7 @@ namespace dou2d {
                 }
             }
             else {
-                invertMatrix.premultiply(matrix, matrix);
+                matrix.premultiply(invertMatrix, matrix);
             }
         }
 

@@ -24,7 +24,7 @@ namespace dou2d.rendering {
         }
 
         public get renderCount(): number {
-            return this.renderCount;
+            return this._renderCount;
         }
 
         /**

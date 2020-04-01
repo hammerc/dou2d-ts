@@ -1,6 +1,6 @@
 namespace dou2d.rendering {
-    let blendModes = ["source-over", "lighter", "destination-out"];
-    let defaultCompositeOp = "source-over";
+    const blendModes = ["source-over", "lighter", "destination-out"];
+    const defaultCompositeOp = "source-over";
 
     /**
      * 核心渲染类
@@ -42,7 +42,7 @@ namespace dou2d.rendering {
             invert.recycle();
             this._nestLevel--;
             if (this._nestLevel === 0) {
-                //最大缓存6个渲染缓冲
+                // 最大缓存 6 个渲染缓冲
                 if (this._renderBufferPool.length > 6) {
                     this._renderBufferPool.length = 6;
                 }
@@ -63,11 +63,11 @@ namespace dou2d.rendering {
             let displayList = displayObject.$displayList;
             if (displayList && !isStage) {
                 if (displayObject.$cacheDirty || displayObject.$renderDirty ||
-                    displayList.$canvasScaleX != DisplayList.$canvasScaleX ||
-                    displayList.$canvasScaleY != DisplayList.$canvasScaleY) {
+                    displayList.canvasScaleX != DisplayList.canvasScaleX ||
+                    displayList.canvasScaleY != DisplayList.canvasScaleY) {
                     drawCalls += displayList.drawToSurface();
                 }
-                node = displayList.$renderNode;
+                node = displayList.renderNode;
             }
             else {
                 if (displayObject.$renderDirty) {
@@ -583,8 +583,8 @@ namespace dou2d.rendering {
             if (width <= 0 || height <= 0 || !width || !height || node.drawData.length == 0) {
                 return;
             }
-            let canvasScaleX = DisplayList.$canvasScaleX;
-            let canvasScaleY = DisplayList.$canvasScaleY;
+            let canvasScaleX = DisplayList.canvasScaleX;
+            let canvasScaleY = DisplayList.canvasScaleY;
             let maxTextureSize = buffer.context.maxTextureSize;
             if (width * canvasScaleX > maxTextureSize) {
                 canvasScaleX *= maxTextureSize / (width * canvasScaleX);
@@ -657,8 +657,8 @@ namespace dou2d.rendering {
             if (width <= 0 || height <= 0 || !width || !height || node.drawData.length == 0) {
                 return;
             }
-            let canvasScaleX = DisplayList.$canvasScaleX;
-            let canvasScaleY = DisplayList.$canvasScaleY;
+            let canvasScaleX = DisplayList.canvasScaleX;
+            let canvasScaleY = DisplayList.canvasScaleY;
             if (width * canvasScaleX < 1 || height * canvasScaleY < 1) {
                 canvasScaleX = canvasScaleY = 1;
             }

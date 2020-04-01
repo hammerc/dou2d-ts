@@ -35,7 +35,9 @@ namespace dou2d.input {
                     this._inputElement.type = this.textfield.inputType;
                 }
                 else {
-                    this._inputElement.type = "text";
+                    if (this._inputElement instanceof HTMLInputElement) {
+                        this._inputElement.type = "text";
+                    }
                 }
                 this._inputDiv = this._htmlInput.inputDIV;
             }

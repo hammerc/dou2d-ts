@@ -89,7 +89,9 @@ namespace dou2d.input {
                 self._simpleElement = inputElement;
                 inputElement.id = "douInput";
             }
-            inputElement.type = "text";
+            if (inputElement instanceof HTMLInputElement) {
+                inputElement.type = "text";
+            }
             self.inputDIV.appendChild(inputElement);
             inputElement.setAttribute("tabindex", "-1");
             inputElement.style.width = "1px";
@@ -112,8 +114,8 @@ namespace dou2d.input {
             if (!this._canvas) {
                 return;
             }
-            this.scaleX = rendering.DisplayList.$canvasScaleX;
-            this.scaleY = rendering.DisplayList.$canvasScaleY;
+            this.scaleX = rendering.DisplayList.canvasScaleX;
+            this.scaleY = rendering.DisplayList.canvasScaleY;
             this._stageDelegateDiv.style.left = this._canvas.style.left;
             this._stageDelegateDiv.style.top = this._canvas.style.top;
             let transformKey = HtmlUtil.getStyleName("transform");

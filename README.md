@@ -65,3 +65,11 @@ new dou2d.Engine(ShapeTest);
 * [绘制小白块](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=ShapeTest)
 
 * [绘制图片](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=BitmapTest)
+
+* [文本和输入](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=TextTest)
+
+* [交互](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=TouchTest)
+
+* [内置滤镜](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=FilterTest)
+
+* [自定义滤镜](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=CustomFilterTest)

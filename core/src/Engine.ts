@@ -19,7 +19,6 @@ namespace dou2d {
 
         private _container: HTMLElement;
         private _touchHandler: touch.TouchHandler;
-        private _input: input.InputManager;
 
         /**
          * @param rootClass 根显示容器类
@@ -57,7 +56,8 @@ namespace dou2d {
             sys.context2D = HtmlUtil.get2DContext(HtmlUtil.createCanvas(2, 2));
 
             this._touchHandler = new touch.TouchHandler(sys.stage, sys.canvas);
-            this._input = new input.InputManager();
+            sys.inputManager = new input.InputManager();
+            sys.inputManager.initStageDelegateDiv(this._container, sys.canvas);
 
             sys.player = new sys.Player(renderBuffer, sys.stage, options.rootClass);
             sys.player.start();
@@ -181,17 +181,17 @@ namespace dou2d {
                 canvas.style.left = (boundingClientWidth - displayWidth) / 2 + "px";
             }
             let scalex = displayWidth / stageWidth, scaley = displayHeight / stageHeight;
-            let canvasScaleX = scalex * rendering.DisplayList.$canvasScaleFactor;
-            let canvasScaleY = scaley * rendering.DisplayList.$canvasScaleFactor;
+            let canvasScaleX = scalex * rendering.DisplayList.canvasScaleFactor;
+            let canvasScaleY = scaley * rendering.DisplayList.canvasScaleFactor;
             let matrix = dou.recyclable(Matrix);
             matrix.scale(scalex / canvasScaleX, scaley / canvasScaleY);
             matrix.rotate(rotation * Math.PI / 180);
             let transform = `matrix(${matrix.a},${matrix.b},${matrix.c},${matrix.d},${matrix.tx},${matrix.ty})`;
             matrix.recycle();
             canvas.style[HtmlUtil.getStyleName("transform")] = transform;
-            rendering.DisplayList.$setCanvasScale(canvasScaleX, canvasScaleY);
+            rendering.DisplayList.setCanvasScale(canvasScaleX, canvasScaleY);
             this._touchHandler.updateScaleMode(scalex, scaley, rotation);
-            this._input.updateSize();
+            sys.inputManager.updateSize();
             sys.player.updateStageSize(stageWidth, stageHeight);
         }
 

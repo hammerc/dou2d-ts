@@ -4,10 +4,10 @@ namespace dou2d.rendering {
      * @author wizardc
      */
     export class DisplayList {
-        public static $canvasScaleFactor: number = 1;
+        public static canvasScaleFactor: number = 1;
 
-        public static $canvasScaleX: number = 1;
-        public static $canvasScaleY: number = 1;
+        public static canvasScaleX: number = 1;
+        public static canvasScaleY: number = 1;
 
         /**
          * 创建一个 DisplayList 对象, 若内存不足或无法创建 RenderBuffer, 将会返回 null
@@ -25,15 +25,15 @@ namespace dou2d.rendering {
             return displayList;
         }
 
-        public static $setCanvasScale(x: number, y: number): void {
-            DisplayList.$canvasScaleX = x;
-            DisplayList.$canvasScaleY = y;
+        public static setCanvasScale(x: number, y: number): void {
+            DisplayList.canvasScaleX = x;
+            DisplayList.canvasScaleY = y;
         }
 
         /**
          * 位图渲染节点
          */
-        public $renderNode: RenderNode;
+        public renderNode: RenderNode;
 
         public renderBuffer: RenderBuffer;
 
@@ -45,8 +45,8 @@ namespace dou2d.rendering {
          */
         public root: DisplayObject;
 
-        public $canvasScaleX: number = 1;
-        public $canvasScaleY: number = 1;
+        public canvasScaleX: number = 1;
+        public canvasScaleY: number = 1;
 
         private _isStage: boolean = false;
 
@@ -57,33 +57,26 @@ namespace dou2d.rendering {
         public constructor(root: DisplayObject) {
             this.root = root;
             this._isStage = root instanceof Stage;
-            this.$renderNode = new BitmapNode();
+            this.renderNode = new BitmapNode();
             this._offsetMatrix = new Matrix();
-        }
-
-        /**
-         * 获取渲染节点
-         */
-        public $getRenderNode(): RenderNode {
-            return this.$renderNode;
         }
 
         /**
          * 设置剪裁边界, 不再绘制完整目标对象, 画布尺寸由外部决定, 超过边界的节点将跳过绘制
          */
         public setClipRect(width: number, height: number): void {
-            width *= DisplayList.$canvasScaleX;
-            height *= DisplayList.$canvasScaleY;
+            width *= DisplayList.canvasScaleX;
+            height *= DisplayList.canvasScaleY;
             this.renderBuffer.resize(width, height);
         }
 
         /**
-         * 绘制根节点显示对象到目标画布, 返回draw的次数
+         * 绘制根节点显示对象到目标画布, 返回 draw 的次数
          */
         public drawToSurface(): number {
             let drawCalls = 0;
-            this.$canvasScaleX = this._offsetMatrix.a = DisplayList.$canvasScaleX;
-            this.$canvasScaleY = this._offsetMatrix.d = DisplayList.$canvasScaleY;
+            this.canvasScaleX = this._offsetMatrix.a = DisplayList.canvasScaleX;
+            this.canvasScaleY = this._offsetMatrix.d = DisplayList.canvasScaleY;
             // 对非舞台画布要根据目标显示对象尺寸改变而改变
             if (!this._isStage) {
                 this.changeSurfaceSize();
@@ -94,7 +87,7 @@ namespace dou2d.rendering {
             // 对非舞台画布要保存渲染节点
             if (!this._isStage) {
                 let surface = buffer.surface;
-                let renderNode = <BitmapNode>this.$renderNode;
+                let renderNode = <BitmapNode>this.renderNode;
                 renderNode.drawData.length = 0;
                 let width = surface.width;
                 let height = surface.height;
@@ -109,7 +102,7 @@ namespace dou2d.rendering {
                 renderNode.image = this._bitmapData;
                 renderNode.imageWidth = width;
                 renderNode.imageHeight = height;
-                renderNode.drawImage(0, 0, width, height, -this.offsetX, -this.offsetY, width / this.$canvasScaleX, height / this.$canvasScaleY);
+                renderNode.drawImage(0, 0, width, height, -this.offsetX, -this.offsetY, width / this.canvasScaleX, height / this.canvasScaleY);
             }
             return drawCalls;
         }
@@ -121,8 +114,8 @@ namespace dou2d.rendering {
             let oldOffsetX = this.offsetX;
             let oldOffsetY = this.offsetY;
             let bounds = this.root.$getOriginalBounds();
-            let scaleX = this.$canvasScaleX;
-            let scaleY = this.$canvasScaleY;
+            let scaleX = this.canvasScaleX;
+            let scaleY = this.canvasScaleY;
             this.offsetX = -bounds.x;
             this.offsetY = -bounds.y;
             this._offsetMatrix.set(this._offsetMatrix.a, 0, 0, this._offsetMatrix.d, this.offsetX, this.offsetY);

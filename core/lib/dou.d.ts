@@ -330,7 +330,7 @@ declare namespace dou {
             type?: string;
             priority?: number;
             cache?: boolean;
-        }[], callback?: (current: number, total: number, url: string, data: any) => void, thisObj?: any): void;
+        }[], callback?: (current: number, total: number, data: any, url: string) => void, thisObj?: any): void;
         loadGroupAsync(items: {
             url: string;
             type?: string;

@@ -3024,18 +3024,18 @@ declare namespace dou2d.rendering {
      * @author wizardc
      */
     class DisplayList {
-        static $canvasScaleFactor: number;
-        static $canvasScaleX: number;
-        static $canvasScaleY: number;
+        static canvasScaleFactor: number;
+        static canvasScaleX: number;
+        static canvasScaleY: number;
         /**
          * 创建一个 DisplayList 对象, 若内存不足或无法创建 RenderBuffer, 将会返回 null
          */
         static create(target: DisplayObject): DisplayList;
-        static $setCanvasScale(x: number, y: number): void;
+        static setCanvasScale(x: number, y: number): void;
         /**
          * 位图渲染节点
          */
-        $renderNode: RenderNode;
+        renderNode: RenderNode;
         renderBuffer: RenderBuffer;
         offsetX: number;
         offsetY: number;
@@ -3043,22 +3043,18 @@ declare namespace dou2d.rendering {
          * 显示列表根节点
          */
         root: DisplayObject;
-        $canvasScaleX: number;
-        $canvasScaleY: number;
+        canvasScaleX: number;
+        canvasScaleY: number;
         private _isStage;
         private _offsetMatrix;
         private _bitmapData;
         constructor(root: DisplayObject);
         /**
-         * 获取渲染节点
-         */
-        $getRenderNode(): RenderNode;
-        /**
          * 设置剪裁边界, 不再绘制完整目标对象, 画布尺寸由外部决定, 超过边界的节点将跳过绘制
          */
         setClipRect(width: number, height: number): void;
         /**
-         * 绘制根节点显示对象到目标画布, 返回draw的次数
+         * 绘制根节点显示对象到目标画布, 返回 draw 的次数
          */
         drawToSurface(): number;
         /**
@@ -4185,7 +4181,6 @@ declare namespace dou2d {
         private _options;
         private _container;
         private _touchHandler;
-        private _input;
         /**
          * @param rootClass 根显示容器类
          * @param div 用户呈现 3D 图像的 Div 元素, 为空则会创建一个全屏的元素

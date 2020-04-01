@@ -321,7 +321,7 @@ var dou;
         off(type, listener, thisObj) {
             let map = this._eventMap;
             if (map.hasOwnProperty(type)) {
-                let list = map[event.type];
+                let list = map[type];
                 for (let i = 0, len = list.length; i < len; i++) {
                     let info = list[i];
                     if (info && info.listener == listener && info.thisObj == thisObj) {
@@ -735,7 +735,7 @@ var dou;
         }
         loadAsync(url, type, priority = 0, cache = true) {
             return new Promise((resolve, reject) => {
-                this.load(url, (url, data) => {
+                this.load(url, (data, url) => {
                     if (data) {
                         resolve(data);
                     }
@@ -750,9 +750,9 @@ var dou;
          */
         loadGroup(items, callback, thisObj) {
             let current = 0, total = items.length;
-            let itemCallback = (url, data) => {
+            let itemCallback = (data, url) => {
                 current++;
-                callback.call(thisObj, current, total, url, data);
+                callback.call(thisObj, current, total, data, url);
             };
             for (let item of items) {
                 this.load(item.url, itemCallback, this, item.type, item.priority, item.cache);
@@ -760,7 +760,7 @@ var dou;
         }
         loadGroupAsync(items) {
             return new Promise((resolve, reject) => {
-                this.loadGroup(items, (current, total, url, data) => {
+                this.loadGroup(items, (current, total, data, url) => {
                     if (current == total) {
                         resolve();
                     }

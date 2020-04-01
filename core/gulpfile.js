@@ -12,7 +12,7 @@ gulp.task("ts", function () {
 
 gulp.task("uglify", function () {
   return gulp.src("bin/dou2d.js")
-    .pipe(uglify())
+    .pipe(uglify({ compress: { global_defs: { DEBUG: false, RELEASE: true } } }))
     .pipe(rename({ basename: "dou2d.min" }))
     .pipe(gulp.dest("bin"));
 });

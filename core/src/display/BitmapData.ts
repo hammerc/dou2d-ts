@@ -139,7 +139,6 @@ namespace dou2d {
 
         public constructor(source: any) {
             this.source = source;
-            this.source = source;
             if (this.source) {
                 this.width = +source.width;
                 this.height = +source.height;
