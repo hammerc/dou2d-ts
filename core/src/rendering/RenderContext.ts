@@ -460,7 +460,7 @@ namespace dou2d.rendering {
                             program = Program.getProgram("blur", gl, ShaderLib.default_vs, ShaderLib.blur_fs);
                         }
                         else if (filter.type === "glow") {
-                            program = Program.getProgram("blur", gl, ShaderLib.default_vs, ShaderLib.glow_fs);
+                            program = Program.getProgram("glow", gl, ShaderLib.default_vs, ShaderLib.glow_fs);
                         }
                     }
                     else {

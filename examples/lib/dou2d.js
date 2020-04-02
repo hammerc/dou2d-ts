@@ -6469,7 +6469,7 @@ var dou2d;
                                 program = rendering.Program.getProgram("blur", gl, rendering.ShaderLib.default_vs, rendering.ShaderLib.blur_fs);
                             }
                             else if (filter.type === "glow") {
-                                program = rendering.Program.getProgram("blur", gl, rendering.ShaderLib.default_vs, rendering.ShaderLib.glow_fs);
+                                program = rendering.Program.getProgram("glow", gl, rendering.ShaderLib.default_vs, rendering.ShaderLib.glow_fs);
                             }
                         }
                         else {
