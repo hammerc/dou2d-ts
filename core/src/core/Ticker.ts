@@ -4,19 +4,11 @@ namespace dou2d.sys {
      * @author wizardc
      */
     export class Ticker extends dou.TickerBase {
-        private _deltaTime: number = 0;
         private _tickList: { method: (passedTime: number) => void, thisObj: any }[];
 
         public constructor() {
             super();
             this._tickList = [];
-        }
-
-        /**
-         * 相较上一帧经过的时间
-         */
-        public get deltaTime(): number {
-            return this._deltaTime;
         }
 
         /**
@@ -57,19 +49,20 @@ namespace dou2d.sys {
         }
 
         public updateLogic(passedTime: number): void {
-            this._deltaTime = passedTime;
+            sys.deltaTime = passedTime;
 
             let logicCost: number, renderCost: number;
-            logicCost = dou.getTimer();
+            logicCost = Time.time;
             dou.Tween.tick(passedTime, false);
             this.broadcastDelay(passedTime);
             this.broadcastTick(passedTime);
             this.broadcastRender();
-            renderCost = dou.getTimer();
+            renderCost = Time.time;
             let drawCalls = player.render(passedTime);
-            renderCost = dou.getTimer() - renderCost;
+            renderCost = Time.time - renderCost;
             this.broadcastEnterFrame();
-            logicCost = dou.getTimer() - logicCost - renderCost;
+            this.broadcastFixedEnterFrame(passedTime);
+            logicCost = Time.time - logicCost - renderCost;
             stat.onFrame(logicCost, renderCost, drawCalls);
         }
 
@@ -118,6 +111,31 @@ namespace dou2d.sys {
                 enterFrameOnceCallBackList = [];
                 for (let display of list) {
                     display.dispatchEvent(Event2D.ENTER_FRAME);
+                }
+            }
+        }
+
+        private broadcastFixedEnterFrame(passedTime: number): void {
+            sys.fixedPassedTime += passedTime;
+            let times = ~~(sys.fixedPassedTime / sys.fixedDeltaTime);
+            if (times > 0) {
+                sys.fixedPassedTime %= sys.fixedDeltaTime;
+                if (fixedEnterFrameCallBackList.length > 0) {
+                    let list = fixedEnterFrameCallBackList.concat();
+                    for (let display of list) {
+                        for (let i = 0; i < times; i++) {
+                            display.dispatchEvent(Event2D.FIXED_ENTER_FRAME);
+                        }
+                    }
+                }
+                if (fixedEnterFrameOnceCallBackList.length > 0) {
+                    let list = fixedEnterFrameOnceCallBackList;
+                    fixedEnterFrameOnceCallBackList = [];
+                    for (let display of list) {
+                        for (let i = 0; i < times; i++) {
+                            display.dispatchEvent(Event2D.FIXED_ENTER_FRAME);
+                        }
+                    }
                 }
             }
         }

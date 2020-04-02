@@ -35,7 +35,10 @@ namespace dou2d {
         public static REMOVED: string = "removed";
 
         public static ENTER_FRAME: string = "enterFrame";
-        public static EXIT_FRAME: string = "exitFrame";
+        public static FIXED_ENTER_FRAME: string = "fixedEnterFrame";
+
+        public static SHOWED: string = "showed";
+        public static HIDDEN: string = "hidden";
 
         public static RENDER: string = "render";
 

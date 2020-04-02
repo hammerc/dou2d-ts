@@ -73,7 +73,7 @@ namespace dou2d.input {
         }
 
         public onFocus(): void {
-            if (!this._text.visible) {
+            if (!this._text.$getVisible()) {
                 return;
             }
             if (this._isFocus) {
@@ -149,7 +149,7 @@ namespace dou2d.input {
         }
 
         private updateInput(): void {
-            if (!this._text.visible && this._stageText) {
+            if (!this._text.$getVisible() && this._stageText) {
                 this.hideInput();
             }
         }

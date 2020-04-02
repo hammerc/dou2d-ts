@@ -71,8 +71,6 @@
     "src/core/Ticker.ts",
     "src/core/Player.ts",
 
-    "src/debug/Stat.ts",
-
     "src/display/DisplayObject.ts",
     "src/display/DisplayObjectContainer.ts",
     "src/display/Shape.ts",
@@ -175,6 +173,10 @@
     "src/utils/Capabilities.ts",
     "src/utils/TextFieldUtil.ts",
     "src/utils/UUID.ts",
+    "src/utils/Time.ts",
+
+    "src/debug/Stat.ts",
+    "src/debug/StatPanel.ts",
 
     "src/Engine.ts"
   ]

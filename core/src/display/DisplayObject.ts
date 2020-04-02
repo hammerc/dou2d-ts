@@ -65,6 +65,8 @@ namespace dou2d {
         protected _anchorOffsetY: number = 0;
 
         protected _visible: boolean = true;
+        protected _invisible: boolean = false;
+        protected _finalVisible: boolean = true;
         protected _alpha: number = 1;
         protected _tint: number = 0;
 
@@ -77,6 +79,7 @@ namespace dou2d {
         protected _cacheAsBitmap: boolean = false;
 
         protected _touchEnabled: boolean = DisplayObject.defaultTouchEnabled;
+        protected _hitArea: Rectangle;
 
         protected _zIndex: number = 0;
         protected _sortableChildren: boolean = false;
@@ -585,17 +588,36 @@ namespace dou2d {
          * 是否可见
          */
         public set visible(value: boolean) {
-            this.$setVisible(value);
+            this._visible = value;
+            this.$setVisible(this._visible && !this._invisible);
         }
         public get visible(): boolean {
+            return this._visible;
+        }
+
+        /**
+         * 是否不可见
+         */
+        public set invisible(value: boolean) {
+            this._invisible = value;
+            this.$setVisible(this._visible && !this._invisible);
+        }
+        public get invisible(): boolean {
+            return this._invisible;
+        }
+
+        /**
+         * 最终是否可见
+         */
+        public get finalVisible(): boolean {
             return this.$getVisible();
         }
 
         public $setVisible(value: boolean): void {
-            if (this._visible == value) {
+            if (this._finalVisible == value) {
                 return;
             }
-            this._visible = value;
+            this._finalVisible = value;
             this.$updateRenderMode();
             let p = this._parent;
             if (p && !p.$cacheDirty) {
@@ -607,10 +629,11 @@ namespace dou2d {
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
+            this.dispatchEvent2D(value ? Event2D.SHOWED : Event2D.HIDDEN);
         }
 
         public $getVisible(): boolean {
-            return this._visible;
+            return this._finalVisible;
         }
 
         /**
@@ -895,6 +918,24 @@ namespace dou2d {
         }
 
         /**
+         * 指定的点击区域
+         */
+        public set hitArea(value: Rectangle) {
+            this.$setHitArea(value);
+        }
+        public get hitArea(): Rectangle {
+            return this.$getHitArea();
+        }
+
+        public $setHitArea(value: Rectangle): void {
+            this._hitArea = value;
+        }
+
+        public $getHitArea(): Rectangle {
+            return this._hitArea;
+        }
+
+        /**
          * 设置对象的 Z 轴顺序
          */
         public set zIndex(value: number) {
@@ -1157,7 +1198,7 @@ namespace dou2d {
          * 更新渲染模式
          */
         public $updateRenderMode(): void {
-            if (!this._visible || this._alpha <= 0 || this.$maskedObject) {
+            if (!this._finalVisible || this._alpha <= 0 || this.$maskedObject) {
                 this.$renderMode = rendering.RenderMode.none;
             }
             else if (this.filters && this.filters.length > 0) {
@@ -1211,17 +1252,27 @@ namespace dou2d {
          * 碰撞检测, 检测舞台坐标下面最先碰撞到的显示对象
          */
         public $hitTest(stageX: number, stageY: number): DisplayObject {
-            if (!this.$renderNode || !this._visible || this._scaleX == 0 || this._scaleY == 0) {
-                return null;
+            if (!this.$renderNode || !this._finalVisible || this._scaleX == 0 || this._scaleY == 0) {
+                if (!this._hitArea) {
+                    return null;
+                }
             }
             let m = this.$getInvertedConcatenatedMatrix();
             // 防止父类影响子类
             if (m.a == 0 && m.b == 0 && m.c == 0 && m.d == 0) {
-                return null;
+                if (!this._hitArea) {
+                    return null;
+                }
             }
             let bounds = this.$getContentBounds();
             let localX = m.a * stageX + m.c * stageY + m.tx;
             let localY = m.b * stageX + m.d * stageY + m.ty;
+            if (this._hitArea) {
+                if (this._hitArea.contains(localX, localY)) {
+                    return this;
+                }
+                return null;
+            }
             if (bounds.contains(localX, localY)) {
                 // 容器已经检查过 scrollRect 和 mask, 避免重复对遮罩进行碰撞
                 if (!this._children) {
@@ -1297,12 +1348,21 @@ namespace dou2d {
             }
         }
 
+        public removeSelf(): void {
+            if (this._parent) {
+                this._parent.removeChild(this);
+            }
+        }
+
         protected addEventListener(type: string, listener: Function, thisObj: any, once: boolean): boolean {
             let result = super.addEventListener(type, listener, thisObj, once);
-            if (type == Event2D.ENTER_FRAME || type == Event2D.RENDER) {
+            if (type == Event2D.ENTER_FRAME || type == Event2D.FIXED_ENTER_FRAME || type == Event2D.RENDER) {
                 let list: DisplayObject[];
                 if (type == Event2D.ENTER_FRAME) {
                     list = once ? sys.enterFrameOnceCallBackList : sys.enterFrameCallBackList;
+                }
+                else if (type == Event2D.FIXED_ENTER_FRAME) {
+                    list = once ? sys.fixedEnterFrameOnceCallBackList : sys.fixedEnterFrameCallBackList;
                 }
                 else {
                     list = once ? sys.renderOnceCallBackList : sys.renderCallBackList;
@@ -1359,12 +1419,16 @@ namespace dou2d {
 
         public off(type: string, listener: Function, thisObj?: any): void {
             super.off(type, listener, thisObj);
-            if (type == Event2D.ENTER_FRAME || type == Event2D.RENDER) {
+            if (type == Event2D.ENTER_FRAME || type == Event2D.FIXED_ENTER_FRAME || type == Event2D.RENDER) {
                 let list: DisplayObject[];
                 let listOnce: DisplayObject[];
                 if (type == Event2D.ENTER_FRAME) {
                     list = sys.enterFrameCallBackList;
                     listOnce = sys.enterFrameOnceCallBackList;
+                }
+                else if (type == Event2D.FIXED_ENTER_FRAME) {
+                    list = sys.fixedEnterFrameCallBackList;
+                    listOnce = sys.fixedEnterFrameOnceCallBackList;
                 }
                 else {
                     list = sys.renderCallBackList;

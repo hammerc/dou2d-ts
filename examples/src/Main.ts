@@ -37,6 +37,7 @@ class Main {
         let demo = urlParams.demo;
         loadJSAsync("bin/examples/" + demo + ".js", () => {
             new dou2d.Engine(examples[demo]);
+            new dou2d.StatPanel();
         });
     }
 }

@@ -27,6 +27,8 @@ namespace dou2d {
 
         protected _inputController: input.InputController;
 
+        protected _linkPreventTap: boolean = false;
+
         protected _textNode: rendering.TextNode;
         protected _graphicsNode: rendering.GraphicsNode;
 
@@ -799,6 +801,24 @@ namespace dou2d {
             return TextFieldUtil.getTextHeight(this);
         }
 
+        /**
+         * 触发 link 事件后是否阻止父级容器后续的 tap 事件冒泡
+         */
+        public set linkPreventTap(value: boolean) {
+            this.$setLinkPreventTap(value);
+        }
+        public get linkPreventTap(): boolean {
+            return this.$getLinkPreventTap();
+        }
+
+        public $setLinkPreventTap(value: boolean): void {
+            this._linkPreventTap = value;
+        }
+
+        public $getLinkPreventTap(): boolean {
+            return this._linkPreventTap;
+        }
+
         public $setWidth(value: number): boolean {
             let values = this.$propertyMap;
             if (isNaN(value)) {
@@ -1223,10 +1243,20 @@ namespace dou2d {
             if (style && style.href) {
                 if (style.href.match(/^event:/)) {
                     let type = style.href.match(/^event:/)[0];
-                    this.dispatchEvent2D(Event2D.LINK, style.href.substring(type.length));
+                    let data = {
+                        text: style.href.substring(type.length),
+                        stageX: e.stageX,
+                        stageY: e.stageY,
+                        localX: e.localX,
+                        localY: e.localY
+                    };
+                    this.dispatchEvent2D(Event2D.LINK, data);
                 }
                 else {
                     open(style.href, style.target || "_blank");
+                }
+                if (this._linkPreventTap) {
+                    e.stopPropagation();
                 }
             }
         }
@@ -1370,7 +1400,16 @@ namespace dou2d {
                 for (let j = 0, elementsLength = line.elements.length; j < elementsLength; j++) {
                     let element: IWTextElement = line.elements[j];
                     let size = element.style.size || values[sys.TextKeys.fontSize];
-                    node.drawText(drawX, drawY + (h - size) / 2, element.text, element.style);
+                    let verticalAlign = values[sys.TextKeys.verticalAlign];
+                    if (verticalAlign == VerticalAlign.top) {
+                        node.drawText(drawX, drawY - (h - size) / 2, element.text, element.style);
+                    }
+                    else if (verticalAlign == VerticalAlign.middle) {
+                        node.drawText(drawX, drawY, element.text, element.style);
+                    }
+                    else {
+                        node.drawText(drawX, drawY + (h - size) / 2, element.text, element.style);
+                    }
                     if (element.style.underline) {
                         underLineData.push(
                             drawX,

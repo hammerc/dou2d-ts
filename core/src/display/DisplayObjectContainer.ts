@@ -403,12 +403,18 @@ namespace dou2d {
         }
 
         public $hitTest(stageX: number, stageY: number): DisplayObject {
-            if (!this._visible) {
+            if (!this._finalVisible) {
                 return null;
             }
             let m = this.$getInvertedConcatenatedMatrix();
             let localX = m.a * stageX + m.c * stageY + m.tx;
             let localY = m.b * stageX + m.d * stageY + m.ty;
+            if (this._hitArea) {
+                if (this._hitArea.contains(localX, localY)) {
+                    return this;
+                }
+                return null;
+            }
             let rect = this._scrollRect ? this._scrollRect : this.$maskRect;
             if (rect && !rect.contains(localX, localY)) {
                 return null;

@@ -78,6 +78,14 @@ declare namespace dou2d.sys {
      */
     let enterFrameOnceCallBackList: DisplayObject[];
     /**
+     * 固定频率进入帧回调对象列表
+     */
+    let fixedEnterFrameCallBackList: DisplayObject[];
+    /**
+     * 仅一次固定频率进入帧回调对象列表
+     */
+    let fixedEnterFrameOnceCallBackList: DisplayObject[];
+    /**
      * 是否派发 Event.RENDER 事件
      */
     let invalidateRenderFlag: boolean;
@@ -369,13 +377,8 @@ declare namespace dou2d.sys {
      * @author wizardc
      */
     class Ticker extends dou.TickerBase {
-        private _deltaTime;
         private _tickList;
         constructor();
-        /**
-         * 相较上一帧经过的时间
-         */
-        readonly deltaTime: number;
         /**
          * 添加自定义心跳计时器
          */
@@ -391,6 +394,7 @@ declare namespace dou2d.sys {
         private broadcastTick;
         private broadcastRender;
         private broadcastEnterFrame;
+        private broadcastFixedEnterFrame;
     }
 }
 declare namespace dou2d.sys {
@@ -417,18 +421,6 @@ declare namespace dou2d.sys {
          * 更新舞台尺寸
          */
         updateStageSize(stageWidth: number, stageHeight: number): void;
-    }
-}
-declare namespace dou2d.sys {
-    /**
-     * 应用统计信息
-     * @author wizardc
-     */
-    class Stat {
-        private _method;
-        private _thisObj;
-        setListener(method: (logicTime: number, renderTime: number, drawCalls: number) => void, thisObj?: any): void;
-        onFrame(logicTime: number, renderTime: number, drawCalls: number): void;
     }
 }
 declare namespace dou2d {
@@ -479,6 +471,8 @@ declare namespace dou2d {
         protected _anchorOffsetX: number;
         protected _anchorOffsetY: number;
         protected _visible: boolean;
+        protected _invisible: boolean;
+        protected _finalVisible: boolean;
         protected _alpha: number;
         protected _tint: number;
         protected _blendMode: BlendMode;
@@ -486,6 +480,7 @@ declare namespace dou2d {
         protected _filters: (Filter | CustomFilter)[];
         protected _cacheAsBitmap: boolean;
         protected _touchEnabled: boolean;
+        protected _hitArea: Rectangle;
         protected _zIndex: number;
         protected _sortableChildren: boolean;
         constructor();
@@ -608,6 +603,14 @@ declare namespace dou2d {
          * 是否可见
          */
         visible: boolean;
+        /**
+         * 是否不可见
+         */
+        invisible: boolean;
+        /**
+         * 最终是否可见
+         */
+        readonly finalVisible: boolean;
         $setVisible(value: boolean): void;
         $getVisible(): boolean;
         /**
@@ -661,6 +664,12 @@ declare namespace dou2d {
         touchEnabled: boolean;
         $setTouchEnabled(value: boolean): void;
         $getTouchEnabled(): boolean;
+        /**
+         * 指定的点击区域
+         */
+        hitArea: Rectangle;
+        $setHitArea(value: Rectangle): void;
+        $getHitArea(): Rectangle;
         /**
          * 设置对象的 Z 轴顺序
          */
@@ -745,6 +754,7 @@ declare namespace dou2d {
          * @param shapeFlag 是否开启精确碰撞检测
          */
         hitTestPoint(x: number, y: number, shapeFlag?: boolean): boolean;
+        removeSelf(): void;
         protected addEventListener(type: string, listener: Function, thisObj: any, once: boolean): boolean;
         willTrigger(type: string): boolean;
         dispatch(event: dou.Event): boolean;
@@ -1741,7 +1751,9 @@ declare namespace dou2d {
         static ADDED: string;
         static REMOVED: string;
         static ENTER_FRAME: string;
-        static EXIT_FRAME: string;
+        static FIXED_ENTER_FRAME: string;
+        static SHOWED: string;
+        static HIDDEN: string;
         static RENDER: string;
         static RESIZE: string;
         static FOCUS_IN: string;
@@ -3538,6 +3550,7 @@ declare namespace dou2d {
         $propertyMap: Object;
         $inputEnabled: boolean;
         protected _inputController: input.InputController;
+        protected _linkPreventTap: boolean;
         protected _textNode: rendering.TextNode;
         protected _graphicsNode: rendering.GraphicsNode;
         protected _isFlow: boolean;
@@ -3711,6 +3724,12 @@ declare namespace dou2d {
          * 获取文本测量高度
          */
         readonly textHeight: number;
+        /**
+         * 触发 link 事件后是否阻止父级容器后续的 tap 事件冒泡
+         */
+        linkPreventTap: boolean;
+        $setLinkPreventTap(value: boolean): void;
+        $getLinkPreventTap(): boolean;
         $setWidth(value: number): boolean;
         $getWidth(): number;
         $setHeight(value: number): boolean;
@@ -3935,11 +3954,18 @@ declare namespace dou2d.touch {
 declare namespace dou2d {
     /**
      * 注册一个下次渲染之前执行的方法
+     * * 同一个方法重复添加会多次调用
      */
     function callLater(method: Function, thisObj: any, ...args: any[]): void;
+    /**
+     * 注册一个下次渲染之前执行的方法
+     * * 同一个方法重复添加只会调用一次
+     */
+    function callLaterUnique(method: Function, thisObj: any, ...args: any[]): void;
     namespace sys {
         function updateCallLater(): void;
         function callLater(method: Function, thisObj: any, ...args: any[]): void;
+        function callLaterUnique(method: Function, thisObj: any, ...args: any[]): void;
     }
 }
 declare namespace dou2d {
@@ -4170,6 +4196,60 @@ declare namespace dou2d {
          * 生成一个 UUID
          */
         function generate(): string;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 时间类
+     * @author wizardc
+     */
+    class Time {
+        /**
+         * 项目启动后经过的时间
+         */
+        static readonly time: number;
+        /**
+         * 上一帧到这一帧经过的时间
+         */
+        static readonly deltaTime: number;
+        /**
+         * 固定频率刷新时间间隔, 默认值为 50 毫秒
+         */
+        static fixedDeltaTime: number;
+    }
+    namespace sys {
+        let deltaTime: number;
+        let fixedDeltaTime: number;
+        let fixedPassedTime: number;
+    }
+}
+declare namespace dou2d.sys {
+    /**
+     * 应用统计信息
+     * @author wizardc
+     */
+    class Stat {
+        private _method;
+        private _thisObj;
+        setListener(method: (logicTime: number, renderTime: number, drawCalls: number) => void, thisObj?: any): void;
+        onFrame(logicTime: number, renderTime: number, drawCalls: number): void;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 简单的性能统计信息面板
+     * * 推荐实际项目中自己实现该面板来统计更多有用的详细信息
+     * @author wizardc
+     */
+    class StatPanel extends DisplayObjectContainer {
+        private _label;
+        private _time;
+        private _frame;
+        private _drawCalls;
+        private _logicTime;
+        private _renderTime;
+        constructor();
+        private receive;
     }
 }
 declare namespace dou2d {

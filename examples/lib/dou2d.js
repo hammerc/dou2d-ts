@@ -69,6 +69,14 @@ var dou2d;
          */
         sys.enterFrameOnceCallBackList = [];
         /**
+         * 固定频率进入帧回调对象列表
+         */
+        sys.fixedEnterFrameCallBackList = [];
+        /**
+         * 仅一次固定频率进入帧回调对象列表
+         */
+        sys.fixedEnterFrameOnceCallBackList = [];
+        /**
          * 是否派发 Event.RENDER 事件
          */
         sys.invalidateRenderFlag = false;
@@ -834,14 +842,7 @@ var dou2d;
         class Ticker extends dou.TickerBase {
             constructor() {
                 super();
-                this._deltaTime = 0;
                 this._tickList = [];
-            }
-            /**
-             * 相较上一帧经过的时间
-             */
-            get deltaTime() {
-                return this._deltaTime;
             }
             /**
              * 添加自定义心跳计时器
@@ -877,18 +878,19 @@ var dou2d;
                 }
             }
             updateLogic(passedTime) {
-                this._deltaTime = passedTime;
+                sys.deltaTime = passedTime;
                 let logicCost, renderCost;
-                logicCost = dou.getTimer();
+                logicCost = dou2d.Time.time;
                 dou.Tween.tick(passedTime, false);
                 this.broadcastDelay(passedTime);
                 this.broadcastTick(passedTime);
                 this.broadcastRender();
-                renderCost = dou.getTimer();
+                renderCost = dou2d.Time.time;
                 let drawCalls = sys.player.render(passedTime);
-                renderCost = dou.getTimer() - renderCost;
+                renderCost = dou2d.Time.time - renderCost;
                 this.broadcastEnterFrame();
-                logicCost = dou.getTimer() - logicCost - renderCost;
+                this.broadcastFixedEnterFrame(passedTime);
+                logicCost = dou2d.Time.time - logicCost - renderCost;
                 sys.stat.onFrame(logicCost, renderCost, drawCalls);
             }
             broadcastDelay(passedTime) {
@@ -933,6 +935,30 @@ var dou2d;
                     sys.enterFrameOnceCallBackList = [];
                     for (let display of list) {
                         display.dispatchEvent(dou2d.Event2D.ENTER_FRAME);
+                    }
+                }
+            }
+            broadcastFixedEnterFrame(passedTime) {
+                sys.fixedPassedTime += passedTime;
+                let times = ~~(sys.fixedPassedTime / sys.fixedDeltaTime);
+                if (times > 0) {
+                    sys.fixedPassedTime %= sys.fixedDeltaTime;
+                    if (sys.fixedEnterFrameCallBackList.length > 0) {
+                        let list = sys.fixedEnterFrameCallBackList.concat();
+                        for (let display of list) {
+                            for (let i = 0; i < times; i++) {
+                                display.dispatchEvent(dou2d.Event2D.FIXED_ENTER_FRAME);
+                            }
+                        }
+                    }
+                    if (sys.fixedEnterFrameOnceCallBackList.length > 0) {
+                        let list = sys.fixedEnterFrameOnceCallBackList;
+                        sys.fixedEnterFrameOnceCallBackList = [];
+                        for (let display of list) {
+                            for (let i = 0; i < times; i++) {
+                                display.dispatchEvent(dou2d.Event2D.FIXED_ENTER_FRAME);
+                            }
+                        }
                     }
                 }
             }
@@ -1008,28 +1034,6 @@ var dou2d;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
-    var sys;
-    (function (sys) {
-        /**
-         * 应用统计信息
-         * @author wizardc
-         */
-        class Stat {
-            setListener(method, thisObj) {
-                this._method = method;
-                this._thisObj = thisObj;
-            }
-            onFrame(logicTime, renderTime, drawCalls) {
-                if (this._method) {
-                    this._method.call(this._thisObj, logicTime, renderTime, drawCalls);
-                }
-            }
-        }
-        sys.Stat = Stat;
-    })(sys = dou2d.sys || (dou2d.sys = {}));
-})(dou2d || (dou2d = {}));
-var dou2d;
-(function (dou2d) {
     const tempRect = new dou2d.Rectangle();
     /**
      * 显示对象
@@ -1064,6 +1068,8 @@ var dou2d;
             this._anchorOffsetX = 0;
             this._anchorOffsetY = 0;
             this._visible = true;
+            this._invisible = false;
+            this._finalVisible = true;
             this._alpha = 1;
             this._tint = 0;
             this._blendMode = "normal" /* normal */;
@@ -1527,16 +1533,33 @@ var dou2d;
          * 是否可见
          */
         set visible(value) {
-            this.$setVisible(value);
+            this._visible = value;
+            this.$setVisible(this._visible && !this._invisible);
         }
         get visible() {
+            return this._visible;
+        }
+        /**
+         * 是否不可见
+         */
+        set invisible(value) {
+            this._invisible = value;
+            this.$setVisible(this._visible && !this._invisible);
+        }
+        get invisible() {
+            return this._invisible;
+        }
+        /**
+         * 最终是否可见
+         */
+        get finalVisible() {
             return this.$getVisible();
         }
         $setVisible(value) {
-            if (this._visible == value) {
+            if (this._finalVisible == value) {
                 return;
             }
-            this._visible = value;
+            this._finalVisible = value;
             this.$updateRenderMode();
             let p = this._parent;
             if (p && !p.$cacheDirty) {
@@ -1548,9 +1571,10 @@ var dou2d;
                 maskedObject.$cacheDirty = true;
                 maskedObject.$cacheDirtyUp();
             }
+            this.dispatchEvent2D(value ? dou2d.Event2D.SHOWED : dou2d.Event2D.HIDDEN);
         }
         $getVisible() {
-            return this._visible;
+            return this._finalVisible;
         }
         /**
          * 透明度
@@ -1813,6 +1837,21 @@ var dou2d;
             return this._touchEnabled;
         }
         /**
+         * 指定的点击区域
+         */
+        set hitArea(value) {
+            this.$setHitArea(value);
+        }
+        get hitArea() {
+            return this.$getHitArea();
+        }
+        $setHitArea(value) {
+            this._hitArea = value;
+        }
+        $getHitArea() {
+            return this._hitArea;
+        }
+        /**
          * 设置对象的 Z 轴顺序
          */
         set zIndex(value) {
@@ -2058,7 +2097,7 @@ var dou2d;
          * 更新渲染模式
          */
         $updateRenderMode() {
-            if (!this._visible || this._alpha <= 0 || this.$maskedObject) {
+            if (!this._finalVisible || this._alpha <= 0 || this.$maskedObject) {
                 this.$renderMode = 1 /* none */;
             }
             else if (this.filters && this.filters.length > 0) {
@@ -2109,17 +2148,27 @@ var dou2d;
          * 碰撞检测, 检测舞台坐标下面最先碰撞到的显示对象
          */
         $hitTest(stageX, stageY) {
-            if (!this.$renderNode || !this._visible || this._scaleX == 0 || this._scaleY == 0) {
-                return null;
+            if (!this.$renderNode || !this._finalVisible || this._scaleX == 0 || this._scaleY == 0) {
+                if (!this._hitArea) {
+                    return null;
+                }
             }
             let m = this.$getInvertedConcatenatedMatrix();
             // 防止父类影响子类
             if (m.a == 0 && m.b == 0 && m.c == 0 && m.d == 0) {
-                return null;
+                if (!this._hitArea) {
+                    return null;
+                }
             }
             let bounds = this.$getContentBounds();
             let localX = m.a * stageX + m.c * stageY + m.tx;
             let localY = m.b * stageX + m.d * stageY + m.ty;
+            if (this._hitArea) {
+                if (this._hitArea.contains(localX, localY)) {
+                    return this;
+                }
+                return null;
+            }
             if (bounds.contains(localX, localY)) {
                 // 容器已经检查过 scrollRect 和 mask, 避免重复对遮罩进行碰撞
                 if (!this._children) {
@@ -2193,12 +2242,20 @@ var dou2d;
                 return true;
             }
         }
+        removeSelf() {
+            if (this._parent) {
+                this._parent.removeChild(this);
+            }
+        }
         addEventListener(type, listener, thisObj, once) {
             let result = super.addEventListener(type, listener, thisObj, once);
-            if (type == dou2d.Event2D.ENTER_FRAME || type == dou2d.Event2D.RENDER) {
+            if (type == dou2d.Event2D.ENTER_FRAME || type == dou2d.Event2D.FIXED_ENTER_FRAME || type == dou2d.Event2D.RENDER) {
                 let list;
                 if (type == dou2d.Event2D.ENTER_FRAME) {
                     list = once ? dou2d.sys.enterFrameOnceCallBackList : dou2d.sys.enterFrameCallBackList;
+                }
+                else if (type == dou2d.Event2D.FIXED_ENTER_FRAME) {
+                    list = once ? dou2d.sys.fixedEnterFrameOnceCallBackList : dou2d.sys.fixedEnterFrameCallBackList;
                 }
                 else {
                     list = once ? dou2d.sys.renderOnceCallBackList : dou2d.sys.renderCallBackList;
@@ -2250,12 +2307,16 @@ var dou2d;
         }
         off(type, listener, thisObj) {
             super.off(type, listener, thisObj);
-            if (type == dou2d.Event2D.ENTER_FRAME || type == dou2d.Event2D.RENDER) {
+            if (type == dou2d.Event2D.ENTER_FRAME || type == dou2d.Event2D.FIXED_ENTER_FRAME || type == dou2d.Event2D.RENDER) {
                 let list;
                 let listOnce;
                 if (type == dou2d.Event2D.ENTER_FRAME) {
                     list = dou2d.sys.enterFrameCallBackList;
                     listOnce = dou2d.sys.enterFrameOnceCallBackList;
+                }
+                else if (type == dou2d.Event2D.FIXED_ENTER_FRAME) {
+                    list = dou2d.sys.fixedEnterFrameCallBackList;
+                    listOnce = dou2d.sys.fixedEnterFrameOnceCallBackList;
                 }
                 else {
                     list = dou2d.sys.renderCallBackList;
@@ -2651,12 +2712,18 @@ var dou2d;
             bounds.set(xMin, yMin, xMax - xMin, yMax - yMin);
         }
         $hitTest(stageX, stageY) {
-            if (!this._visible) {
+            if (!this._finalVisible) {
                 return null;
             }
             let m = this.$getInvertedConcatenatedMatrix();
             let localX = m.a * stageX + m.c * stageY + m.tx;
             let localY = m.b * stageX + m.d * stageY + m.ty;
+            if (this._hitArea) {
+                if (this._hitArea.contains(localX, localY)) {
+                    return this;
+                }
+                return null;
+            }
             let rect = this._scrollRect ? this._scrollRect : this.$maskRect;
             if (rect && !rect.contains(localX, localY)) {
                 return null;
@@ -4219,7 +4286,9 @@ var dou2d;
     Event2D.ADDED = "added";
     Event2D.REMOVED = "removed";
     Event2D.ENTER_FRAME = "enterFrame";
-    Event2D.EXIT_FRAME = "exitFrame";
+    Event2D.FIXED_ENTER_FRAME = "fixedEnterFrame";
+    Event2D.SHOWED = "showed";
+    Event2D.HIDDEN = "hidden";
     Event2D.RENDER = "render";
     Event2D.RESIZE = "resize";
     Event2D.FOCUS_IN = "focusIn";
@@ -4571,10 +4640,10 @@ var dou2d;
          * @param inner 是否为内发光
          * @param knockout 是否具有挖空效果
          */
-        constructor(color = 0xFF0000, alpha = 1, blurX = 6, blurY = 6, strength = 2, inner = false, knockout = false) {
+        constructor(color = 0xff0000, alpha = 1, blurX = 6, blurY = 6, strength = 2, inner = false, knockout = false) {
             super("glow");
             this._color = color;
-            this._blue = color & 0x0000FF;
+            this._blue = color & 0x0000ff;
             this._green = (color & 0x00ff00) >> 8;
             this._red = color >> 16;
             this._alpha = alpha;
@@ -4603,7 +4672,7 @@ var dou2d;
                 return;
             }
             this._color = value;
-            this._blue = value & 0x0000FF;
+            this._blue = value & 0x0000ff;
             this._green = (value & 0x00ff00) >> 8;
             this._red = value >> 16;
             this.$uniforms.color.x = this._red / 255;
@@ -9083,7 +9152,7 @@ var dou2d;
                 this.onFocus();
             }
             onFocus() {
-                if (!this._text.visible) {
+                if (!this._text.$getVisible()) {
                     return;
                 }
                 if (this._isFocus) {
@@ -9154,7 +9223,7 @@ var dou2d;
                 this.updateInput();
             }
             updateInput() {
-                if (!this._text.visible && this._stageText) {
+                if (!this._text.$getVisible() && this._stageText) {
                     this.hideInput();
                 }
             }
@@ -9373,6 +9442,7 @@ var dou2d;
         constructor() {
             super();
             this.$inputEnabled = false;
+            this._linkPreventTap = false;
             this._isFlow = false;
             this._isTyping = false;
             let textNode = new dou2d.rendering.TextNode();
@@ -10058,6 +10128,21 @@ var dou2d;
             this.$getLinesArr();
             return dou2d.TextFieldUtil.getTextHeight(this);
         }
+        /**
+         * 触发 link 事件后是否阻止父级容器后续的 tap 事件冒泡
+         */
+        set linkPreventTap(value) {
+            this.$setLinkPreventTap(value);
+        }
+        get linkPreventTap() {
+            return this.$getLinkPreventTap();
+        }
+        $setLinkPreventTap(value) {
+            this._linkPreventTap = value;
+        }
+        $getLinkPreventTap() {
+            return this._linkPreventTap;
+        }
         $setWidth(value) {
             let values = this.$propertyMap;
             if (isNaN(value)) {
@@ -10461,10 +10546,20 @@ var dou2d;
             if (style && style.href) {
                 if (style.href.match(/^event:/)) {
                     let type = style.href.match(/^event:/)[0];
-                    this.dispatchEvent2D(dou2d.Event2D.LINK, style.href.substring(type.length));
+                    let data = {
+                        text: style.href.substring(type.length),
+                        stageX: e.stageX,
+                        stageY: e.stageY,
+                        localX: e.localX,
+                        localY: e.localY
+                    };
+                    this.dispatchEvent2D(dou2d.Event2D.LINK, data);
                 }
                 else {
                     open(style.href, style.target || "_blank");
+                }
+                if (this._linkPreventTap) {
+                    e.stopPropagation();
                 }
             }
         }
@@ -10604,7 +10699,16 @@ var dou2d;
                 for (let j = 0, elementsLength = line.elements.length; j < elementsLength; j++) {
                     let element = line.elements[j];
                     let size = element.style.size || values[0 /* fontSize */];
-                    node.drawText(drawX, drawY + (h - size) / 2, element.text, element.style);
+                    let verticalAlign = values[10 /* verticalAlign */];
+                    if (verticalAlign == 0 /* top */) {
+                        node.drawText(drawX, drawY - (h - size) / 2, element.text, element.style);
+                    }
+                    else if (verticalAlign == 1 /* middle */) {
+                        node.drawText(drawX, drawY, element.text, element.style);
+                    }
+                    else {
+                        node.drawText(drawX, drawY + (h - size) / 2, element.text, element.style);
+                    }
                     if (element.style.underline) {
                         underLineData.push(drawX, drawY + (h) / 2, element.width, element.style.textColor);
                     }
@@ -11502,16 +11606,28 @@ var dou2d;
 (function (dou2d) {
     /**
      * 注册一个下次渲染之前执行的方法
+     * * 同一个方法重复添加会多次调用
      */
     function callLater(method, thisObj, ...args) {
         sys.callLater(method, thisObj, ...args);
     }
     dou2d.callLater = callLater;
+    /**
+     * 注册一个下次渲染之前执行的方法
+     * * 同一个方法重复添加只会调用一次
+     */
+    function callLaterUnique(method, thisObj, ...args) {
+        sys.callLaterUnique(method, thisObj, ...args);
+    }
+    dou2d.callLaterUnique = callLaterUnique;
     let sys;
     (function (sys) {
         let functionList = [];
         let thisList = [];
         let argsList = [];
+        let functionUniqueList = [];
+        let thisUniqueList = [];
+        let argsUniqueList = [];
         function updateCallLater() {
             if (functionList.length > 0) {
                 let fList = functionList;
@@ -11524,6 +11640,17 @@ var dou2d;
                     fList[i].apply(tList[i], ...aList[i]);
                 }
             }
+            if (functionUniqueList.length > 0) {
+                let fList = functionUniqueList;
+                let tList = thisUniqueList;
+                let aList = argsUniqueList;
+                functionUniqueList = [];
+                thisUniqueList = [];
+                argsUniqueList = [];
+                for (let i = 0, len = fList.length; i < len; i++) {
+                    fList[i].apply(tList[i], ...aList[i]);
+                }
+            }
         }
         sys.updateCallLater = updateCallLater;
         function callLater(method, thisObj, ...args) {
@@ -11532,6 +11659,17 @@ var dou2d;
             argsList.push(args);
         }
         sys.callLater = callLater;
+        function callLaterUnique(method, thisObj, ...args) {
+            for (let i = 0, len = functionUniqueList.length; i < len; i++) {
+                if (functionUniqueList[i] === method && thisUniqueList[i] === thisObj) {
+                    return;
+                }
+            }
+            functionUniqueList.push(method);
+            thisUniqueList.push(thisObj);
+            argsUniqueList.push(args);
+        }
+        sys.callLaterUnique = callLaterUnique;
     })(sys = dou2d.sys || (dou2d.sys = {}));
 })(dou2d || (dou2d = {}));
 var dou2d;
@@ -12303,6 +12441,113 @@ var dou2d;
         }
         UUID.generate = generate;
     })(UUID = dou2d.UUID || (dou2d.UUID = {}));
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 时间类
+     * @author wizardc
+     */
+    class Time {
+        /**
+         * 项目启动后经过的时间
+         */
+        static get time() {
+            return dou.getTimer();
+        }
+        /**
+         * 上一帧到这一帧经过的时间
+         */
+        static get deltaTime() {
+            return sys.deltaTime;
+        }
+        /**
+         * 固定频率刷新时间间隔, 默认值为 50 毫秒
+         */
+        static set fixedDeltaTime(value) {
+            sys.fixedDeltaTime = value;
+        }
+        static get fixedDeltaTime() {
+            return sys.fixedDeltaTime;
+        }
+    }
+    dou2d.Time = Time;
+    let sys;
+    (function (sys) {
+        sys.deltaTime = 0;
+        sys.fixedDeltaTime = 50;
+        sys.fixedPassedTime = 0;
+    })(sys = dou2d.sys || (dou2d.sys = {}));
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    var sys;
+    (function (sys) {
+        /**
+         * 应用统计信息
+         * @author wizardc
+         */
+        class Stat {
+            setListener(method, thisObj) {
+                this._method = method;
+                this._thisObj = thisObj;
+            }
+            onFrame(logicTime, renderTime, drawCalls) {
+                if (this._method) {
+                    this._method.call(this._thisObj, logicTime, renderTime, drawCalls);
+                }
+            }
+        }
+        sys.Stat = Stat;
+    })(sys = dou2d.sys || (dou2d.sys = {}));
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 简单的性能统计信息面板
+     * * 推荐实际项目中自己实现该面板来统计更多有用的详细信息
+     * @author wizardc
+     */
+    class StatPanel extends dou2d.DisplayObjectContainer {
+        constructor() {
+            super();
+            this._time = 0;
+            this._frame = 0;
+            this._drawCalls = 0;
+            this._logicTime = 0;
+            this._renderTime = 0;
+            this._label = new dou2d.TextField();
+            this._label.text = "FPS: 0\rDraw: 0\rLogic: 0ms\rRender: 0ms";
+            this._label.size = 20;
+            this._label.textColor = 0xffffff;
+            this._label.strokeColor = 0x000000;
+            this._label.stroke = 1;
+            this.addChild(this._label);
+            dou2d.sys.stat.setListener(this.receive, this);
+            dou2d.sys.stage.addChild(this);
+        }
+        receive(logicTime, renderTime, drawCalls) {
+            this._time += dou2d.Time.deltaTime;
+            this._frame += 1;
+            this._drawCalls += drawCalls;
+            this._logicTime += logicTime;
+            this._renderTime += renderTime;
+            if (this._frame == dou2d.sys.stage.frameRate) {
+                let passedTime = this._time * 0.001;
+                let fps = (this._frame / passedTime).toFixed(1);
+                let draw = Math.ceil(this._drawCalls / this._frame);
+                let logic = Math.ceil(this._logicTime / this._frame);
+                let render = Math.ceil(this._renderTime / this._frame);
+                this._label.text = `FPS: ${fps}\rDraw: ${draw}\rLogic: ${logic}ms\rRender: ${render}ms`;
+                this._time = 0;
+                this._frame = 0;
+                this._drawCalls = 0;
+                this._logicTime = 0;
+                this._renderTime = 0;
+            }
+        }
+    }
+    dou2d.StatPanel = StatPanel;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {

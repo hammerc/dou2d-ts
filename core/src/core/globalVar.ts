@@ -67,6 +67,16 @@ namespace dou2d.sys {
     export let enterFrameOnceCallBackList: DisplayObject[] = [];
 
     /**
+     * 固定频率进入帧回调对象列表
+     */
+    export let fixedEnterFrameCallBackList: DisplayObject[] = [];
+
+    /**
+     * 仅一次固定频率进入帧回调对象列表
+     */
+    export let fixedEnterFrameOnceCallBackList: DisplayObject[] = [];
+
+    /**
      * 是否派发 Event.RENDER 事件
      */
     export let invalidateRenderFlag: boolean = false;
