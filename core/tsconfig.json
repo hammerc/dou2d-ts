@@ -83,6 +83,8 @@
     "src/display/SpriteSheet.ts",
     "src/display/RenderTexture.ts",
 
+    "src/drag/DragManager.ts",
+
     "src/enum/DrawableType.ts",
     "src/enum/RenderMode.ts",
     "src/enum/RenderNodeType.ts",
@@ -103,8 +105,10 @@
 
     "src/event/Event2D.ts",
     "src/event/TouchEvent.ts",
+    "src/event/DragEvent.ts",
 
     "src/filters/Filter.ts",
+    "src/filters/ColorBrushFilter.ts",
     "src/filters/ColorMatrixFilter.ts",
     "src/filters/BlurFilter.ts",
     "src/filters/CustomFilter.ts",
@@ -174,6 +178,7 @@
     "src/utils/TextFieldUtil.ts",
     "src/utils/UUID.ts",
     "src/utils/Time.ts",
+    "src/utils/BezierUtil.ts",
 
     "src/debug/Stat.ts",
     "src/debug/StatPanel.ts",

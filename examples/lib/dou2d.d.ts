@@ -481,6 +481,7 @@ declare namespace dou2d {
         protected _cacheAsBitmap: boolean;
         protected _touchEnabled: boolean;
         protected _hitArea: Rectangle;
+        protected _dropEnabled: boolean;
         protected _zIndex: number;
         protected _sortableChildren: boolean;
         constructor();
@@ -670,6 +671,12 @@ declare namespace dou2d {
         hitArea: Rectangle;
         $setHitArea(value: Rectangle): void;
         $getHitArea(): Rectangle;
+        /**
+         * 是否接受其它对象拖入
+         */
+        dropEnabled: boolean;
+        $setDropEnabled(value: boolean): void;
+        $getDropEnabled(): boolean;
         /**
          * 设置对象的 Z 轴顺序
          */
@@ -1379,6 +1386,34 @@ declare namespace dou2d {
         dispose(): void;
     }
 }
+declare namespace dou2d {
+    /**
+     * 拖拽管理器类
+     * @author wizardc
+     */
+    class DragManager {
+        private static _instance;
+        static readonly instance: DragManager;
+        private _dragging;
+        private _dropTarget;
+        private _dragTarget;
+        private _originDrag;
+        private _dragData;
+        private _offsetX;
+        private _offsetY;
+        private constructor();
+        readonly dragging: boolean;
+        readonly originDrag: DisplayObject;
+        $dropRegister(target: DisplayObject, canDrop: boolean): void;
+        private stageMoveHandler;
+        private onMove;
+        private onEnd;
+        doDrag(dragTarget: DisplayObject, touchEvent: TouchEvent, dragData?: any, dragImage?: DisplayObject, xOffset?: number, yOffset?: number, imageAlpha?: number): DisplayObject;
+        private onStageMove;
+        private onStageEnd;
+        private endDrag;
+    }
+}
 declare namespace dou2d.rendering {
     /**
      * 绘制命令类型
@@ -1811,6 +1846,50 @@ declare namespace dou2d {
         onRecycle(): void;
     }
 }
+declare module dou {
+    interface EventDispatcher {
+        /**
+         * 抛出拖拽事件
+         */
+        dispatchDragEvent(type: string, dragData?: any, bubbles?: boolean, cancelable?: boolean): boolean;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 拖拽事件
+     * @author wizardc
+     */
+    class DragEvent extends Event2D {
+        /**
+         * 拖拽对象进入接受安放的拖拽区域时, 由接受对象播放
+         */
+        static DRAG_ENTER: string;
+        /**
+         * 拖拽对象在接受安放的拖拽区域中移动时, 由接受对象播放
+         */
+        static DRAG_MOVE: string;
+        /**
+         * 拖拽对象在离开接受安放的拖拽区域时, 由接受对象播放
+         */
+        static DRAG_EXIT: string;
+        /**
+         * 拖拽对象在接受安放的拖拽区域放下时, 由接受对象播放
+         */
+        static DRAG_DROP: string;
+        /**
+         * 拖拽对象开始拖拽时, 由拖拽对象播放
+         */
+        static DRAG_START: string;
+        /**
+         * 拖拽对象在无效的区域放下时, 由拖拽对象播放
+         */
+        static DRAG_OVER: string;
+        private _dragData;
+        readonly dragData: any;
+        $initDragEvent(type: string, dragData?: any, bubbles?: boolean, cancelable?: boolean): void;
+        onRecycle(): void;
+    }
+}
 declare namespace dou2d {
     /**
      * 滤镜基类
@@ -1830,6 +1909,20 @@ declare namespace dou2d {
         readonly type: string;
         onPropertyChange(): void;
         protected updatePadding(): void;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 颜色刷子着色器
+     * * 将显示对象刷成一种单一颜色
+     * @author wizardc
+     */
+    class ColorBrushFilter extends Filter {
+        constructor(r?: number, g?: number, b?: number, a?: number);
+        r: number;
+        g: number;
+        b: number;
+        a: number;
     }
 }
 declare namespace dou2d {
@@ -3245,8 +3338,9 @@ declare namespace dou2d.rendering {
     namespace ShaderLib {
         const default_vs = "attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\nattribute vec2 aColor;\nuniform vec2 projectionVector;\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nconst vec2 center=vec2(-1.0,1.0);\nvoid main(){\ngl_Position=vec4((aVertexPosition/projectionVector)+center,0.0,1.0);\nvTextureCoord=aTextureCoord;\nvColor=vec4(aColor.x,aColor.x,aColor.x,aColor.x);\n}";
         const blur_fs = "precision mediump float;\nuniform vec2 blur;\nuniform sampler2D uSampler;\nuniform vec2 uTextureSize;\nvarying vec2 vTextureCoord;\nvoid main(){\nconst int sampleRadius=5;\nconst int samples=sampleRadius*2+1;\nvec2 blurUv=blur/uTextureSize;\nvec4 color=vec4(0.0,0.0,0.0,0.0);\nvec2 uv=vec2(0.0,0.0);\nblurUv/=float(sampleRadius);\nfor(int i=-sampleRadius;i<=sampleRadius;i++){\nuv.x=vTextureCoord.x+float(i)*blurUv.x;\nuv.y=vTextureCoord.y+float(i)*blurUv.y;\ncolor+=texture2D(uSampler,uv);\n}\ncolor/=float(samples);\ngl_FragColor=color;\n}";
+        const colorBrush_fs = "precision lowp float;\nuniform float r;\nuniform float g;\nuniform float b;\nuniform float a;\nuniform sampler2D uSampler;\nvarying vec2 vTextureCoord;\nvoid main(){\nvec4 color=texture2D(uSampler,vTextureCoord);\nif(color.a>0.0){\ncolor=vec4(color.rgb/color.a,color.a);\n}\ncolor.r=r;\ncolor.g=g;\ncolor.b=b;\ncolor.a*=a;\ngl_FragColor=vec4(color.rgb*color.a,color.a);\n}";
         const colorTransform_fs = "precision mediump float;\nuniform mat4 matrix;\nuniform vec4 colorAdd;\nuniform sampler2D uSampler;\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nvoid main(){\nvec4 texColor=texture2D(uSampler,vTextureCoord);\nif(texColor.a>0.0){\ntexColor=vec4(texColor.rgb/texColor.a,texColor.a);\n}\nvec4 locColor=clamp(texColor*matrix+colorAdd,0.0,1.0);\ngl_FragColor=vColor*vec4(locColor.rgb*locColor.a,locColor.a);\n}";
-        const glow_fs = "precision highp float;\nuniform float dist;\nuniform float angle;\nuniform vec4 color;\nuniform float alpha;\nuniform float blurX;\nuniform float blurY;\nuniform float strength;\nuniform float inner;\nuniform float knockout;\nuniform float hideObject;\nuniform sampler2D uSampler;\nuniform vec2 uTextureSize;\nvarying vec2 vTextureCoord;\nfloat random(vec2 scale){\nreturn fract(sin(dot(gl_FragCoord.xy,scale))*43758.5453);\n}\nvoid main(){\nvec2 px=vec2(1.0/uTextureSize.x,1.0/uTextureSize.y);\nconst float linearSamplingTimes=7.0;\nconst float circleSamplingTimes=12.0;\nvec4 ownColor=texture2D(uSampler,vTextureCoord);\nvec4 curColor;\nfloat totalAlpha=0.0;\nfloat maxTotalAlpha=0.0;\nfloat curDistanceX=0.0;\nfloat curDistanceY=0.0;\nfloat offsetX=dist*cos(angle)*px.x;\nfloat offsetY=dist*sin(angle)*px.y;\nconst float PI=3.14159265358979323846264;\nfloat cosAngle;\nfloat sinAngle;\nfloat offset=PI*2.0/circleSamplingTimes*random(vec2(12.9898,78.233));\nfloat stepX=blurX*px.x/linearSamplingTimes;\nfloat stepY=blurY*px.y/linearSamplingTimes;\nfor(float a=0.0;a<=PI*2.0;a+=PI*2.0/circleSamplingTimes){\ncosAngle=cos(a+offset);\nsinAngle=sin(a+offset);\nfor(float i=1.0;i<=linearSamplingTimes;i++){\ncurDistanceX=i*stepX*cosAngle;\ncurDistanceY=i*stepY*sinAngle;\nif(vTextureCoord.x+curDistanceX-offsetX>=0.0 && vTextureCoord.y+curDistanceY+offsetY<=1.0){\ncurColor=texture2D(uSampler,vec2(vTextureCoord.x+curDistanceX-offsetX,vTextureCoord.y+curDistanceY+offsetY));\ntotalAlpha+=(linearSamplingTimes-i)*curColor.a;\n}\nmaxTotalAlpha+=(linearSamplingTimes-i);\n}\n}\nownColor.a=max(ownColor.a,0.0001);\nownColor.rgb=ownColor.rgb/ownColor.a;\nfloat outerGlowAlpha=(totalAlpha/maxTotalAlpha)*strength*alpha*(1.-inner)*max(min(hideObject,knockout),1.-ownColor.a);\nfloat innerGlowAlpha=((maxTotalAlpha-totalAlpha)/maxTotalAlpha)*strength*alpha*inner*ownColor.a;\nownColor.a=max(ownColor.a*knockout*(1.-hideObject),0.0001);\nvec3 mix1=mix(ownColor.rgb,color.rgb,innerGlowAlpha/(innerGlowAlpha+ownColor.a));\nvec3 mix2=mix(mix1,color.rgb,outerGlowAlpha/(innerGlowAlpha+ownColor.a+outerGlowAlpha));\nfloat resultAlpha=min(ownColor.a+outerGlowAlpha+innerGlowAlpha,1.);\ngl_FragColor=vec4(mix2*resultAlpha,resultAlpha);\n}";
+        const glow_fs = "precision highp float;\nuniform float dist;\nuniform float angle;\nuniform vec4 color;\nuniform float alpha;\nuniform float blurX;\nuniform float blurY;\nuniform float strength;\nuniform float inner;\nuniform float knockout;\nuniform float hideObject;\nuniform sampler2D uSampler;\nuniform vec2 uTextureSize;\nvarying vec2 vTextureCoord;\nfloat random(vec2 scale){\nreturn fract(sin(dot(gl_FragCoord.xy,scale))*43758.5453);\n}\nvoid main(){\nvec2 px=vec2(1.0/uTextureSize.x,1.0/uTextureSize.y);\nconst float linearSamplingTimes=7.0;\nconst float circleSamplingTimes=12.0;\nvec4 ownColor=texture2D(uSampler,vTextureCoord);\nvec4 curColor;\nfloat totalAlpha=0.0;\nfloat maxTotalAlpha=0.0;\nfloat curDistanceX=0.0;\nfloat curDistanceY=0.0;\nfloat offsetX=dist*cos(angle)*px.x;\nfloat offsetY=dist*sin(angle)*px.y;\nconst float PI=3.14159265358979323846264;\nfloat cosAngle;\nfloat sinAngle;\nfloat offset=PI*2.0/circleSamplingTimes*random(vec2(12.9898,78.233));\nfloat stepX=blurX*px.x/linearSamplingTimes;\nfloat stepY=blurY*px.y/linearSamplingTimes;\nfor(float a=0.0;a<=PI*2.0;a+=PI*2.0/circleSamplingTimes){\ncosAngle=cos(a+offset);\nsinAngle=sin(a+offset);\nfor(float i=1.0;i<=linearSamplingTimes;i++){\ncurDistanceX=i*stepX*cosAngle;\ncurDistanceY=i*stepY*sinAngle;\nif(vTextureCoord.x+curDistanceX-offsetX>=0.0 && vTextureCoord.y+curDistanceY+offsetY<=1.0){\ncurColor=texture2D(uSampler,vec2(vTextureCoord.x+curDistanceX-offsetX,vTextureCoord.y+curDistanceY+offsetY));\ntotalAlpha+=(linearSamplingTimes-i)*curColor.a;\n}\nmaxTotalAlpha+=(linearSamplingTimes-i);\n}\n}\nownColor.a=max(ownColor.a,0.0001);\nownColor.rgb=ownColor.rgb/ownColor.a;\nfloat outerGlowAlpha=(totalAlpha/maxTotalAlpha)*strength*alpha*(1.0-inner)*max(min(hideObject,knockout),1.0-ownColor.a);\nfloat innerGlowAlpha=((maxTotalAlpha-totalAlpha)/maxTotalAlpha)*strength*alpha*inner*ownColor.a;\nownColor.a=max(ownColor.a*knockout*(1.0-hideObject),0.0001);\nvec3 mix1=mix(ownColor.rgb,color.rgb,innerGlowAlpha/(innerGlowAlpha+ownColor.a));\nvec3 mix2=mix(mix1,color.rgb,outerGlowAlpha/(innerGlowAlpha+ownColor.a+outerGlowAlpha));\nfloat resultAlpha=min(ownColor.a+outerGlowAlpha+innerGlowAlpha,1.0);\ngl_FragColor=vec4(mix2*resultAlpha,resultAlpha);\n}";
         const primitive_fs = "precision lowp float;\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nvoid main(){\ngl_FragColor=vColor;\n}";
         const texture_fs = "precision lowp float;\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nuniform sampler2D uSampler;\nvoid main(){\ngl_FragColor=texture2D(uSampler,vTextureCoord)*vColor;\n}";
     }
@@ -4221,6 +4315,22 @@ declare namespace dou2d {
         let deltaTime: number;
         let fixedDeltaTime: number;
         let fixedPassedTime: number;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 贝塞尔工具类
+     * @author wizardc
+     */
+    namespace BezierUtil {
+        /**
+         * 二次贝塞尔曲线
+         */
+        function quadratic(factor: number, point1: Point, point2: Point, point3: Point, result?: Point): Point;
+        /**
+         * 三次贝塞尔曲线
+         */
+        function cube(factor: number, startPoint: Point, point1: Point, point2: Point, endPoint: Point, result?: Point): Point;
     }
 }
 declare namespace dou2d.sys {

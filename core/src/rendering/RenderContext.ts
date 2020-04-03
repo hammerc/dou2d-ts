@@ -450,6 +450,9 @@ namespace dou2d.rendering {
                         if (filter.type === "custom") {
                             program = Program.getProgram((<CustomFilter>filter).$shaderKey, gl, (<CustomFilter>filter).$vertexSrc, (<CustomFilter>filter).$fragmentSrc);
                         }
+                        else if (filter.type === "colorBrush") {
+                            program = Program.getProgram("colorBrush", gl, ShaderLib.default_vs, ShaderLib.colorBrush_fs);
+                        }
                         else if (filter.type === "colorTransform") {
                             program = Program.getProgram("colorTransform", gl, ShaderLib.default_vs, ShaderLib.colorTransform_fs);
                         }

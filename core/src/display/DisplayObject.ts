@@ -81,6 +81,8 @@ namespace dou2d {
         protected _touchEnabled: boolean = DisplayObject.defaultTouchEnabled;
         protected _hitArea: Rectangle;
 
+        protected _dropEnabled: boolean = false;
+
         protected _zIndex: number = 0;
         protected _sortableChildren: boolean = false;
 
@@ -933,6 +935,28 @@ namespace dou2d {
 
         public $getHitArea(): Rectangle {
             return this._hitArea;
+        }
+
+        /**
+         * 是否接受其它对象拖入
+         */
+        public set dropEnabled(value: boolean) {
+            this.$setDropEnabled(value);
+        }
+        public get dropEnabled(): boolean {
+            return this.$getDropEnabled();
+        }
+
+        public $setDropEnabled(value: boolean): void {
+            if (this._dropEnabled == value) {
+                return;
+            }
+            this._dropEnabled = value;
+            DragManager.instance.$dropRegister(this, this._dropEnabled);
+        }
+
+        public $getDropEnabled(): boolean {
+            return this._dropEnabled;
         }
 
         /**

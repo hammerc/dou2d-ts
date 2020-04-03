@@ -1000,3 +1000,19 @@ declare namespace dou {
         function switchBit32(target: number, position: number): number;
     }
 }
+declare namespace dou {
+    /**
+     * 字符串工具类
+     * @author wizardc
+     */
+    namespace StringUtil {
+        /**
+         * 使用参数替换模板字符串
+         */
+        function substitute(str: string, ...rest: string[]): string;
+        /**
+         * 字符串是否全是空白字符
+         */
+        function isAllWhitespace(str: string): boolean;
+    }
+}

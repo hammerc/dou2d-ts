@@ -2954,3 +2954,31 @@ var dou;
         BitUtil.switchBit32 = switchBit32;
     })(BitUtil = dou.BitUtil || (dou.BitUtil = {}));
 })(dou || (dou = {}));
+var dou;
+(function (dou) {
+    /**
+     * 字符串工具类
+     * @author wizardc
+     */
+    let StringUtil;
+    (function (StringUtil) {
+        /**
+         * 使用参数替换模板字符串
+         */
+        function substitute(str, ...rest) {
+            let len = rest.length;
+            for (let i = 0; i < len; i++) {
+                str = str.replace(new RegExp("\\{" + i + "\\}", "g"), rest[i]);
+            }
+            return str;
+        }
+        StringUtil.substitute = substitute;
+        /**
+         * 字符串是否全是空白字符
+         */
+        function isAllWhitespace(str) {
+            return /^[ \t\r\n\f]*$/.test(str);
+        }
+        StringUtil.isAllWhitespace = isAllWhitespace;
+    })(StringUtil = dou.StringUtil || (dou.StringUtil = {}));
+})(dou || (dou = {}));

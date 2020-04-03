@@ -57,11 +57,11 @@ void main() {
     }
     ownColor.a = max(ownColor.a, 0.0001);
     ownColor.rgb = ownColor.rgb / ownColor.a;
-    float outerGlowAlpha = (totalAlpha / maxTotalAlpha) * strength * alpha * (1. - inner) * max(min(hideObject, knockout), 1. - ownColor.a);
+    float outerGlowAlpha = (totalAlpha / maxTotalAlpha) * strength * alpha * (1.0 - inner) * max(min(hideObject, knockout), 1.0 - ownColor.a);
     float innerGlowAlpha = ((maxTotalAlpha - totalAlpha) / maxTotalAlpha) * strength * alpha * inner * ownColor.a;
-    ownColor.a = max(ownColor.a * knockout * (1. - hideObject), 0.0001);
+    ownColor.a = max(ownColor.a * knockout * (1.0 - hideObject), 0.0001);
     vec3 mix1 = mix(ownColor.rgb, color.rgb, innerGlowAlpha / (innerGlowAlpha + ownColor.a));
     vec3 mix2 = mix(mix1, color.rgb, outerGlowAlpha / (innerGlowAlpha + ownColor.a + outerGlowAlpha));
-    float resultAlpha = min(ownColor.a + outerGlowAlpha + innerGlowAlpha, 1.);
+    float resultAlpha = min(ownColor.a + outerGlowAlpha + innerGlowAlpha, 1.0);
     gl_FragColor = vec4(mix2 * resultAlpha, resultAlpha);
 }

@@ -206,7 +206,7 @@ namespace dou2d.rendering {
             if (displayBoundsWidth <= 0 || displayBoundsHeight <= 0) {
                 return drawCalls;
             }
-            if (!displayObject.mask && filters.length == 1 && (filters[0].type == "colorTransform" || (filters[0].type === "custom" && (<CustomFilter>filters[0]).padding === 0))) {
+            if (!displayObject.mask && filters.length == 1 && (filters[0].type == "colorBrush" || filters[0].type == "colorTransform" || (filters[0].type === "custom" && (<CustomFilter>filters[0]).padding === 0))) {
                 let childrenDrawCount = this.getRenderCount(displayObject);
                 if (!displayObject.$children || childrenDrawCount == 1) {
                     if (hasBlendMode) {

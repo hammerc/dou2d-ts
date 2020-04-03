@@ -1075,6 +1075,7 @@ var dou2d;
             this._blendMode = "normal" /* normal */;
             this._cacheAsBitmap = false;
             this._touchEnabled = DisplayObject.defaultTouchEnabled;
+            this._dropEnabled = false;
             this._zIndex = 0;
             this._sortableChildren = false;
             this._matrix = new dou2d.Matrix();
@@ -1850,6 +1851,25 @@ var dou2d;
         }
         $getHitArea() {
             return this._hitArea;
+        }
+        /**
+         * 是否接受其它对象拖入
+         */
+        set dropEnabled(value) {
+            this.$setDropEnabled(value);
+        }
+        get dropEnabled() {
+            return this.$getDropEnabled();
+        }
+        $setDropEnabled(value) {
+            if (this._dropEnabled == value) {
+                return;
+            }
+            this._dropEnabled = value;
+            dou2d.DragManager.instance.$dropRegister(this, this._dropEnabled);
+        }
+        $getDropEnabled() {
+            return this._dropEnabled;
         }
         /**
          * 设置对象的 Z 轴顺序
@@ -4227,6 +4247,122 @@ var dou2d;
     }
     dou2d.RenderTexture = RenderTexture;
 })(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 拖拽管理器类
+     * @author wizardc
+     */
+    class DragManager {
+        constructor() {
+            this._dragging = false;
+            dou2d.sys.stage.on(dou2d.TouchEvent.TOUCH_MOVE, this.stageMoveHandler, this);
+        }
+        static get instance() {
+            return DragManager._instance || (DragManager._instance = new DragManager());
+        }
+        get dragging() {
+            return this._dragging;
+        }
+        get originDrag() {
+            return this._originDrag;
+        }
+        $dropRegister(target, canDrop) {
+            if (canDrop) {
+                target.on(dou2d.TouchEvent.TOUCH_BEGIN, this.onMove, this);
+                target.on(dou2d.TouchEvent.TOUCH_MOVE, this.onMove, this);
+                target.on(dou2d.TouchEvent.TOUCH_END, this.onEnd, this);
+            }
+            else {
+                target.off(dou2d.TouchEvent.TOUCH_BEGIN, this.onMove, this);
+                target.off(dou2d.TouchEvent.TOUCH_MOVE, this.onMove, this);
+                target.off(dou2d.TouchEvent.TOUCH_END, this.onEnd, this);
+            }
+        }
+        stageMoveHandler(event) {
+            if (this._dragging && this._dropTarget) {
+                let end = false;
+                if (this._dropTarget instanceof dou2d.DisplayObjectContainer) {
+                    end = !this._dropTarget.contains(event.target);
+                }
+                else {
+                    end = this._dropTarget !== event.target;
+                }
+                if (end) {
+                    this._dropTarget.dispatchDragEvent(dou2d.DragEvent.DRAG_EXIT, this._dragData);
+                    this._dropTarget = undefined;
+                }
+            }
+        }
+        onMove(event) {
+            if (this._dragging) {
+                if (!this._dropTarget) {
+                    this._dropTarget = event.currentTarget;
+                    this._dropTarget.dispatchDragEvent(dou2d.DragEvent.DRAG_ENTER, this._dragData);
+                }
+                else {
+                    this._dropTarget.dispatchDragEvent(dou2d.DragEvent.DRAG_MOVE, this._dragData);
+                }
+            }
+        }
+        onEnd(event) {
+            if (this._dragging && this._dropTarget) {
+                this._dropTarget.dispatchDragEvent(dou2d.DragEvent.DRAG_DROP, this._dragData);
+                this._dragging = false;
+                this._dropTarget = undefined;
+                this._dragData = undefined;
+                this.endDrag();
+            }
+        }
+        doDrag(dragTarget, touchEvent, dragData, dragImage, xOffset, yOffset, imageAlpha = 1) {
+            this._dragging = true;
+            this._originDrag = dragTarget;
+            if (dragImage) {
+                this._dragTarget = dragImage;
+            }
+            else {
+                let rt = new dou2d.RenderTexture();
+                rt.drawToTexture(dragTarget);
+                this._dragTarget = new dou2d.Bitmap(rt);
+            }
+            this._dragData = dragData;
+            this._dragTarget.touchEnabled = false;
+            if (this._dragTarget instanceof dou2d.DisplayObjectContainer) {
+                this._dragTarget.touchChildren = false;
+            }
+            this._dragTarget.alpha = imageAlpha;
+            dou2d.sys.stage.addChild(this._dragTarget);
+            this._offsetX = xOffset;
+            this._offsetY = yOffset;
+            dou2d.sys.stage.on(dou2d.TouchEvent.TOUCH_MOVE, this.onStageMove, this);
+            dou2d.sys.stage.on(dou2d.TouchEvent.TOUCH_END, this.onStageEnd, this);
+            this.onStageMove(touchEvent);
+            this._originDrag.dispatchDragEvent(dou2d.DragEvent.DRAG_START, this._dragData);
+            return this._dragTarget;
+        }
+        onStageMove(event) {
+            this._dragTarget.x = event.stageX + this._offsetX;
+            this._dragTarget.y = event.stageY + this._offsetY;
+        }
+        onStageEnd(event) {
+            if (this._dragging) {
+                this._originDrag.dispatchDragEvent(dou2d.DragEvent.DRAG_OVER, this._dragData);
+                this._dragging = false;
+                this._dropTarget = undefined;
+                this._dragData = undefined;
+                this.endDrag();
+            }
+        }
+        endDrag() {
+            dou2d.sys.stage.off(dou2d.TouchEvent.TOUCH_MOVE, this.onStageMove, this);
+            dou2d.sys.stage.off(dou2d.TouchEvent.TOUCH_END, this.onStageEnd, this);
+            dou2d.sys.stage.removeChild(this._dragTarget);
+            this._dragTarget = undefined;
+            this._originDrag = undefined;
+        }
+    }
+    dou2d.DragManager = DragManager;
+})(dou2d || (dou2d = {}));
 (function () {
     Object.defineProperties(dou.EventDispatcher.prototype, {
         dispatchEvent2D: {
@@ -4385,6 +4521,65 @@ var dou2d;
     TouchEvent.TOUCH_RELEASE_OUTSIDE = "touchReleaseOutside";
     dou2d.TouchEvent = TouchEvent;
 })(dou2d || (dou2d = {}));
+(function () {
+    Object.defineProperties(dou.EventDispatcher.prototype, {
+        dispatchDragEvent: {
+            value: function (type, dragData, bubbles, cancelable) {
+                let event = dou.recyclable(dou2d.DragEvent);
+                event.$initDragEvent(type, dragData, bubbles, cancelable);
+                let result = this.dispatch(event);
+                event.recycle();
+                return result;
+            },
+            enumerable: false
+        }
+    });
+})();
+var dou2d;
+(function (dou2d) {
+    /**
+     * 拖拽事件
+     * @author wizardc
+     */
+    class DragEvent extends dou2d.Event2D {
+        get dragData() {
+            return this._dragData;
+        }
+        $initDragEvent(type, dragData, bubbles, cancelable) {
+            this.$initEvent2D(type, null, bubbles, cancelable);
+            this._dragData = dragData;
+        }
+        onRecycle() {
+            super.onRecycle();
+            this._dragData = null;
+        }
+    }
+    /**
+     * 拖拽对象进入接受安放的拖拽区域时, 由接受对象播放
+     */
+    DragEvent.DRAG_ENTER = "dragEnter";
+    /**
+     * 拖拽对象在接受安放的拖拽区域中移动时, 由接受对象播放
+     */
+    DragEvent.DRAG_MOVE = "dragMove";
+    /**
+     * 拖拽对象在离开接受安放的拖拽区域时, 由接受对象播放
+     */
+    DragEvent.DRAG_EXIT = "dragExit";
+    /**
+     * 拖拽对象在接受安放的拖拽区域放下时, 由接受对象播放
+     */
+    DragEvent.DRAG_DROP = "dragDrop";
+    /**
+     * 拖拽对象开始拖拽时, 由拖拽对象播放
+     */
+    DragEvent.DRAG_START = "dragStart";
+    /**
+     * 拖拽对象在无效的区域放下时, 由拖拽对象播放
+     */
+    DragEvent.DRAG_OVER = "dragOver";
+    dou2d.DragEvent = DragEvent;
+})(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
     /**
@@ -4410,6 +4605,53 @@ var dou2d;
         }
     }
     dou2d.Filter = Filter;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 颜色刷子着色器
+     * * 将显示对象刷成一种单一颜色
+     * @author wizardc
+     */
+    class ColorBrushFilter extends dou2d.Filter {
+        constructor(r = 1, g = 1, b = 1, a = 1) {
+            super("colorBrush");
+            this.$uniforms.r = r;
+            this.$uniforms.g = g;
+            this.$uniforms.b = b;
+            this.$uniforms.a = a;
+            this.onPropertyChange();
+        }
+        set r(value) {
+            this.$uniforms.r = value;
+            this.onPropertyChange();
+        }
+        get r() {
+            return this.$uniforms.r;
+        }
+        set g(value) {
+            this.$uniforms.g = value;
+            this.onPropertyChange();
+        }
+        get g() {
+            return this.$uniforms.g;
+        }
+        set b(value) {
+            this.$uniforms.b = value;
+            this.onPropertyChange();
+        }
+        get b() {
+            return this.$uniforms.b;
+        }
+        set a(value) {
+            this.$uniforms.a = value;
+            this.onPropertyChange();
+        }
+        get a() {
+            return this.$uniforms.a;
+        }
+    }
+    dou2d.ColorBrushFilter = ColorBrushFilter;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
@@ -6459,6 +6701,9 @@ var dou2d;
                             if (filter.type === "custom") {
                                 program = rendering.Program.getProgram(filter.$shaderKey, gl, filter.$vertexSrc, filter.$fragmentSrc);
                             }
+                            else if (filter.type === "colorBrush") {
+                                program = rendering.Program.getProgram("colorBrush", gl, rendering.ShaderLib.default_vs, rendering.ShaderLib.colorBrush_fs);
+                            }
                             else if (filter.type === "colorTransform") {
                                 program = rendering.Program.getProgram("colorTransform", gl, rendering.ShaderLib.default_vs, rendering.ShaderLib.colorTransform_fs);
                             }
@@ -7806,7 +8051,7 @@ var dou2d;
                 if (displayBoundsWidth <= 0 || displayBoundsHeight <= 0) {
                     return drawCalls;
                 }
-                if (!displayObject.mask && filters.length == 1 && (filters[0].type == "colorTransform" || (filters[0].type === "custom" && filters[0].padding === 0))) {
+                if (!displayObject.mask && filters.length == 1 && (filters[0].type == "colorBrush" || filters[0].type == "colorTransform" || (filters[0].type === "custom" && filters[0].padding === 0))) {
                     let childrenDrawCount = this.getRenderCount(displayObject);
                     if (!displayObject.$children || childrenDrawCount == 1) {
                         if (hasBlendMode) {
@@ -8500,8 +8745,9 @@ var dou2d;
         (function (ShaderLib) {
             ShaderLib.default_vs = `attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\nattribute vec2 aColor;\nuniform vec2 projectionVector;\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nconst vec2 center=vec2(-1.0,1.0);\nvoid main(){\ngl_Position=vec4((aVertexPosition/projectionVector)+center,0.0,1.0);\nvTextureCoord=aTextureCoord;\nvColor=vec4(aColor.x,aColor.x,aColor.x,aColor.x);\n}`;
             ShaderLib.blur_fs = `precision mediump float;\nuniform vec2 blur;\nuniform sampler2D uSampler;\nuniform vec2 uTextureSize;\nvarying vec2 vTextureCoord;\nvoid main(){\nconst int sampleRadius=5;\nconst int samples=sampleRadius*2+1;\nvec2 blurUv=blur/uTextureSize;\nvec4 color=vec4(0.0,0.0,0.0,0.0);\nvec2 uv=vec2(0.0,0.0);\nblurUv/=float(sampleRadius);\nfor(int i=-sampleRadius;i<=sampleRadius;i++){\nuv.x=vTextureCoord.x+float(i)*blurUv.x;\nuv.y=vTextureCoord.y+float(i)*blurUv.y;\ncolor+=texture2D(uSampler,uv);\n}\ncolor/=float(samples);\ngl_FragColor=color;\n}`;
+            ShaderLib.colorBrush_fs = `precision lowp float;\nuniform float r;\nuniform float g;\nuniform float b;\nuniform float a;\nuniform sampler2D uSampler;\nvarying vec2 vTextureCoord;\nvoid main(){\nvec4 color=texture2D(uSampler,vTextureCoord);\nif(color.a>0.0){\ncolor=vec4(color.rgb/color.a,color.a);\n}\ncolor.r=r;\ncolor.g=g;\ncolor.b=b;\ncolor.a*=a;\ngl_FragColor=vec4(color.rgb*color.a,color.a);\n}`;
             ShaderLib.colorTransform_fs = `precision mediump float;\nuniform mat4 matrix;\nuniform vec4 colorAdd;\nuniform sampler2D uSampler;\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nvoid main(){\nvec4 texColor=texture2D(uSampler,vTextureCoord);\nif(texColor.a>0.0){\ntexColor=vec4(texColor.rgb/texColor.a,texColor.a);\n}\nvec4 locColor=clamp(texColor*matrix+colorAdd,0.0,1.0);\ngl_FragColor=vColor*vec4(locColor.rgb*locColor.a,locColor.a);\n}`;
-            ShaderLib.glow_fs = `precision highp float;\nuniform float dist;\nuniform float angle;\nuniform vec4 color;\nuniform float alpha;\nuniform float blurX;\nuniform float blurY;\nuniform float strength;\nuniform float inner;\nuniform float knockout;\nuniform float hideObject;\nuniform sampler2D uSampler;\nuniform vec2 uTextureSize;\nvarying vec2 vTextureCoord;\nfloat random(vec2 scale){\nreturn fract(sin(dot(gl_FragCoord.xy,scale))*43758.5453);\n}\nvoid main(){\nvec2 px=vec2(1.0/uTextureSize.x,1.0/uTextureSize.y);\nconst float linearSamplingTimes=7.0;\nconst float circleSamplingTimes=12.0;\nvec4 ownColor=texture2D(uSampler,vTextureCoord);\nvec4 curColor;\nfloat totalAlpha=0.0;\nfloat maxTotalAlpha=0.0;\nfloat curDistanceX=0.0;\nfloat curDistanceY=0.0;\nfloat offsetX=dist*cos(angle)*px.x;\nfloat offsetY=dist*sin(angle)*px.y;\nconst float PI=3.14159265358979323846264;\nfloat cosAngle;\nfloat sinAngle;\nfloat offset=PI*2.0/circleSamplingTimes*random(vec2(12.9898,78.233));\nfloat stepX=blurX*px.x/linearSamplingTimes;\nfloat stepY=blurY*px.y/linearSamplingTimes;\nfor(float a=0.0;a<=PI*2.0;a+=PI*2.0/circleSamplingTimes){\ncosAngle=cos(a+offset);\nsinAngle=sin(a+offset);\nfor(float i=1.0;i<=linearSamplingTimes;i++){\ncurDistanceX=i*stepX*cosAngle;\ncurDistanceY=i*stepY*sinAngle;\nif(vTextureCoord.x+curDistanceX-offsetX>=0.0 && vTextureCoord.y+curDistanceY+offsetY<=1.0){\ncurColor=texture2D(uSampler,vec2(vTextureCoord.x+curDistanceX-offsetX,vTextureCoord.y+curDistanceY+offsetY));\ntotalAlpha+=(linearSamplingTimes-i)*curColor.a;\n}\nmaxTotalAlpha+=(linearSamplingTimes-i);\n}\n}\nownColor.a=max(ownColor.a,0.0001);\nownColor.rgb=ownColor.rgb/ownColor.a;\nfloat outerGlowAlpha=(totalAlpha/maxTotalAlpha)*strength*alpha*(1.-inner)*max(min(hideObject,knockout),1.-ownColor.a);\nfloat innerGlowAlpha=((maxTotalAlpha-totalAlpha)/maxTotalAlpha)*strength*alpha*inner*ownColor.a;\nownColor.a=max(ownColor.a*knockout*(1.-hideObject),0.0001);\nvec3 mix1=mix(ownColor.rgb,color.rgb,innerGlowAlpha/(innerGlowAlpha+ownColor.a));\nvec3 mix2=mix(mix1,color.rgb,outerGlowAlpha/(innerGlowAlpha+ownColor.a+outerGlowAlpha));\nfloat resultAlpha=min(ownColor.a+outerGlowAlpha+innerGlowAlpha,1.);\ngl_FragColor=vec4(mix2*resultAlpha,resultAlpha);\n}`;
+            ShaderLib.glow_fs = `precision highp float;\nuniform float dist;\nuniform float angle;\nuniform vec4 color;\nuniform float alpha;\nuniform float blurX;\nuniform float blurY;\nuniform float strength;\nuniform float inner;\nuniform float knockout;\nuniform float hideObject;\nuniform sampler2D uSampler;\nuniform vec2 uTextureSize;\nvarying vec2 vTextureCoord;\nfloat random(vec2 scale){\nreturn fract(sin(dot(gl_FragCoord.xy,scale))*43758.5453);\n}\nvoid main(){\nvec2 px=vec2(1.0/uTextureSize.x,1.0/uTextureSize.y);\nconst float linearSamplingTimes=7.0;\nconst float circleSamplingTimes=12.0;\nvec4 ownColor=texture2D(uSampler,vTextureCoord);\nvec4 curColor;\nfloat totalAlpha=0.0;\nfloat maxTotalAlpha=0.0;\nfloat curDistanceX=0.0;\nfloat curDistanceY=0.0;\nfloat offsetX=dist*cos(angle)*px.x;\nfloat offsetY=dist*sin(angle)*px.y;\nconst float PI=3.14159265358979323846264;\nfloat cosAngle;\nfloat sinAngle;\nfloat offset=PI*2.0/circleSamplingTimes*random(vec2(12.9898,78.233));\nfloat stepX=blurX*px.x/linearSamplingTimes;\nfloat stepY=blurY*px.y/linearSamplingTimes;\nfor(float a=0.0;a<=PI*2.0;a+=PI*2.0/circleSamplingTimes){\ncosAngle=cos(a+offset);\nsinAngle=sin(a+offset);\nfor(float i=1.0;i<=linearSamplingTimes;i++){\ncurDistanceX=i*stepX*cosAngle;\ncurDistanceY=i*stepY*sinAngle;\nif(vTextureCoord.x+curDistanceX-offsetX>=0.0 && vTextureCoord.y+curDistanceY+offsetY<=1.0){\ncurColor=texture2D(uSampler,vec2(vTextureCoord.x+curDistanceX-offsetX,vTextureCoord.y+curDistanceY+offsetY));\ntotalAlpha+=(linearSamplingTimes-i)*curColor.a;\n}\nmaxTotalAlpha+=(linearSamplingTimes-i);\n}\n}\nownColor.a=max(ownColor.a,0.0001);\nownColor.rgb=ownColor.rgb/ownColor.a;\nfloat outerGlowAlpha=(totalAlpha/maxTotalAlpha)*strength*alpha*(1.0-inner)*max(min(hideObject,knockout),1.0-ownColor.a);\nfloat innerGlowAlpha=((maxTotalAlpha-totalAlpha)/maxTotalAlpha)*strength*alpha*inner*ownColor.a;\nownColor.a=max(ownColor.a*knockout*(1.0-hideObject),0.0001);\nvec3 mix1=mix(ownColor.rgb,color.rgb,innerGlowAlpha/(innerGlowAlpha+ownColor.a));\nvec3 mix2=mix(mix1,color.rgb,outerGlowAlpha/(innerGlowAlpha+ownColor.a+outerGlowAlpha));\nfloat resultAlpha=min(ownColor.a+outerGlowAlpha+innerGlowAlpha,1.0);\ngl_FragColor=vec4(mix2*resultAlpha,resultAlpha);\n}`;
             ShaderLib.primitive_fs = `precision lowp float;\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nvoid main(){\ngl_FragColor=vColor;\n}`;
             ShaderLib.texture_fs = `precision lowp float;\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nuniform sampler2D uSampler;\nvoid main(){\ngl_FragColor=texture2D(uSampler,vTextureCoord)*vColor;\n}`;
         })(ShaderLib = rendering.ShaderLib || (rendering.ShaderLib = {}));
@@ -12478,6 +12724,41 @@ var dou2d;
         sys.fixedDeltaTime = 50;
         sys.fixedPassedTime = 0;
     })(sys = dou2d.sys || (dou2d.sys = {}));
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 贝塞尔工具类
+     * @author wizardc
+     */
+    let BezierUtil;
+    (function (BezierUtil) {
+        /**
+         * 二次贝塞尔曲线
+         */
+        function quadratic(factor, point1, point2, point3, result) {
+            if (!result) {
+                result = dou.recyclable(dou2d.Point);
+            }
+            result.x = (1 - factor) * (1 - factor) * point1.x + 2 * factor * (1 - factor) * point2.x + factor * factor * point3.x;
+            result.y = (1 - factor) * (1 - factor) * point1.y + 2 * factor * (1 - factor) * point2.y + factor * factor * point3.y;
+            return result;
+        }
+        BezierUtil.quadratic = quadratic;
+        /**
+         * 三次贝塞尔曲线
+         */
+        function cube(factor, startPoint, point1, point2, endPoint, result) {
+            if (!result) {
+                result = dou.recyclable(dou2d.Point);
+            }
+            let left = 1 - factor;
+            result.x = (startPoint.x * Math.pow(left, 3) + 3 * point1.x * Math.pow(left, 2) * factor + 3 * point2.x * Math.pow(factor, 2) * left + endPoint.x * Math.pow(factor, 3));
+            result.y = (startPoint.y * Math.pow(left, 3) + 3 * point1.y * Math.pow(left, 2) * factor + 3 * point2.y * Math.pow(factor, 2) * left + endPoint.y * Math.pow(factor, 3));
+            return result;
+        }
+        BezierUtil.cube = cube;
+    })(BezierUtil = dou2d.BezierUtil || (dou2d.BezierUtil = {}));
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
