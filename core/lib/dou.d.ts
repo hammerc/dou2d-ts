@@ -1016,3 +1016,23 @@ declare namespace dou {
         function isAllWhitespace(str: string): boolean;
     }
 }
+declare namespace dou {
+    /**
+     * 调用父类 getter 方法, 类似其他语言的 xxx = super.getter; 这样的写法
+     * @param currentClass 当前的类
+     * @param thisObj 当前的对象
+     * @param type 要调用的属性名
+     * @returns 返回的值
+     */
+    function superGetter(currentClass: any, thisObj: any, type: string): any;
+}
+declare namespace dou {
+    /**
+     * 调用父类 setter 方法, 类似其他语言的 super.setter = xxx; 这样的写法
+     * @param currentClass 当前的类
+     * @param thisObj 当前的对象
+     * @param type 要调用的属性名
+     * @param values 传递的参数
+     */
+    function superSetter(currentClass: any, thisObj: any, type: string, ...values: any[]): any;
+}

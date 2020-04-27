@@ -2982,3 +2982,75 @@ var dou;
         StringUtil.isAllWhitespace = isAllWhitespace;
     })(StringUtil = dou.StringUtil || (dou.StringUtil = {}));
 })(dou || (dou = {}));
+var dou;
+(function (dou) {
+    /**
+     * 调用父类 getter 方法, 类似其他语言的 xxx = super.getter; 这样的写法
+     * @param currentClass 当前的类
+     * @param thisObj 当前的对象
+     * @param type 要调用的属性名
+     * @returns 返回的值
+     */
+    function superGetter(currentClass, thisObj, type) {
+        let cla = currentClass.prototype;
+        let geters;
+        if (!currentClass.hasOwnProperty("__gets__")) {
+            Object.defineProperty(currentClass, "__gets__", { "value": {} });
+        }
+        geters = currentClass["__gets__"];
+        let getF = geters[type];
+        if (getF) {
+            return getF.call(thisObj);
+        }
+        let d = Object.getPrototypeOf(cla);
+        if (d == null) {
+            return;
+        }
+        while (!d.hasOwnProperty(type)) {
+            d = Object.getPrototypeOf(d);
+            if (d == null) {
+                return;
+            }
+        }
+        getF = Object.getOwnPropertyDescriptor(d, type).get;
+        geters[type] = getF;
+        return getF.call(thisObj);
+    }
+    dou.superGetter = superGetter;
+})(dou || (dou = {}));
+var dou;
+(function (dou) {
+    /**
+     * 调用父类 setter 方法, 类似其他语言的 super.setter = xxx; 这样的写法
+     * @param currentClass 当前的类
+     * @param thisObj 当前的对象
+     * @param type 要调用的属性名
+     * @param values 传递的参数
+     */
+    function superSetter(currentClass, thisObj, type, ...values) {
+        let cla = currentClass.prototype;
+        let seters;
+        if (!currentClass.hasOwnProperty("__sets__")) {
+            Object.defineProperty(currentClass, "__sets__", { "value": {} });
+        }
+        seters = currentClass["__sets__"];
+        let setF = seters[type];
+        if (setF) {
+            return setF.apply(thisObj, values);
+        }
+        let d = Object.getPrototypeOf(cla);
+        if (d == null) {
+            return;
+        }
+        while (!d.hasOwnProperty(type)) {
+            d = Object.getPrototypeOf(d);
+            if (d == null) {
+                return;
+            }
+        }
+        setF = Object.getOwnPropertyDescriptor(d, type).set;
+        seters[type] = setF;
+        setF.apply(thisObj, values);
+    }
+    dou.superSetter = superSetter;
+})(dou || (dou = {}));
