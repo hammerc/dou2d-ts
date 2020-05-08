@@ -642,9 +642,18 @@ var dou;
             this._extensionMap[extension] = type;
         }
         /**
+         * 注册实际地址控制器
+         */
+        registerPathController(controller) {
+            this._pathController = controller;
+        }
+        /**
          * 加载指定项
          */
         load(url, callback, thisObj, type, priority = 0, cache = true) {
+            if (this._pathController) {
+                url = this._pathController.getVirtualUrl(url);
+            }
             if (this.isLoaded(url)) {
                 callback.call(thisObj, this.get(url), url);
                 return;
@@ -771,18 +780,27 @@ var dou;
          * 资源是否已经加载并缓存
          */
         isLoaded(url) {
+            if (this._pathController) {
+                url = this._pathController.getVirtualUrl(url);
+            }
             return this._cacheDataMap.hasOwnProperty(url);
         }
         /**
          * 获取已经加载并缓存的资源
          */
         get(url) {
+            if (this._pathController) {
+                url = this._pathController.getVirtualUrl(url);
+            }
             return this._cacheDataMap[url];
         }
         /**
          * 释放已经加载并缓存的资源
          */
         release(url) {
+            if (this._pathController) {
+                url = this._pathController.getVirtualUrl(url);
+            }
             if (this.isLoaded(url)) {
                 let type = this._cacheTypeMap[url];
                 let analyzer = this._analyzerMap[type];

@@ -278,6 +278,18 @@ declare namespace dou {
 }
 declare namespace dou {
     /**
+     * 实际地址控制器
+     * @author wizardc
+     */
+    interface IPathController {
+        /**
+         * 获取实际的 URL 地址
+         */
+        getVirtualUrl(url: string): string;
+    }
+}
+declare namespace dou {
+    /**
      * 加载管理器
      * @author wizardc
      */
@@ -288,6 +300,7 @@ declare namespace dou {
         private _resourceRoot;
         private _analyzerMap;
         private _extensionMap;
+        private _pathController;
         private _priorityList;
         private _priorityMap;
         private _keyMap;
@@ -314,6 +327,10 @@ declare namespace dou {
          * 注册后缀名和其对应的默认类型
          */
         registerExtension(extension: string, type: string): void;
+        /**
+         * 注册实际地址控制器
+         */
+        registerPathController(controller: IPathController): void;
         /**
          * 加载指定项
          */
