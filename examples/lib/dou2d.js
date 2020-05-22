@@ -1051,7 +1051,7 @@ var dou2d;
             /**
              * 这个对象在显示列表中的嵌套深度, 舞台为 1, 它的子项为 2, 子项的子项为 3, 以此类推, 当对象不在显示列表中时此属性值为 0
              */
-            this._nestLevel = 0;
+            this.$nestLevel = 0;
             this._name = "";
             this._matrixDirty = false;
             this._x = 0;
@@ -1897,14 +1897,14 @@ var dou2d;
          */
         $onAddToStage(stage, nestLevel) {
             this._stage = stage;
-            this._nestLevel = nestLevel;
+            this.$nestLevel = nestLevel;
             this.dispatchEvent2D(dou2d.Event2D.ADDED_TO_STAGE);
         }
         /**
          * 显示对象从舞台移除
          */
         $onRemoveFromStage() {
-            this._nestLevel = 0;
+            this.$nestLevel = 0;
             this._stage = null;
             this.dispatchEvent2D(dou2d.Event2D.REMOVED_FROM_STAGE);
         }
@@ -2141,9 +2141,9 @@ var dou2d;
             // 缩放值为 0 逆矩阵无效
             if (invertMatrix.a === 0 || invertMatrix.d === 0) {
                 let target = this;
-                let rootLevel = root._nestLevel;
+                let rootLevel = root.$nestLevel;
                 matrix.identity();
-                while (target._nestLevel > rootLevel) {
+                while (target.$nestLevel > rootLevel) {
                     let rect = target._scrollRect;
                     if (rect) {
                         let m = dou.recyclable(dou2d.Matrix);
@@ -2457,7 +2457,7 @@ var dou2d;
             let stage = this._stage;
             // 当前容器在舞台
             if (stage) {
-                child.$onAddToStage(stage, this._nestLevel + 1);
+                child.$onAddToStage(stage, this.$nestLevel + 1);
             }
             if (notifyListeners) {
                 child.dispatchEvent2D(dou2d.Event2D.ADDED, null, true);
@@ -2885,7 +2885,7 @@ var dou2d;
             this._maxTouches = 99;
             this._engine = engine;
             this._stage = this;
-            this._nestLevel = 1;
+            this.$nestLevel = 1;
         }
         /**
          * 舞台的帧速率

@@ -28,14 +28,14 @@ namespace dou2d {
         public $sortDirty: boolean = false;
         public $lastSortedIndex: number = 0;
 
-        protected _children: DisplayObject[];
-        protected _parent: DisplayObjectContainer;
-        protected _stage: Stage;
-
         /**
          * 这个对象在显示列表中的嵌套深度, 舞台为 1, 它的子项为 2, 子项的子项为 3, 以此类推, 当对象不在显示列表中时此属性值为 0
          */
-        protected _nestLevel: number = 0;
+        public $nestLevel: number = 0;
+
+        protected _children: DisplayObject[];
+        protected _parent: DisplayObjectContainer;
+        protected _stage: Stage;
 
         protected _name: string = "";
 
@@ -987,7 +987,7 @@ namespace dou2d {
          */
         public $onAddToStage(stage: Stage, nestLevel: number): void {
             this._stage = stage;
-            this._nestLevel = nestLevel;
+            this.$nestLevel = nestLevel;
             this.dispatchEvent2D(Event2D.ADDED_TO_STAGE);
         }
 
@@ -995,7 +995,7 @@ namespace dou2d {
          * 显示对象从舞台移除
          */
         public $onRemoveFromStage(): void {
-            this._nestLevel = 0;
+            this.$nestLevel = 0;
             this._stage = null;
             this.dispatchEvent2D(Event2D.REMOVED_FROM_STAGE);
         }
@@ -1247,9 +1247,9 @@ namespace dou2d {
             // 缩放值为 0 逆矩阵无效
             if (invertMatrix.a === 0 || invertMatrix.d === 0) {
                 let target: DisplayObject = this;
-                let rootLevel = root._nestLevel;
+                let rootLevel = root.$nestLevel;
                 matrix.identity();
-                while (target._nestLevel > rootLevel) {
+                while (target.$nestLevel > rootLevel) {
                     let rect = target._scrollRect;
                     if (rect) {
                         let m = dou.recyclable(Matrix);

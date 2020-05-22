@@ -18,7 +18,7 @@ namespace dou2d {
             super();
             this._engine = engine;
             this._stage = this;
-            this._nestLevel = 1;
+            this.$nestLevel = 1;
         }
 
         /**

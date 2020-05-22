@@ -445,13 +445,13 @@ declare namespace dou2d {
         $tintRGB: number;
         $sortDirty: boolean;
         $lastSortedIndex: number;
-        protected _children: DisplayObject[];
-        protected _parent: DisplayObjectContainer;
-        protected _stage: Stage;
         /**
          * 这个对象在显示列表中的嵌套深度, 舞台为 1, 它的子项为 2, 子项的子项为 3, 以此类推, 当对象不在显示列表中时此属性值为 0
          */
-        protected _nestLevel: number;
+        $nestLevel: number;
+        protected _children: DisplayObject[];
+        protected _parent: DisplayObjectContainer;
+        protected _stage: Stage;
         protected _name: string;
         protected _matrix: Matrix;
         protected _matrixDirty: boolean;

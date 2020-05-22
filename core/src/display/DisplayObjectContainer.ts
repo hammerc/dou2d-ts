@@ -111,7 +111,7 @@ namespace dou2d {
             let stage = this._stage;
             // 当前容器在舞台
             if (stage) {
-                child.$onAddToStage(stage, this._nestLevel + 1);
+                child.$onAddToStage(stage, this.$nestLevel + 1);
             }
             if (notifyListeners) {
                 child.dispatchEvent2D(Event2D.ADDED, null, true);
