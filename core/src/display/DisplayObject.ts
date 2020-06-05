@@ -75,6 +75,7 @@ namespace dou2d {
         protected _scrollRect: Rectangle;
 
         protected _filters: (Filter | CustomFilter)[];
+        protected _filterClip: Rectangle;
 
         protected _cacheAsBitmap: boolean = false;
 
@@ -871,6 +872,25 @@ namespace dou2d {
 
         public $getFilters(): (Filter | CustomFilter)[] {
             return this._filters;
+        }
+
+        /**
+         * 当前对象的滤镜裁剪区域
+         * * 注意: 设定后仅渲染设定了裁剪区域内的图像, 同时滤镜也按照该区域进行处理, 不设定按照默认尺寸进行渲染
+         */
+        public set filterClip(value: Rectangle) {
+            this.$setFilterClip(value);
+        }
+        public get filterClip(): Rectangle {
+            return this.$getFilterClip();
+        }
+
+        public $setFilterClip(value: Rectangle): void {
+            this._filterClip = value;
+        }
+
+        public $getFilterClip(): Rectangle {
+            return this._filterClip;
         }
 
         /**

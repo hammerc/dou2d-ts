@@ -1797,6 +1797,22 @@ var dou2d;
             return this._filters;
         }
         /**
+         * 当前对象的滤镜裁剪区域
+         * * 注意: 设定后仅渲染设定了裁剪区域内的图像, 同时滤镜也按照该区域进行处理, 不设定按照默认尺寸进行渲染
+         */
+        set filterClip(value) {
+            this.$setFilterClip(value);
+        }
+        get filterClip() {
+            return this.$getFilterClip();
+        }
+        $setFilterClip(value) {
+            this._filterClip = value;
+        }
+        $getFilterClip() {
+            return this._filterClip;
+        }
+        /**
          * 是否将当前的显示对象缓存为位图
          */
         set cacheAsBitmap(value) {
@@ -4200,7 +4216,7 @@ var dou2d;
             if (clipBounds && (clipBounds.width == 0 || clipBounds.height == 0)) {
                 return false;
             }
-            let bounds = clipBounds || displayObject.$getOriginalBounds();
+            let bounds = clipBounds || displayObject.$getFilterClip() || displayObject.$getOriginalBounds();
             if (bounds.width == 0 || bounds.height == 0) {
                 return false;
             }
@@ -7595,7 +7611,7 @@ var dou2d;
             changeSurfaceSize() {
                 let oldOffsetX = this.offsetX;
                 let oldOffsetY = this.offsetY;
-                let bounds = this.root.$getOriginalBounds();
+                let bounds = this.root.$getFilterClip() || this.root.$getOriginalBounds();
                 let scaleX = this.canvasScaleX;
                 let scaleY = this.canvasScaleY;
                 this.offsetX = -bounds.x;
@@ -8043,7 +8059,7 @@ var dou2d;
                         compositeOp = defaultCompositeOp;
                     }
                 }
-                let displayBounds = displayObject.$getOriginalBounds();
+                let displayBounds = displayObject.$getFilterClip() || displayObject.$getOriginalBounds();
                 let displayBoundsX = displayBounds.x;
                 let displayBoundsY = displayBounds.y;
                 let displayBoundsWidth = displayBounds.width;
@@ -8184,7 +8200,7 @@ var dou2d;
                     return drawCalls;
                 }
                 else {
-                    let displayBounds = displayObject.$getOriginalBounds();
+                    let displayBounds = displayObject.$getFilterClip() || displayObject.$getOriginalBounds();
                     let displayBoundsX = displayBounds.x;
                     let displayBoundsY = displayBounds.y;
                     let displayBoundsWidth = displayBounds.width;

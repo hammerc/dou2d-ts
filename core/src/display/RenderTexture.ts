@@ -25,7 +25,7 @@ namespace dou2d {
             if (clipBounds && (clipBounds.width == 0 || clipBounds.height == 0)) {
                 return false;
             }
-            let bounds = clipBounds || displayObject.$getOriginalBounds();
+            let bounds = clipBounds || displayObject.$getFilterClip() || displayObject.$getOriginalBounds();
             if (bounds.width == 0 || bounds.height == 0) {
                 return false;
             }

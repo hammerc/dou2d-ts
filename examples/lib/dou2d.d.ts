@@ -478,6 +478,7 @@ declare namespace dou2d {
         protected _blendMode: BlendMode;
         protected _scrollRect: Rectangle;
         protected _filters: (Filter | CustomFilter)[];
+        protected _filterClip: Rectangle;
         protected _cacheAsBitmap: boolean;
         protected _touchEnabled: boolean;
         protected _hitArea: Rectangle;
@@ -654,6 +655,13 @@ declare namespace dou2d {
         filters: (Filter | CustomFilter)[];
         $setFilters(value: (Filter | CustomFilter)[]): void;
         $getFilters(): (Filter | CustomFilter)[];
+        /**
+         * 当前对象的滤镜裁剪区域
+         * * 注意: 设定后仅渲染设定了裁剪区域内的图像, 同时滤镜也按照该区域进行处理, 不设定按照默认尺寸进行渲染
+         */
+        filterClip: Rectangle;
+        $setFilterClip(value: Rectangle): void;
+        $getFilterClip(): Rectangle;
         /**
          * 是否将当前的显示对象缓存为位图
          */

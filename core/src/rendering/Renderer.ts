@@ -198,7 +198,7 @@ namespace dou2d.rendering {
                     compositeOp = defaultCompositeOp;
                 }
             }
-            let displayBounds = displayObject.$getOriginalBounds();
+            let displayBounds = displayObject.$getFilterClip() || displayObject.$getOriginalBounds();
             let displayBoundsX = displayBounds.x;
             let displayBoundsY = displayBounds.y;
             let displayBoundsWidth = displayBounds.width;
@@ -341,7 +341,7 @@ namespace dou2d.rendering {
                 return drawCalls;
             }
             else {
-                let displayBounds = displayObject.$getOriginalBounds();
+                let displayBounds = displayObject.$getFilterClip() || displayObject.$getOriginalBounds();
                 let displayBoundsX = displayBounds.x;
                 let displayBoundsY = displayBounds.y;
                 let displayBoundsWidth = displayBounds.width;

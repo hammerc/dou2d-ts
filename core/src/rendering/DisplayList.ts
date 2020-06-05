@@ -113,7 +113,7 @@ namespace dou2d.rendering {
         public changeSurfaceSize(): void {
             let oldOffsetX = this.offsetX;
             let oldOffsetY = this.offsetY;
-            let bounds = this.root.$getOriginalBounds();
+            let bounds = this.root.$getFilterClip() || this.root.$getOriginalBounds();
             let scaleX = this.canvasScaleX;
             let scaleY = this.canvasScaleY;
             this.offsetX = -bounds.x;

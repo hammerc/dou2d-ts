@@ -73,3 +73,5 @@ new dou2d.Engine(ShapeTest);
 * [内置滤镜](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=FilterTest)
 
 * [自定义滤镜](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=CustomFilterTest)
+
+* [自定义裁剪滤镜](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=ClipFilterTest)
