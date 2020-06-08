@@ -2320,10 +2320,37 @@ var dou;
     /**
      * 对象池配置
      */
-    function deployPool(targetClass, maxCount) {
-        targetClass.prototype.constructor.__cacheMaxCount = maxCount;
+    function deployPool(creator, maxCount) {
+        creator.prototype.constructor.__cacheMaxCount = maxCount;
     }
     dou.deployPool = deployPool;
+    /**
+     * 获取对象池中的对象数量
+     */
+    function getPoolSize(creator) {
+        let pool;
+        if (creator.hasOwnProperty("__pool")) {
+            pool = creator.__pool;
+        }
+        if (pool) {
+            return pool.size;
+        }
+        return 0;
+    }
+    dou.getPoolSize = getPoolSize;
+    /**
+     * 清空对象池
+     */
+    function clearPool(creator) {
+        let pool;
+        if (creator.hasOwnProperty("__pool")) {
+            pool = creator.__pool;
+        }
+        if (pool) {
+            pool.clear();
+        }
+    }
+    dou.clearPool = clearPool;
 })(dou || (dou = {}));
 var dou;
 (function (dou) {

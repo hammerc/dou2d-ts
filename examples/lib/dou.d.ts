@@ -882,9 +882,21 @@ declare namespace dou {
     /**
      * 对象池配置
      */
-    function deployPool(targetClass: {
-        new (): any;
+    function deployPool(creator: Creator<any> & {
+        __pool?: ObjectPool<any>;
     }, maxCount: number): void;
+    /**
+     * 获取对象池中的对象数量
+     */
+    function getPoolSize(creator: Creator<any> & {
+        __pool?: ObjectPool<any>;
+    }): number;
+    /**
+     * 清空对象池
+     */
+    function clearPool(creator: Creator<any> & {
+        __pool?: ObjectPool<any>;
+    }): void;
 }
 declare namespace dou {
     /**
