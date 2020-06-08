@@ -2127,6 +2127,417 @@ declare namespace dou2d {
         release(data: Texture): boolean;
     }
 }
+declare namespace dou2d {
+    /**
+     * 粒子系统基类
+     * @author wizardc
+     */
+    abstract class ParticleSystem<T extends Particle> extends DisplayObject {
+        /**
+         * 表示粒子所使用的纹理
+         */
+        protected _texture: Texture;
+        /**
+         * 表示粒子出现间隔
+         */
+        protected _emissionRate: number;
+        /**
+         * 表示粒子系统最大粒子数, 超过该数量将不会继续创建粒子
+         */
+        protected _maxParticles: number;
+        /**
+         * 粒子类
+         */
+        protected _particleClass: {
+            new (): T;
+        };
+        private _emissionTime;
+        private _frameTime;
+        private _particles;
+        private _numParticles;
+        private _emitterX;
+        private _emitterY;
+        private _particleMeasureRect;
+        private _transformForMeasure;
+        private _lastRect;
+        private _bitmapNodeList;
+        constructor(texture: Texture, emissionRate: number, maxParticles: number);
+        /**
+         * 表示粒子出现点 x 坐标
+         */
+        emitterX: number;
+        /**
+         * 表示粒子出现点 y 坐标
+         */
+        emitterY: number;
+        /**
+         * 更换粒子纹理
+         */
+        changeTexture(texture: Texture): void;
+        /**
+         * 开始创建粒子
+         * @param duration 粒子出现总时间, -1 表示无限时间
+         */
+        start(duration?: number): void;
+        private update;
+        private addOneParticle;
+        private getParticle;
+        protected abstract initParticle(particle: T): void;
+        abstract advanceParticle(particle: T, passedTime: number): void;
+        private removeParticle;
+        /**
+         * 停止创建粒子
+         * @param clear 是否清除掉现有粒子
+         */
+        stop(clear?: boolean): void;
+        $measureContentBounds(bounds: Rectangle): void;
+        private appendTransform;
+        $updateRenderNode(): void;
+        private clear;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 粒子范围
+     * @author wizardc
+     */
+    class ParticleRegion implements dou.ICacheable {
+        minX: number;
+        minY: number;
+        maxX: number;
+        maxY: number;
+        width: number;
+        height: number;
+        area: number;
+        updateRegion(bounds: Rectangle, matrix: Matrix): void;
+        clear(): void;
+        onRecycle(): void;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 粒子基类
+     * @author wizardc
+     */
+    abstract class Particle implements dou.ICacheable {
+        /**
+         * 表示粒子相对于父级本地坐标的 x 坐标
+         */
+        x: number;
+        /**
+         * 表示粒子相对于父级本地坐标的 y 坐标
+         */
+        y: number;
+        /**
+         * 表示从注册点开始应用的对象的缩放比例
+         */
+        scale: number;
+        /**
+         * 表示粒子距其原始方向的旋转程度, 以度为单位
+         */
+        rotation: number;
+        /**
+         * 表示粒子的 Alpha 透明度值
+         */
+        alpha: number;
+        /**
+         * 表示粒子当前存活时间
+         */
+        currentTime: number;
+        /**
+         * 表示粒子的存活总时间
+         */
+        totalTime: number;
+        private _matrix;
+        constructor();
+        getMatrix(regX: number, regY: number): Matrix;
+        clear(): void;
+        onRecycle(): void;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 重力粒子配置接口
+     * @author wizardc
+     */
+    interface GravityParticleConfig {
+        /**
+         * 粒子发射坐标
+         */
+        emitter: {
+            x: number;
+            y: number;
+        };
+        /**
+         * 粒子发射坐标偏移量
+         */
+        emitterVariance: {
+            x: number;
+            y: number;
+        };
+        /**
+         * 粒子最大数量
+         */
+        maxParticles: number;
+        /**
+         * 粒子存活时间
+         */
+        lifespan: number;
+        /**
+         * 粒子存活时间差值
+         */
+        lifespanVariance: number;
+        /**
+         * 粒子出现时大小
+         */
+        startSize: number;
+        /**
+         * 粒子出现时大小差值
+         */
+        startSizeVariance: number;
+        /**
+         * 粒子消失时大小
+         */
+        endSize: number;
+        /**
+         * 粒子消失时大小差值
+         */
+        endSizeVariance: number;
+        /**
+         * 粒子出现时的角度
+         */
+        emitAngle: number;
+        /**
+         * 粒子出现时角度差值
+         */
+        emitAngleVariance: number;
+        /**
+         * 粒子出现时旋转值
+         */
+        startRotation: number;
+        /**
+         * 粒子出现时旋转值差值
+         */
+        startRotationVariance: number;
+        /**
+         * 粒子消失时旋转值
+         */
+        endRotation: number;
+        /**
+         * 粒子消失时旋转值差值
+         */
+        endRotationVariance: number;
+        /**
+         * 粒子出现时速度
+         */
+        speed: number;
+        /**
+         * 粒子出现时速度差值
+         */
+        speedVariance: number;
+        /**
+         * 粒子重力
+         */
+        gravity: {
+            x: number;
+            y: number;
+        };
+        /**
+         * 粒子径向加速度
+         */
+        radialAcceleration: number;
+        /**
+         * 粒子径向加速度差值
+         */
+        radialAccelerationVariance: number;
+        /**
+         * 粒子切向加速度
+         */
+        tangentialAcceleration: number;
+        /**
+         * 粒子切向加速度差值
+         */
+        tangentialAccelerationVariance: number;
+        /**
+         * 粒子出现时透明度
+         */
+        startAlpha: number;
+        /**
+         * 粒子出现时的透明度差值
+         */
+        startAlphaVariance: number;
+        /**
+         * 粒子消失时透明度
+         */
+        endAlpha: number;
+        /**
+         * 粒子消失时的透明度差值
+         */
+        endAlphaVariance: number;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 重力粒子系统
+     * @author wizardc
+     */
+    class GravityParticleSystem extends ParticleSystem<GravityParticle> {
+        /**
+         * 表示粒子初始坐标 x 差值
+         */
+        private _emitterXVariance;
+        /**
+         * 表示粒子初始坐标 y 差值
+         */
+        private _emitterYVariance;
+        /**
+         * 表示粒子存活时间，单位毫秒
+         */
+        private _lifespan;
+        /**
+         * 表示粒子存活时间差值，单位毫秒
+         */
+        private _lifespanVariance;
+        /**
+         * 表示粒子出现时大小
+         */
+        private _startSize;
+        /**
+         * 表示粒子出现时大小差值
+         */
+        private _startSizeVariance;
+        /**
+         * 表示粒子消失时大小
+         */
+        private _endSize;
+        /**
+         * 表示粒子消失时大小差值
+         */
+        private _endSizeVariance;
+        /**
+         * 表示粒子出现时的角度
+         */
+        private _emitAngle;
+        /**
+         * 表示粒子出现时的角度差值
+         */
+        private _emitAngleVariance;
+        /**
+         * 表示粒子出现时旋转值
+         */
+        private _startRotation;
+        /**
+         * 表示粒子出现时旋转值差值
+         */
+        private _startRotationVariance;
+        /**
+         * 表示粒子消失时旋转值
+         */
+        private _endRotation;
+        /**
+         * 表示粒子消失时旋转值差值
+         */
+        private _endRotationVariance;
+        /**
+         * 表示粒子出现时速度
+         */
+        private _speed;
+        /**
+         * 表示粒子出现时速度差值
+         */
+        private _speedVariance;
+        /**
+         * 表示粒子水平重力
+         */
+        private _gravityX;
+        /**
+         * 表示粒子垂直重力
+         */
+        private _gravityY;
+        /**
+         * 表示粒子径向加速度
+         */
+        private _radialAcceleration;
+        /**
+         * 表示粒子径向加速度差值
+         */
+        private _radialAccelerationVariance;
+        /**
+         * 表示粒子切向加速度
+         */
+        private _tangentialAcceleration;
+        /**
+         * 表示粒子切向加速度差值
+         */
+        private _tangentialAccelerationVariance;
+        /**
+         * 表示粒子出现时的 Alpha 透明度值
+         */
+        private _startAlpha;
+        /**
+         * 表示粒子出现时的 Alpha 透明度差值
+         */
+        private _startAlphaVariance;
+        /**
+         * 表示粒子消失时的 Alpha 透明度值
+         */
+        private _endAlpha;
+        /**
+         * 表示粒子消失时的 Alpha 透明度差值
+         */
+        private _endAlphaVariance;
+        constructor(texture: Texture, config: GravityParticleConfig);
+        private parseConfig;
+        protected initParticle(particle: GravityParticle): void;
+        private getValue;
+        advanceParticle(particle: GravityParticle, passedTime: number): void;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 重力粒子
+     * @author wizardc
+     */
+    class GravityParticle extends Particle {
+        /**
+         * 发射时的 x 坐标
+         */
+        startX: number;
+        /**
+         * 发射时的 y 坐标
+         */
+        startY: number;
+        /**
+         * x 轴速度
+         */
+        velocityX: number;
+        /**
+         * y 轴速度
+         */
+        velocityY: number;
+        /**
+         * 径向加速度
+         */
+        radialAcceleration: number;
+        /**
+         * 切向加速度
+         */
+        tangentialAcceleration: number;
+        /**
+         * 旋转增量
+         */
+        rotationDelta: number;
+        /**
+         * 缩放增量
+         */
+        scaleDelta: number;
+        /**
+         * 透明度增量
+         */
+        alphaDelta: number;
+        clear(): void;
+    }
+}
 declare namespace dou2d.rendering {
     /**
      * 渲染节点基类

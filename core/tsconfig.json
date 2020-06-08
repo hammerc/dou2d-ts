@@ -117,6 +117,13 @@
 
     "src/load/analyzer/ImageAnalyzer.ts",
 
+    "src/particle/ParticleSystem.ts",
+    "src/particle/ParticleRegion.ts",
+    "src/particle/Particle.ts",
+    "src/particle/gravity/GravityParticleConfig.ts",
+    "src/particle/gravity/GravityParticleSystem.ts",
+    "src/particle/gravity/GravityParticle.ts",
+
     "src/rendering/nodes/RenderNode.ts",
     "src/rendering/nodes/NormalBitmapNode.ts",
     "src/rendering/nodes/BitmapNode.ts",

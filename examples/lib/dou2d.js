@@ -5168,6 +5168,538 @@ var dou2d;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
+    /**
+     * 粒子系统基类
+     * @author wizardc
+     */
+    class ParticleSystem extends dou2d.DisplayObject {
+        constructor(texture, emissionRate, maxParticles) {
+            super();
+            /**
+             * 表示粒子系统最大粒子数, 超过该数量将不会继续创建粒子
+             */
+            this._maxParticles = 200;
+            this._emissionTime = -1;
+            this._frameTime = 0;
+            this._numParticles = 0;
+            this._emitterX = 0;
+            this._emitterY = 0;
+            this._texture = texture;
+            this._emissionRate = emissionRate;
+            this._maxParticles = maxParticles;
+            this._particles = [];
+            this._particleMeasureRect = new dou2d.Rectangle();
+            this._transformForMeasure = new dou2d.Matrix();
+            this._bitmapNodeList = [];
+            this.$renderNode = new dou2d.rendering.GroupNode();
+            // 不清除绘制数据
+            this.$renderNode.cleanBeforeRender = function () { };
+        }
+        /**
+         * 表示粒子出现点 x 坐标
+         */
+        set emitterX(value) {
+            this._emitterX = value;
+        }
+        get emitterX() {
+            return this._emitterX;
+        }
+        /**
+         * 表示粒子出现点 y 坐标
+         */
+        set emitterY(value) {
+            this._emitterY = value;
+        }
+        get emitterY() {
+            return this._emitterY;
+        }
+        /**
+         * 更换粒子纹理
+         */
+        changeTexture(texture) {
+            if (this._texture != texture) {
+                this._texture = texture;
+                this._bitmapNodeList.length = 0;
+                this.$renderNode.drawData.length = 0;
+            }
+        }
+        /**
+         * 开始创建粒子
+         * @param duration 粒子出现总时间, -1 表示无限时间
+         */
+        start(duration = -1) {
+            if (this._emissionRate != 0) {
+                this._emissionTime = duration;
+                dou2d.sys.ticker.startTick(this.update, this);
+            }
+        }
+        update(passedTime) {
+            if (this._emissionTime == -1 || this._emissionTime > 0) {
+                this._frameTime += passedTime;
+                while (this._frameTime > 0) {
+                    if (this._numParticles < this._maxParticles) {
+                        this.addOneParticle();
+                    }
+                    this._frameTime -= this._emissionRate;
+                }
+                if (this._emissionTime != -1) {
+                    this._emissionTime -= passedTime;
+                    if (this._emissionTime < 0) {
+                        this._emissionTime = 0;
+                    }
+                }
+            }
+            let particle;
+            let particleIndex = 0;
+            while (particleIndex < this._numParticles) {
+                particle = this._particles[particleIndex];
+                if (particle.currentTime < particle.totalTime) {
+                    this.advanceParticle(particle, passedTime);
+                    particle.currentTime += passedTime;
+                    particleIndex++;
+                }
+                else {
+                    this.removeParticle(particle);
+                }
+            }
+            this.$renderDirty = true;
+            if (this._numParticles == 0 && this._emissionTime == 0) {
+                dou2d.sys.ticker.stopTick(this.update, this);
+                this.dispatchEvent(dou.Event.COMPLETE);
+            }
+            return false;
+        }
+        addOneParticle() {
+            let particle = this.getParticle();
+            this.initParticle(particle);
+            if (particle.totalTime > 0) {
+                this._particles.push(particle);
+                this._numParticles++;
+            }
+        }
+        getParticle() {
+            return dou.recyclable(this._particleClass);
+        }
+        removeParticle(particle) {
+            let index = this._particles.indexOf(particle);
+            if (index != -1) {
+                particle.recycle();
+                this._particles.splice(index, 1);
+                this._numParticles--;
+                if (this._bitmapNodeList.length > this._numParticles) {
+                    this._bitmapNodeList.length = this._numParticles;
+                    this.$renderNode.drawData.length = this._numParticles;
+                }
+                return true;
+            }
+            return false;
+        }
+        /**
+         * 停止创建粒子
+         * @param clear 是否清除掉现有粒子
+         */
+        stop(clear = false) {
+            this._emissionTime = 0;
+            if (clear) {
+                this.clear();
+                dou2d.sys.ticker.stopTick(this.update, this);
+            }
+        }
+        $measureContentBounds(bounds) {
+            if (this._numParticles > 0) {
+                let texture = this._texture;
+                let textureW = Math.round(texture.$getScaleBitmapWidth());
+                let textureH = Math.round(texture.$getScaleBitmapHeight());
+                let totalRect = dou.recyclable(dou2d.Rectangle);
+                let particle;
+                for (let i = 0; i < this._numParticles; i++) {
+                    particle = this._particles[i];
+                    this._transformForMeasure.identity();
+                    this.appendTransform(this._transformForMeasure, particle.x, particle.y, particle.scale, particle.scale, particle.rotation, 0, 0, textureW / 2, textureH / 2);
+                    this._particleMeasureRect.clear();
+                    this._particleMeasureRect.width = textureW;
+                    this._particleMeasureRect.height = textureH;
+                    let tmpRegion = dou.recyclable(dou2d.ParticleRegion);
+                    tmpRegion.updateRegion(this._particleMeasureRect, this._transformForMeasure);
+                    if (i == 0) {
+                        totalRect.set(tmpRegion.minX, tmpRegion.minY, tmpRegion.maxX - tmpRegion.minX, tmpRegion.maxY - tmpRegion.minY);
+                    }
+                    else {
+                        let l = Math.min(totalRect.x, tmpRegion.minX);
+                        let t = Math.min(totalRect.y, tmpRegion.minY);
+                        let r = Math.max(totalRect.right, tmpRegion.maxX);
+                        let b = Math.max(totalRect.bottom, tmpRegion.maxY);
+                        totalRect.set(l, t, r - l, b - t);
+                    }
+                    tmpRegion.recycle();
+                }
+                this._lastRect = totalRect;
+                bounds.set(totalRect.x, totalRect.y, totalRect.width, totalRect.height);
+                totalRect.recycle();
+            }
+            else {
+                if (this._lastRect) {
+                    let totalRect = this._lastRect;
+                    bounds.set(totalRect.x, totalRect.y, totalRect.width, totalRect.height);
+                    totalRect.recycle();
+                    this._lastRect = null;
+                }
+            }
+        }
+        appendTransform(matrix, x, y, scaleX, scaleY, rotation, skewX, skewY, regX, regY) {
+            let cos, sin;
+            if (rotation % 360) {
+                let r = rotation;
+                cos = Math.cos(r);
+                sin = Math.sin(r);
+            }
+            else {
+                cos = 1;
+                sin = 0;
+            }
+            if (skewX || skewY) {
+                matrix.append(Math.cos(skewY), Math.sin(skewY), -Math.sin(skewX), Math.cos(skewX), x, y);
+                matrix.append(cos * scaleX, sin * scaleX, -sin * scaleY, cos * scaleY, 0, 0);
+            }
+            else {
+                matrix.append(cos * scaleX, sin * scaleX, -sin * scaleY, cos * scaleY, x, y);
+            }
+            if (regX || regY) {
+                matrix.tx -= regX * matrix.a + regY * matrix.c;
+                matrix.ty -= regX * matrix.b + regY * matrix.d;
+            }
+            return matrix;
+        }
+        $updateRenderNode() {
+            if (this._numParticles > 0) {
+                let texture = this._texture;
+                let textureW = Math.round(texture.$getScaleBitmapWidth());
+                let textureH = Math.round(texture.$getScaleBitmapHeight());
+                let offsetX = texture.offsetX;
+                let offsetY = texture.offsetY;
+                let bitmapX = texture.bitmapX;
+                let bitmapY = texture.bitmapY;
+                let bitmapWidth = texture.bitmapWidth;
+                let bitmapHeight = texture.bitmapHeight;
+                let particle;
+                for (let i = 0; i < this._numParticles; i++) {
+                    particle = this._particles[i];
+                    let bitmapNode;
+                    if (!this._bitmapNodeList[i]) {
+                        bitmapNode = new dou2d.rendering.BitmapNode();
+                        this._bitmapNodeList[i] = bitmapNode;
+                        this.$renderNode.addNode(this._bitmapNodeList[i]);
+                        bitmapNode.image = texture.bitmapData;
+                        bitmapNode.imageWidth = texture.sourceWidth;
+                        bitmapNode.imageHeight = texture.sourceHeight;
+                        bitmapNode.drawImage(bitmapX, bitmapY, bitmapWidth, bitmapHeight, offsetX, offsetY, textureW, textureH);
+                    }
+                    bitmapNode = this._bitmapNodeList[i];
+                    bitmapNode.matrix = particle.getMatrix(textureW / 2, textureH / 2);
+                    bitmapNode.alpha = particle.alpha;
+                }
+            }
+        }
+        clear() {
+            while (this._particles.length) {
+                this.removeParticle(this._particles[0]);
+            }
+            this._numParticles = 0;
+            this.$renderNode.drawData.length = 0;
+            this._bitmapNodeList.length = 0;
+            this.$renderDirty = true;
+            dou.clearPool(this._particleClass);
+        }
+    }
+    dou2d.ParticleSystem = ParticleSystem;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 粒子范围
+     * @author wizardc
+     */
+    class ParticleRegion {
+        constructor() {
+            this.minX = 0;
+            this.minY = 0;
+            this.maxX = 0;
+            this.maxY = 0;
+            this.width = 0;
+            this.height = 0;
+            this.area = 0;
+        }
+        updateRegion(bounds, matrix) {
+            if (bounds.width == 0 || bounds.height == 0) {
+                this.clear();
+                return;
+            }
+            let m = matrix;
+            let a = m.a;
+            let b = m.b;
+            let c = m.c;
+            let d = m.d;
+            let tx = m.tx;
+            let ty = m.ty;
+            let x = bounds.x;
+            let y = bounds.y;
+            let xMax = x + bounds.width;
+            let yMax = y + bounds.height;
+            let minX, minY, maxX, maxY;
+            // 通常情况下不缩放旋转的对象占多数, 直接加上偏移量即可
+            if (a == 1 && b == 0 && c == 0 && d == 1) {
+                minX = x + tx - 1;
+                minY = y + ty - 1;
+                maxX = xMax + tx + 1;
+                maxY = yMax + ty + 1;
+            }
+            else {
+                let x0 = a * x + c * y + tx;
+                let y0 = b * x + d * y + ty;
+                let x1 = a * xMax + c * y + tx;
+                let y1 = b * xMax + d * y + ty;
+                let x2 = a * xMax + c * yMax + tx;
+                let y2 = b * xMax + d * yMax + ty;
+                let x3 = a * x + c * yMax + tx;
+                let y3 = b * x + d * yMax + ty;
+                let tmp = 0;
+                if (x0 > x1) {
+                    tmp = x0;
+                    x0 = x1;
+                    x1 = tmp;
+                }
+                if (x2 > x3) {
+                    tmp = x2;
+                    x2 = x3;
+                    x3 = tmp;
+                }
+                minX = (x0 < x2 ? x0 : x2) - 1;
+                maxX = (x1 > x3 ? x1 : x3) + 1;
+                if (y0 > y1) {
+                    tmp = y0;
+                    y0 = y1;
+                    y1 = tmp;
+                }
+                if (y2 > y3) {
+                    tmp = y2;
+                    y2 = y3;
+                    y3 = tmp;
+                }
+                minY = (y0 < y2 ? y0 : y2) - 1;
+                maxY = (y1 > y3 ? y1 : y3) + 1;
+            }
+            this.minX = minX;
+            this.minY = minY;
+            this.maxX = maxX;
+            this.maxY = maxY;
+            this.width = maxX - minX;
+            this.height = maxY - minY;
+            this.area = this.width * this.height;
+        }
+        clear() {
+            this.minX = 0;
+            this.minY = 0;
+            this.maxX = 0;
+            this.maxY = 0;
+            this.width = 0;
+            this.height = 0;
+            this.area = 0;
+        }
+        onRecycle() {
+            this.clear();
+        }
+    }
+    dou2d.ParticleRegion = ParticleRegion;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 粒子基类
+     * @author wizardc
+     */
+    class Particle {
+        constructor() {
+            this._matrix = new dou2d.Matrix();
+            this.clear();
+        }
+        getMatrix(regX, regY) {
+            let matrix = this._matrix;
+            matrix.identity();
+            let cos, sin;
+            if (this.rotation % 360) {
+                let r = this.rotation;
+                cos = Math.cos(r);
+                sin = Math.sin(r);
+            }
+            else {
+                cos = 1;
+                sin = 0;
+            }
+            matrix.append(cos * this.scale, sin * this.scale, -sin * this.scale, cos * this.scale, this.x, this.y);
+            if (regX || regY) {
+                matrix.tx -= regX * matrix.a + regY * matrix.c;
+                matrix.ty -= regX * matrix.b + regY * matrix.d;
+            }
+            return matrix;
+        }
+        clear() {
+            this.x = 0;
+            this.y = 0;
+            this.scale = 1;
+            this.rotation = 0;
+            this.alpha = 1;
+            this.currentTime = 0;
+            this.totalTime = 1000;
+        }
+        onRecycle() {
+            this.clear();
+        }
+    }
+    dou2d.Particle = Particle;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 重力粒子系统
+     * @author wizardc
+     */
+    class GravityParticleSystem extends dou2d.ParticleSystem {
+        constructor(texture, config) {
+            super(texture, 0, 0);
+            this._particleClass = dou2d.GravityParticle;
+            this.parseConfig(config);
+            this._emissionRate = this._lifespan / this._maxParticles;
+        }
+        parseConfig(config) {
+            this.emitterX = config.emitter.x;
+            this.emitterY = config.emitter.y;
+            this._emitterXVariance = config.emitterVariance.x;
+            this._emitterYVariance = config.emitterVariance.y;
+            this._gravityX = config.gravity.x;
+            this._gravityY = config.gravity.y;
+            this._maxParticles = config.maxParticles;
+            this._speed = config.speed;
+            this._speedVariance = config.speedVariance;
+            this._lifespan = Math.max(0.01, config.lifespan);
+            this._lifespanVariance = config.lifespanVariance;
+            this._emitAngle = config.emitAngle;
+            this._emitAngleVariance = config.emitAngleVariance;
+            this._startSize = config.startSize;
+            this._startSizeVariance = config.startSizeVariance;
+            this._endSize = config.endSize;
+            this._endSizeVariance = config.endSizeVariance;
+            this._startRotation = config.startRotation;
+            this._startRotationVariance = config.startRotationVariance;
+            this._endRotation = config.endRotation;
+            this._endRotationVariance = config.endRotationVariance;
+            this._radialAcceleration = config.radialAcceleration;
+            this._radialAccelerationVariance = config.radialAccelerationVariance;
+            this._tangentialAcceleration = config.tangentialAcceleration;
+            this._tangentialAccelerationVariance = config.tangentialAccelerationVariance;
+            this._startAlpha = config.startAlpha;
+            this._startAlphaVariance = config.startAlphaVariance;
+            this._endAlpha = config.endAlpha;
+            this._endAlphaVariance = config.endAlphaVariance;
+        }
+        initParticle(particle) {
+            let locParticle = particle;
+            let lifespan = this.getValue(this._lifespan, this._lifespanVariance);
+            locParticle.currentTime = 0;
+            locParticle.totalTime = lifespan > 0 ? lifespan : 0;
+            if (lifespan <= 0) {
+                return;
+            }
+            locParticle.x = this.getValue(this.emitterX, this._emitterXVariance);
+            locParticle.y = this.getValue(this.emitterY, this._emitterYVariance);
+            locParticle.startX = this.emitterX;
+            locParticle.startY = this.emitterY;
+            let angle = this.getValue(this._emitAngle, this._emitAngleVariance);
+            let speed = this.getValue(this._speed, this._speedVariance);
+            locParticle.velocityX = speed * Math.cos(angle);
+            locParticle.velocityY = speed * Math.sin(angle);
+            locParticle.radialAcceleration = this.getValue(this._radialAcceleration, this._radialAccelerationVariance);
+            locParticle.tangentialAcceleration = this.getValue(this._tangentialAcceleration, this._tangentialAccelerationVariance);
+            let startSize = this.getValue(this._startSize, this._startSizeVariance);
+            if (startSize < 0.1) {
+                startSize = 0.1;
+            }
+            let endSize = this.getValue(this._endSize, this._endSizeVariance);
+            if (endSize < 0.1) {
+                endSize = 0.1;
+            }
+            let textureWidth = this._texture.textureWidth;
+            locParticle.scale = startSize / textureWidth;
+            locParticle.scaleDelta = ((endSize - startSize) / lifespan) / textureWidth;
+            let startRotation = this.getValue(this._startRotation, this._startRotationVariance);
+            let endRotation = this.getValue(this._endRotation, this._endRotationVariance);
+            locParticle.rotation = startRotation;
+            locParticle.rotationDelta = (endRotation - startRotation) / lifespan;
+            let startAlpha = this.getValue(this._startAlpha, this._startAlphaVariance);
+            let endAlpha = this.getValue(this._endAlpha, this._endAlphaVariance);
+            locParticle.alpha = startAlpha;
+            locParticle.alphaDelta = (endAlpha - startAlpha) / lifespan;
+        }
+        getValue(base, variance) {
+            return base + variance * (Math.random() * 2 - 1);
+        }
+        advanceParticle(particle, passedTime) {
+            let locParticle = particle;
+            passedTime = passedTime / 1000;
+            let restTime = locParticle.totalTime - locParticle.currentTime;
+            passedTime = restTime > passedTime ? passedTime : restTime;
+            locParticle.currentTime += passedTime;
+            let distanceX = locParticle.x - locParticle.startX;
+            let distanceY = locParticle.y - locParticle.startY;
+            let distanceScalar = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+            if (distanceScalar < 0.01) {
+                distanceScalar = 0.01;
+            }
+            let radialX = distanceX / distanceScalar;
+            let radialY = distanceY / distanceScalar;
+            let tangentialX = radialX;
+            let tangentialY = radialY;
+            radialX *= locParticle.radialAcceleration;
+            radialY *= locParticle.radialAcceleration;
+            let temp = tangentialX;
+            tangentialX = -tangentialY * locParticle.tangentialAcceleration;
+            tangentialY = temp * locParticle.tangentialAcceleration;
+            locParticle.velocityX += passedTime * (this._gravityX + radialX + tangentialX);
+            locParticle.velocityY += passedTime * (this._gravityY + radialY + tangentialY);
+            locParticle.x += locParticle.velocityX * passedTime;
+            locParticle.y += locParticle.velocityY * passedTime;
+            locParticle.scale += locParticle.scaleDelta * passedTime * 1000;
+            if (locParticle.scale < 0) {
+                locParticle.scale = 0;
+            }
+            locParticle.rotation += locParticle.rotationDelta * passedTime * 1000;
+            locParticle.alpha += locParticle.alphaDelta * passedTime * 1000;
+        }
+    }
+    dou2d.GravityParticleSystem = GravityParticleSystem;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 重力粒子
+     * @author wizardc
+     */
+    class GravityParticle extends dou2d.Particle {
+        clear() {
+            super.clear();
+            this.startX = 0;
+            this.startY = 0;
+            this.velocityX = 0;
+            this.velocityY = 0;
+            this.radialAcceleration = 0;
+            this.tangentialAcceleration = 0;
+            this.rotationDelta = 0;
+            this.scaleDelta = 0;
+        }
+    }
+    dou2d.GravityParticle = GravityParticle;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
     var rendering;
     (function (rendering) {
         /**

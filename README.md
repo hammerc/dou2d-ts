@@ -75,3 +75,7 @@ new dou2d.Engine(ShapeTest);
 * [自定义滤镜](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=CustomFilterTest)
 
 * [自定义裁剪滤镜](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=ClipFilterTest)
+
+* [粒子效果](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=ParticleTest)
+
+    *注：点击滑动屏幕改变粒子发射位置*
