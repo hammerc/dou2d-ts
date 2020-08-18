@@ -591,7 +591,7 @@ namespace dou2d.rendering {
                     }
                     else {
                         if (DEBUG) {
-                            console.warn("filter custom: uniform " + key + " not defined!");
+                            console.warn(`自定义滤镜的"uniform": "${key}"未定义`);
                         }
                     }
                 }

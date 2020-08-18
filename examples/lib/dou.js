@@ -662,7 +662,7 @@ var dou;
                 type = this.getDefaultType(url);
             }
             if (!this._analyzerMap[type]) {
-                console.error(`Can not find resource type: "${type}"`);
+                console.error(`找不到资源类型: "${type}"`);
                 return;
             }
             let item = { url, type, priority, cache, callback, thisObj };
@@ -865,7 +865,10 @@ var dou;
                 if (this._originAudio) {
                     return this._originAudio.duration;
                 }
-                throw new Error("Sound not loaded.");
+                if (DEBUG) {
+                    console.warn(`音频未加载`);
+                }
+                return -1;
             }
             load(url) {
                 this._url = url;
@@ -904,7 +907,9 @@ var dou;
             }
             play(startTime, loops) {
                 if (!this._loaded) {
-                    console.error("In the absence of sound is not allowed to play after loading.");
+                    if (DEBUG) {
+                        console.warn(`音频需要加载完成后才能播放`);
+                    }
                     return;
                 }
                 let audio = AudioSound.pop(this._url);
@@ -977,7 +982,9 @@ var dou;
             }
             set volume(value) {
                 if (this._isStopped) {
-                    console.error("Sound has stopped, please recall Sound.play () to play the sound.");
+                    if (DEBUG) {
+                        console.warn(`音乐已经停止, 请重新调用 play 方法播放`);
+                    }
                     return;
                 }
                 this._volume = value;
@@ -997,7 +1004,9 @@ var dou;
             }
             play() {
                 if (this._isStopped) {
-                    console.error("Sound has stopped, please recall Sound.play () to play the sound.");
+                    if (DEBUG) {
+                        console.warn(`音乐已经停止, 请重新调用 play 方法播放`);
+                    }
                     return;
                 }
                 try {
@@ -1074,7 +1083,9 @@ var dou;
                     _decoding = false;
                     decode();
                 }, () => {
-                    console.warn("Sound decode error.");
+                    if (DEBUG) {
+                        console.warn(`音频解码错误`);
+                    }
                     if (decodeInfo.fail) {
                         decodeInfo.fail();
                     }
@@ -1104,7 +1115,10 @@ var dou;
                 if (this._audioBuffer) {
                     return this._audioBuffer.duration;
                 }
-                throw new Error("sound not loaded!");
+                if (DEBUG) {
+                    console.warn(`音频未加载`);
+                }
+                return -1;
             }
             load(url) {
                 this._url = url;
@@ -1141,7 +1155,9 @@ var dou;
             }
             play(startTime, loops) {
                 if (!this._loaded) {
-                    console.error("In the absence of sound is not allowed to play after loading.");
+                    if (DEBUG) {
+                        console.warn(`音频需要加载完成后才能播放`);
+                    }
                     return;
                 }
                 let channel = new impl.AudioAPISoundChannel();
@@ -1195,7 +1211,9 @@ var dou;
             }
             set volume(value) {
                 if (this._isStopped) {
-                    console.error("Sound has stopped, please recall Sound.play () to play the sound.");
+                    if (DEBUG) {
+                        console.warn(`音乐已经停止, 请重新调用 play 方法播放`);
+                    }
                     return;
                 }
                 this._volume = value;
@@ -1212,7 +1230,9 @@ var dou;
             }
             play() {
                 if (this._isStopped) {
-                    console.error("Sound has stopped, please recall Sound.play () to play the sound.");
+                    if (DEBUG) {
+                        console.warn(`音乐已经停止, 请重新调用 play 方法播放`);
+                    }
                     return;
                 }
                 if (this._bufferSource) {
@@ -2265,6 +2285,11 @@ var dou;
             if (typeof obj.onRecycle === "function") {
                 obj.onRecycle();
             }
+            if (DEBUG) {
+                if (this._list.length >= this._maxCount) {
+                    console.warn(`类型"${obj.constructor}"的对象池已满, 最大数量为"${this._maxCount}"`);
+                }
+            }
             if (this._list.length < this._maxCount) {
                 if (!this._map.has(obj)) {
                     this._map.set(obj, true);
@@ -2317,6 +2342,15 @@ var dou;
         return pool.take();
     }
     dou.recyclable = recyclable;
+    /**
+     * 对象池配置
+     */
+    function DeployPool(maxCount) {
+        return function (constructor) {
+            constructor.__cacheMaxCount = maxCount;
+        };
+    }
+    dou.DeployPool = DeployPool;
     /**
      * 对象池配置
      */
@@ -2483,9 +2517,7 @@ var dou;
             if (bl > 0 && this._position + len <= bl) {
                 return true;
             }
-            else {
-                console.error("End of the file");
-            }
+            throw new Error(`遇到文件尾`);
         }
         validateBuffer2(len) {
             this._writePosition = len > this._writePosition ? len : this._writePosition;
@@ -2555,15 +2587,13 @@ var dou;
             let pos = this._position;
             let available = this._writePosition - pos;
             if (available < 0) {
-                console.error("End of the file");
-                return;
+                throw new Error(`遇到文件尾`);
             }
             if (length == 0) {
                 length = available;
             }
             else if (length > available) {
-                console.error("End of the file");
-                return;
+                throw new Error(`遇到文件尾`);
             }
             const position = bytes._position;
             bytes._position = 0;
@@ -2687,7 +2717,7 @@ var dou;
         }
         decoderError(fatal, opt_code_point) {
             if (fatal) {
-                console.error("Decoding error");
+                console.error(`解码错误`);
             }
             return opt_code_point || 0xFFFD;
         }
@@ -2767,7 +2797,7 @@ var dou;
             while (codePoints.length > pos) {
                 let code_point = codePoints[pos++];
                 if (this.inRange(code_point, 0xD800, 0xDFFF)) {
-                    console.error(`EncodingError The code point ${code_point} could not be encoded`);
+                    console.error(`编码错误, "${code_point}"不能被编码`);
                 }
                 else if (this.inRange(code_point, 0x0000, 0x007f)) {
                     outputBytes.push(code_point);

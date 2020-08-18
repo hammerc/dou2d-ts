@@ -94,13 +94,13 @@ namespace dou2d.rendering {
             height = height || 1;
             if (width < 1) {
                 if (DEBUG) {
-                    console.warn("WebGLRenderTarget _resize width = " + width);
+                    console.warn(`"WebGLRenderTarget"设定的宽度过小: ${width}`);
                 }
                 width = 1;
             }
             if (height < 1) {
                 if (DEBUG) {
-                    console.warn("WebGLRenderTarget _resize height = " + height);
+                    console.warn(`"WebGLRenderTarget"设定的高度过小: ${height}`);
                 }
                 height = 1;
             }

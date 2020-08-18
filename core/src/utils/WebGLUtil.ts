@@ -35,7 +35,7 @@ namespace dou2d {
             // 引擎默认的空白纹理不允许删除
             if (texture[sys.engineDefaultEmptyTexture]) {
                 if (DEBUG) {
-                    console.warn("Can not delete WebGLTexture: " + sys.engineDefaultEmptyTexture);
+                    console.warn(`默认纹理不允许删除: ${sys.engineDefaultEmptyTexture}`);
                 }
                 return;
             }
@@ -45,7 +45,7 @@ namespace dou2d {
             }
             else {
                 if (DEBUG) {
-                    console.warn("delete WebGLTexture gl is empty!");
+                    console.warn(`gl 对象为空, 无法删除纹理`);
                 }
             }
         }

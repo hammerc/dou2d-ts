@@ -15,11 +15,15 @@ namespace dou2d.sys {
     export function markCannotUse(instance: any, property: string, defaultValue: any): void {
         Object.defineProperty(instance.prototype, property, {
             get: function () {
-                console.warn(`This class cannot use the property "${property}"`);
+                if (DEBUG) {
+                    console.warn(`属性"${property}"不能获取`);
+                }
                 return defaultValue;
             },
             set: function (value) {
-                console.warn(`This class cannot use the property "${property}"`);
+                if (DEBUG) {
+                    console.warn(`属性"${property}"不能设置`);
+                }
             },
             enumerable: true,
             configurable: true

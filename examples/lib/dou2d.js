@@ -37,11 +37,15 @@ var dou2d;
         function markCannotUse(instance, property, defaultValue) {
             Object.defineProperty(instance.prototype, property, {
                 get: function () {
-                    console.warn(`This class cannot use the property "${property}"`);
+                    if (DEBUG) {
+                        console.warn(`属性"${property}"不能获取`);
+                    }
                     return defaultValue;
                 },
                 set: function (value) {
-                    console.warn(`This class cannot use the property "${property}"`);
+                    if (DEBUG) {
+                        console.warn(`属性"${property}"不能设置`);
+                    }
                 },
                 enumerable: true,
                 configurable: true
@@ -1002,7 +1006,7 @@ var dou2d;
                     this._stage.addChild(this._root);
                 }
                 else {
-                    console.error("Root class must inherit from dou2d.DisplayObject.");
+                    console.error(`根容器类必须继承自"dou2d.DisplayObject"`);
                 }
             }
             pause() {
@@ -2255,7 +2259,7 @@ var dou2d;
                         data = buffer.getPixels(localX - displayList.offsetX, localY - displayList.offsetY);
                     }
                     catch (e) {
-                        console.error("Cross domains pictures can not get pixel information!");
+                        console.error(`跨域图片不能获取像素信息`);
                     }
                 }
                 else {
@@ -2269,7 +2273,7 @@ var dou2d;
                         data = buffer.getPixels(1, 1);
                     }
                     catch (e) {
-                        console.error("Cross domains pictures can not get pixel information!");
+                        console.error(`跨域图片不能获取像素信息`);
                     }
                 }
                 if (data[3] === 0) {
@@ -2454,10 +2458,10 @@ var dou2d;
         $doAddChild(child, index, notifyListeners = true) {
             if (DEBUG) {
                 if (child == this) {
-                    throw new Error("An object cannot be added as a child of itthis.");
+                    throw new Error(`不能将自己作为自己的子项添加`);
                 }
                 else if ((child instanceof DisplayObjectContainer) && child.contains(this)) {
-                    throw new Error("An object cannot be added as a child to one of it's children (or children's children, etc.).");
+                    throw new Error(`不能将包含自己的容器作为自己的子项添加`);
                 }
             }
             let host = child.parent;
@@ -2561,7 +2565,7 @@ var dou2d;
             let lastIndex = this._children.indexOf(child);
             if (lastIndex < 0) {
                 if (DEBUG) {
-                    throw new Error("The supplied DisplayObject must be a child of the caller.");
+                    throw new Error(`操作的显示对象必须是自己的子项`);
                 }
             }
             if (lastIndex == index) {
@@ -6856,13 +6860,13 @@ var dou2d;
                 height = height || 1;
                 if (width < 1) {
                     if (DEBUG) {
-                        console.warn("WebGLRenderTarget _resize width = " + width);
+                        console.warn(`"WebGLRenderTarget"设定的宽度过小: ${width}`);
                     }
                     width = 1;
                 }
                 if (height < 1) {
                     if (DEBUG) {
-                        console.warn("WebGLRenderTarget _resize height = " + height);
+                        console.warn(`"WebGLRenderTarget"设定的高度过小: ${height}`);
                     }
                     height = 1;
                 }
@@ -7388,7 +7392,7 @@ var dou2d;
                         }
                         else {
                             if (DEBUG) {
-                                console.warn("filter custom: uniform " + key + " not defined!");
+                                console.warn(`自定义滤镜的"uniform": "${key}"未定义`);
                             }
                         }
                     }
@@ -9332,7 +9336,7 @@ var dou2d;
                 gl.compileShader(shader);
                 let compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
                 if (DEBUG && !compiled) {
-                    console.error("shader not compiled!");
+                    console.error(`着色器未成功编译`);
                     console.error(gl.getShaderInfoLog(shader));
                 }
                 return shader;
@@ -11869,7 +11873,9 @@ var dou2d;
                             xPos += emptyWidth;
                         }
                         else {
-                            console.warn(`BitmapText no corresponding characters: ${character}, please check the configuration file.`);
+                            if (DEBUG) {
+                                console.warn(`未找到字符"${character}", 请检查配置`);
+                            }
                         }
                         continue;
                     }
@@ -11954,7 +11960,9 @@ var dou2d;
                             textureHeight = emptyHeight;
                         }
                         else {
-                            console.warn(`BitmapText no corresponding characters: ${character}, please check the configuration file.`);
+                            if (DEBUG) {
+                                console.warn(`未找到字符"${character}", 请检查配置`);
+                            }
                             if (isFirstChar) {
                                 isFirstChar = false;
                             }
@@ -12074,7 +12082,7 @@ var dou2d;
                     addToResult(htmltext.substring(firstIdx, starIdx), stack, result);
                     let fontEnd = htmltext.indexOf(">", starIdx);
                     if (fontEnd == -1) {
-                        console.error("XML format error!");
+                        console.error(`XML 格式错误`);
                         fontEnd = starIdx;
                     }
                     else if (htmltext.charAt(starIdx + 1) == "\/") {
@@ -12692,7 +12700,7 @@ var dou2d;
             catch (e) {
             }
             if (!gl) {
-                console.log("Nonsupport WebGL!");
+                console.error(`当前设备不支持 WebGL`);
             }
             return gl;
         }
@@ -12856,7 +12864,7 @@ var dou2d;
             // 引擎默认的空白纹理不允许删除
             if (texture[dou2d.sys.engineDefaultEmptyTexture]) {
                 if (DEBUG) {
-                    console.warn("Can not delete WebGLTexture: " + dou2d.sys.engineDefaultEmptyTexture);
+                    console.warn(`默认纹理不允许删除: ${dou2d.sys.engineDefaultEmptyTexture}`);
                 }
                 return;
             }
@@ -12866,7 +12874,7 @@ var dou2d;
             }
             else {
                 if (DEBUG) {
-                    console.warn("delete WebGLTexture gl is empty!");
+                    console.warn(`gl 对象为空, 无法删除纹理`);
                 }
             }
         }

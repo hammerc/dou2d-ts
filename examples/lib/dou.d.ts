@@ -882,6 +882,10 @@ declare namespace dou {
     /**
      * 对象池配置
      */
+    function DeployPool(maxCount: number): (constructor: Function) => void;
+    /**
+     * 对象池配置
+     */
     function deployPool(creator: Creator<any> & {
         __pool?: ObjectPool<any>;
     }, maxCount: number): void;

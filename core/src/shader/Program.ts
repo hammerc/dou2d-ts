@@ -35,7 +35,7 @@ namespace dou2d.rendering {
             gl.compileShader(shader);
             let compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
             if (DEBUG && !compiled) {
-                console.error("shader not compiled!");
+                console.error(`着色器未成功编译`);
                 console.error(gl.getShaderInfoLog(shader));
             }
             return shader;

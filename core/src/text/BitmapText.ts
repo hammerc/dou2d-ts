@@ -325,7 +325,9 @@ namespace dou2d {
                             xPos += emptyWidth;
                         }
                         else {
-                            console.warn(`BitmapText no corresponding characters: ${character}, please check the configuration file.`);
+                            if (DEBUG) {
+                                console.warn(`未找到字符"${character}", 请检查配置`);
+                            }
                         }
                         continue;
                     }
@@ -411,7 +413,9 @@ namespace dou2d {
                             textureHeight = emptyHeight;
                         }
                         else {
-                            console.warn(`BitmapText no corresponding characters: ${character}, please check the configuration file.`);
+                            if (DEBUG) {
+                                console.warn(`未找到字符"${character}", 请检查配置`);
+                            }
                             if (isFirstChar) {
                                 isFirstChar = false;
                             }

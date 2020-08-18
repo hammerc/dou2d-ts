@@ -35,7 +35,7 @@ namespace dou2d {
             catch (e) {
             }
             if (!gl) {
-                console.log("Nonsupport WebGL!");
+                console.error(`当前设备不支持 WebGL`);
             }
             return gl as WebGLRenderingContext;
         }

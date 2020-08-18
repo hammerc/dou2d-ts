@@ -1368,7 +1368,7 @@ namespace dou2d {
                         data = buffer.getPixels(localX - displayList.offsetX, localY - displayList.offsetY);
                     }
                     catch (e) {
-                        console.error("Cross domains pictures can not get pixel information!");
+                        console.error(`跨域图片不能获取像素信息`);
                     }
                 }
                 else {
@@ -1382,7 +1382,7 @@ namespace dou2d {
                         data = buffer.getPixels(1, 1);
                     }
                     catch (e) {
-                        console.error("Cross domains pictures can not get pixel information!");
+                        console.error(`跨域图片不能获取像素信息`);
                     }
                 }
                 if (data[3] === 0) {

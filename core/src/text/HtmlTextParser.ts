@@ -31,7 +31,7 @@ namespace dou2d {
                     addToResult(htmltext.substring(firstIdx, starIdx), stack, result);
                     let fontEnd = htmltext.indexOf(">", starIdx);
                     if (fontEnd == -1) {
-                        console.error("XML format error!");
+                        console.error(`XML 格式错误`);
                         fontEnd = starIdx;
                     }
                     else if (htmltext.charAt(starIdx + 1) == "\/") {

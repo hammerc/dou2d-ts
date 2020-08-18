@@ -42,7 +42,7 @@ namespace dou2d.sys {
                 this._stage.addChild(this._root);
             }
             else {
-                console.error("Root class must inherit from dou2d.DisplayObject.");
+                console.error(`根容器类必须继承自"dou2d.DisplayObject"`);
             }
         }
 

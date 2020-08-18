@@ -92,10 +92,10 @@ namespace dou2d {
         public $doAddChild(child: DisplayObject, index: number, notifyListeners: boolean = true): DisplayObject {
             if (DEBUG) {
                 if (child == this) {
-                    throw new Error("An object cannot be added as a child of itthis.");
+                    throw new Error(`不能将自己作为自己的子项添加`);
                 }
                 else if ((child instanceof DisplayObjectContainer) && (<DisplayObjectContainer>child).contains(this)) {
-                    throw new Error("An object cannot be added as a child to one of it's children (or children's children, etc.).");
+                    throw new Error(`不能将包含自己的容器作为自己的子项添加`);
                 }
             }
             let host = child.parent;
@@ -206,7 +206,7 @@ namespace dou2d {
             let lastIndex = this._children.indexOf(child);
             if (lastIndex < 0) {
                 if (DEBUG) {
-                    throw new Error("The supplied DisplayObject must be a child of the caller.");
+                    throw new Error(`操作的显示对象必须是自己的子项`);
                 }
             }
             if (lastIndex == index) {
