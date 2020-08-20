@@ -24,7 +24,9 @@ WebGL 2D 引擎
 <script type="text/javascript" src="examples/lib/dou2d.js"></script>
 ```
 
-2. 需要外部加载资源时，请注册加载类型解析器：
+2. ~~需要外部加载资源时，请注册加载类型解析器：~~
+
+**注：这一步已集成到 AssetManager 类中自动注册，无需再编写下面代码。**
 
 ```javascript
 // 注册贴图解析器并绑定对应的文件后缀名

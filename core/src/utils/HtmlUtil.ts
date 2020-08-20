@@ -160,5 +160,25 @@ namespace dou2d {
             }
             return "#" + color;
         }
+
+        export function getRelativePath(url: string, fileName: string): string {
+            if (fileName.indexOf("://") != -1) {
+                return fileName;
+            }
+            url = url.split("\\").join("/");
+            var params = url.match(/#.*|\?.*/);
+            var paramUrl = "";
+            if (params) {
+                paramUrl = params[0];
+            }
+            var index = url.lastIndexOf("/");
+            if (index != -1) {
+                url = url.substring(0, index + 1) + fileName;
+            }
+            else {
+                url = fileName;
+            }
+            return url + paramUrl;
+        }
     }
 }

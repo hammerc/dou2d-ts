@@ -59,6 +59,8 @@ namespace dou2d {
             sys.inputManager = new input.InputManager();
             sys.inputManager.initStageDelegateDiv(this._container, sys.canvas);
 
+            asset.$init();
+
             sys.player = new sys.Player(renderBuffer, sys.stage, options.rootClass);
             sys.player.start();
 

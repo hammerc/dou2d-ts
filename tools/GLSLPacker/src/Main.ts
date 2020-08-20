@@ -1,7 +1,7 @@
-import * as fs from "fs"
-import * as path from "path"
-import * as util from "util"
-import { FileUtil } from "../lib/hammerc/utils/FileUtil"
+import * as fs from "fs";
+import * as path from "path";
+import * as util from "util";
+import { FileUtil } from "../lib/hammerc/utils/FileUtil";
 
 const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);

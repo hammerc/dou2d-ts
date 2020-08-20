@@ -1038,6 +1038,233 @@ var dou2d;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
+    /**
+     * 资源管理器
+     * * 提供资源配置文件, 通过该文件可以方便的使用一个简单的名称来指定特定的资源而不使用资源的路径
+     * * 使用该管理器需要保证资源名称的唯一性
+     * * 支持获取图集中的某个图片资源
+     * @author wizardc
+     */
+    class AssetManager {
+        constructor() {
+            this._itemMap = {};
+            this._sheetLoadingMap = {};
+        }
+        static get instance() {
+            return AssetManager._instance || (AssetManager._instance = new AssetManager());
+        }
+        $init() {
+            dou.loader.registerAnalyzer("text" /* text */, new dou.TextAnalyzer());
+            dou.loader.registerExtension("txt", "text" /* text */);
+            dou.loader.registerExtension("xml", "text" /* text */);
+            dou.loader.registerAnalyzer("json" /* json */, new dou.JsonAnalyzer());
+            dou.loader.registerExtension("json", "json" /* json */);
+            dou.loader.registerAnalyzer("binary" /* binary */, new dou.BytesAnalyzer());
+            dou.loader.registerExtension("bin", "binary" /* binary */);
+            dou.loader.registerAnalyzer("image" /* image */, new dou2d.ImageAnalyzer());
+            dou.loader.registerExtension("jpg", "image" /* image */);
+            dou.loader.registerExtension("jpeg", "image" /* image */);
+            dou.loader.registerExtension("png", "image" /* image */);
+            dou.loader.registerExtension("webp", "image" /* image */);
+            dou.loader.registerAnalyzer("sound" /* sound */, new dou.SoundAnalyzer());
+            dou.loader.registerExtension("mp3", "sound" /* sound */);
+            dou.loader.registerExtension("wav", "sound" /* sound */);
+            dou.loader.registerExtension("ogg", "sound" /* sound */);
+            dou.loader.registerAnalyzer("sheet" /* sheet */, new dou2d.SheetAnalyzer());
+        }
+        /**
+         * 加载配置
+         */
+        loadConfig(url, resourceRoot, callback, thisObj) {
+            dou.loader.load(url, (data, url) => {
+                if (data) {
+                    this.addConfig(data, resourceRoot);
+                    if (callback) {
+                        callback.call(thisObj, true);
+                    }
+                }
+                else {
+                    console.error(`资源配置文件加载失败: ${url}`);
+                    callback.call(thisObj, false);
+                }
+            }, this, "json" /* json */);
+        }
+        /**
+         * 加载配置
+         */
+        loadConfigAsync(url, resourceRoot) {
+            return new Promise((resolve, reject) => {
+                this.loadConfig(url, resourceRoot, (success) => {
+                    if (success) {
+                        resolve();
+                    }
+                    else {
+                        reject();
+                    }
+                }, this);
+            });
+        }
+        /**
+         * 添加配置
+         */
+        addConfig(config, resourceRoot) {
+            for (let item of config) {
+                if (DEBUG && this._itemMap[item.name]) {
+                    console.warn(`资源名称已存在: ${item.name}`);
+                }
+                this._itemMap[item.name] = {
+                    name: item.name,
+                    type: item.type,
+                    root: resourceRoot,
+                    url: item.url,
+                    subkeys: item.subkeys
+                };
+            }
+        }
+        /**
+         * 资源是否存在
+         */
+        hasRes(source) {
+            return this._itemMap.hasOwnProperty(source);
+        }
+        /**
+         * 资源是否已经加载
+         */
+        isLoaded(source) {
+            let item = this.getItem(source);
+            if (!item) {
+                return false;
+            }
+            let url = this.getRealPath(item);
+            return dou.loader.isLoaded(url);
+        }
+        getItem(source) {
+            if (source.indexOf(".") == -1) {
+                return this._itemMap[source];
+            }
+            return this._itemMap[source.split(".")[0]];
+        }
+        getRealPath(item) {
+            return (item.root || "") + item.url;
+        }
+        /**
+         * 加载资源
+         */
+        loadRes(source, priority, callBack, thisObject) {
+            let item = this.getItem(source);
+            if (!item) {
+                callBack.call(thisObject, null, source);
+                return;
+            }
+            let realPath = this.getRealPath(item);
+            let sheetInfo = this.getSheetInfo(source);
+            if (sheetInfo) {
+                if (dou.loader.isLoaded(realPath)) {
+                    let sheet = dou.loader.get(realPath);
+                    callBack.call(thisObject, sheet.getTexture(sheetInfo.frame), source);
+                }
+                else {
+                    if (!this._sheetLoadingMap[realPath]) {
+                        this._sheetLoadingMap[realPath] = [];
+                        dou.loader.load(realPath, this.onSheetLoaded, this, item.type, priority);
+                    }
+                    this._sheetLoadingMap[realPath].push({ source, callBack, thisObject });
+                }
+            }
+            else {
+                dou.loader.load(realPath, (data, url) => {
+                    callBack.call(thisObject, data, source);
+                }, this, item.type, priority);
+            }
+        }
+        getSheetInfo(source) {
+            if (source.indexOf(".") == -1) {
+                return null;
+            }
+            let items = source.split(".");
+            return { file: items[0] + "_json", frame: items[1] };
+        }
+        onSheetLoaded(data, url) {
+            let callBackList = this._sheetLoadingMap[url];
+            delete this._sheetLoadingMap[url];
+            for (let item of callBackList) {
+                item.callBack.call(item.thisObject, data ? data.getTexture(item.source.split(".")[1]) : null, item.source);
+            }
+        }
+        /**
+         * 加载资源
+         */
+        loadResAsync(source, priority) {
+            return new Promise((resolve, reject) => {
+                this.loadRes(source, priority, (data, source) => {
+                    resolve(data);
+                }, this);
+            });
+        }
+        /**
+         * 获取已经加载的资源项
+         */
+        getRes(source) {
+            let item = this.getItem(source);
+            if (!item) {
+                return null;
+            }
+            let realPath = this.getRealPath(item);
+            let sheetInfo = this.getSheetInfo(source);
+            if (sheetInfo) {
+                let sheet = dou.loader.get(realPath);
+                if (sheet) {
+                    return sheet.getTexture(sheetInfo.frame);
+                }
+                return null;
+            }
+            return dou.loader.get(realPath);
+        }
+        /**
+         * 加载资源组
+         */
+        loadGroup(sources, priority, callback, thisObj) {
+            let current = 0, total = sources.length;
+            let itemCallback = (data, source) => {
+                current++;
+                callback.call(thisObj, current, total, data, source);
+            };
+            for (let source of sources) {
+                this.loadRes(source, priority, itemCallback, this);
+            }
+        }
+        /**
+         * 加载资源组
+         */
+        loadGroupAsync(sources, priority) {
+            return new Promise((resolve, reject) => {
+                this.loadGroup(sources, priority, (current, total, data, source) => {
+                    if (current == total) {
+                        resolve();
+                    }
+                }, this);
+            });
+        }
+        /**
+         * 销毁资源
+         */
+        destroyRes(source) {
+            let item = this.getItem(source);
+            if (!item) {
+                return false;
+            }
+            let realPath = this.getRealPath(item);
+            return dou.loader.release(realPath);
+        }
+    }
+    dou2d.AssetManager = AssetManager;
+    /**
+     * 资源管理器快速访问
+     */
+    dou2d.asset = AssetManager.instance;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
     const tempRect = new dou2d.Rectangle();
     /**
      * 显示对象
@@ -5169,6 +5396,51 @@ var dou2d;
         }
     }
     dou2d.ImageAnalyzer = ImageAnalyzer;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 图集加载器
+     * @author wizardc
+     */
+    class SheetAnalyzer {
+        load(url, callback, thisObj) {
+            let jsonAnalyzer = new dou.JsonAnalyzer();
+            jsonAnalyzer.load(url, (url, data) => {
+                if (data) {
+                    let imageAnalyzer = new dou2d.ImageAnalyzer();
+                    imageAnalyzer.load(dou2d.HtmlUtil.getRelativePath(url, data.file), (url, texture) => {
+                        if (texture) {
+                            callback.call(thisObj, url, this.createSheet(data, texture));
+                        }
+                        else {
+                            callback.call(thisObj, url);
+                        }
+                    }, this);
+                }
+                else {
+                    callback.call(thisObj, url);
+                }
+            }, this);
+        }
+        createSheet(data, texture) {
+            let frames = data.frames;
+            let sheet = new dou2d.SpriteSheet(texture);
+            for (let name in frames) {
+                let frame = frames[name];
+                sheet.createTexture(name, frame.x, frame.y, frame.w, frame.h, frame.offX, frame.offY, frame.sourceW, frame.sourceH);
+            }
+            return sheet;
+        }
+        release(data) {
+            if (data) {
+                data.dispose();
+                return true;
+            }
+            return false;
+        }
+    }
+    dou2d.SheetAnalyzer = SheetAnalyzer;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
@@ -12825,6 +13097,26 @@ var dou2d;
             return "#" + color;
         }
         HtmlUtil.toColorString = toColorString;
+        function getRelativePath(url, fileName) {
+            if (fileName.indexOf("://") != -1) {
+                return fileName;
+            }
+            url = url.split("\\").join("/");
+            var params = url.match(/#.*|\?.*/);
+            var paramUrl = "";
+            if (params) {
+                paramUrl = params[0];
+            }
+            var index = url.lastIndexOf("/");
+            if (index != -1) {
+                url = url.substring(0, index + 1) + fileName;
+            }
+            else {
+                url = fileName;
+            }
+            return url + paramUrl;
+        }
+        HtmlUtil.getRelativePath = getRelativePath;
     })(HtmlUtil = dou2d.HtmlUtil || (dou2d.HtmlUtil = {}));
 })(dou2d || (dou2d = {}));
 var dou2d;
@@ -13423,6 +13715,7 @@ var dou2d;
             this._touchHandler = new dou2d.touch.TouchHandler(dou2d.sys.stage, dou2d.sys.canvas);
             dou2d.sys.inputManager = new dou2d.input.InputManager();
             dou2d.sys.inputManager.initStageDelegateDiv(this._container, dou2d.sys.canvas);
+            dou2d.asset.$init();
             dou2d.sys.player = new dou2d.sys.Player(renderBuffer, dou2d.sys.stage, options.rootClass);
             dou2d.sys.player.start();
             dou2d.sys.ticker = new dou2d.sys.Ticker();

@@ -71,6 +71,10 @@
     "src/core/Ticker.ts",
     "src/core/Player.ts",
 
+    "src/asset/AssetManager.ts",
+    "src/asset/AssetConfig.ts",
+    "src/asset/AssetType.ts",
+
     "src/display/DisplayObject.ts",
     "src/display/DisplayObjectContainer.ts",
     "src/display/Shape.ts",
@@ -116,6 +120,7 @@
     "src/filters/DropShadowFilter.ts",
 
     "src/load/analyzer/ImageAnalyzer.ts",
+    "src/load/analyzer/SheetAnalyzer.ts",
 
     "src/particle/ParticleSystem.ts",
     "src/particle/ParticleRegion.ts",

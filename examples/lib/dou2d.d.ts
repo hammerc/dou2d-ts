@@ -425,6 +425,120 @@ declare namespace dou2d.sys {
 }
 declare namespace dou2d {
     /**
+     * 资源管理器
+     * * 提供资源配置文件, 通过该文件可以方便的使用一个简单的名称来指定特定的资源而不使用资源的路径
+     * * 使用该管理器需要保证资源名称的唯一性
+     * * 支持获取图集中的某个图片资源
+     * @author wizardc
+     */
+    class AssetManager {
+        private static _instance;
+        static readonly instance: AssetManager;
+        private _itemMap;
+        private _sheetLoadingMap;
+        private constructor();
+        $init(): void;
+        /**
+         * 加载配置
+         */
+        loadConfig(url: string, resourceRoot?: string, callback?: (success: boolean) => void, thisObj?: any): void;
+        /**
+         * 加载配置
+         */
+        loadConfigAsync(url: string, resourceRoot?: string): Promise<void>;
+        /**
+         * 添加配置
+         */
+        addConfig(config: AssetConfigItem[], resourceRoot?: string): void;
+        /**
+         * 资源是否存在
+         */
+        hasRes(source: string): boolean;
+        /**
+         * 资源是否已经加载
+         */
+        isLoaded(source: string): boolean;
+        private getItem;
+        private getRealPath;
+        /**
+         * 加载资源
+         */
+        loadRes(source: string, priority?: number, callBack?: (data: any, source: string) => void, thisObject?: any): void;
+        private getSheetInfo;
+        private onSheetLoaded;
+        /**
+         * 加载资源
+         */
+        loadResAsync(source: string, priority?: number): Promise<any>;
+        /**
+         * 获取已经加载的资源项
+         */
+        getRes(source: string): any;
+        /**
+         * 加载资源组
+         */
+        loadGroup(sources: string[], priority?: number, callback?: (current: number, total: number, data: any, source: string) => void, thisObj?: any): void;
+        /**
+         * 加载资源组
+         */
+        loadGroupAsync(sources: string[], priority?: number): Promise<void>;
+        /**
+         * 销毁资源
+         */
+        destroyRes(source: string): boolean;
+    }
+    /**
+     * 资源管理器快速访问
+     */
+    const asset: AssetManager;
+}
+declare namespace dou2d {
+    /**
+     * 资源配置项
+     * @author wizardc
+     */
+    interface AssetConfigItem {
+        name: string;
+        type: AssetType;
+        url: string;
+        subkeys?: string[];
+    }
+    /**
+     * 图集配置
+     * @author wizardc
+     */
+    interface SheetConfig {
+        file: string;
+        frames: {
+            [name: string]: {
+                x: number;
+                y: number;
+                w: number;
+                h: number;
+                offX: number;
+                offY: number;
+                sourceW: number;
+                sourceH: number;
+            };
+        };
+    }
+}
+declare namespace dou2d {
+    /**
+     * 资源类型
+     * @author wizardc
+     */
+    const enum AssetType {
+        text = "text",
+        json = "json",
+        binary = "binary",
+        image = "image",
+        sheet = "sheet",
+        sound = "sound"
+    }
+}
+declare namespace dou2d {
+    /**
      * 显示对象
      * @author wizardc
      */
@@ -2125,6 +2239,17 @@ declare namespace dou2d {
         load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
         private createTexture;
         release(data: Texture): boolean;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 图集加载器
+     * @author wizardc
+     */
+    class SheetAnalyzer implements dou.IAnalyzer {
+        load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
+        private createSheet;
+        release(data: SpriteSheet): boolean;
     }
 }
 declare namespace dou2d {
@@ -4590,6 +4715,7 @@ declare namespace dou2d {
         function getStyleName(name: string, element?: any): string;
         function getFontString(node: rendering.TextNode, format: rendering.TextFormat): string;
         function toColorString(value: number): string;
+        function getRelativePath(url: string, fileName: string): string;
     }
 }
 declare namespace dou2d {
