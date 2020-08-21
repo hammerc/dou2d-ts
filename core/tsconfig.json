@@ -195,6 +195,8 @@
     "src/debug/Stat.ts",
     "src/debug/StatPanel.ts",
 
-    "src/Engine.ts"
+    "src/Engine.ts",
+
+    "src/Dou.ts"
   ]
 }
