@@ -10335,10 +10335,13 @@ var dou2d;
             }
             updateInput() {
                 if (!this._text.$getVisible() && this._stageText) {
-                    this.hideInput();
+                    this.removeInput();
                 }
             }
             hideInput() {
+                this._stageText.hide();
+            }
+            removeInput() {
                 this._stageText.removeFromStage();
             }
             removeStageText() {

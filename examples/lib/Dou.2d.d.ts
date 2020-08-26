@@ -4096,6 +4096,7 @@ declare namespace Dou.input {
         updateProperties(): void;
         private updateInput;
         hideInput(): void;
+        removeInput(): void;
         removeStageText(): void;
     }
 }

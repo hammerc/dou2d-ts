@@ -150,11 +150,15 @@ namespace dou2d.input {
 
         private updateInput(): void {
             if (!this._text.$getVisible() && this._stageText) {
-                this.hideInput();
+                this.removeInput();
             }
         }
 
         public hideInput(): void {
+            this._stageText.hide();
+        }
+
+        public removeInput(): void {
             this._stageText.removeFromStage();
         }
 
