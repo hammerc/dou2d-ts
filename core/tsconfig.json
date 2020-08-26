@@ -121,6 +121,7 @@
 
     "src/load/analyzer/ImageAnalyzer.ts",
     "src/load/analyzer/SheetAnalyzer.ts",
+    "src/load/analyzer/FontAnalyzer.ts",
 
     "src/particle/ParticleSystem.ts",
     "src/particle/ParticleRegion.ts",

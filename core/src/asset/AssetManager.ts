@@ -34,11 +34,13 @@ namespace dou2d {
             dou.loader.registerExtension("jpeg", AssetType.image);
             dou.loader.registerExtension("png", AssetType.image);
             dou.loader.registerExtension("webp", AssetType.image);
+            dou.loader.registerAnalyzer(AssetType.sheet, new dou2d.SheetAnalyzer());
+            dou.loader.registerAnalyzer(AssetType.font, new dou2d.FontAnalyzer());
+            dou.loader.registerExtension("fnt", AssetType.font);
             dou.loader.registerAnalyzer(AssetType.sound, new dou.SoundAnalyzer());
             dou.loader.registerExtension("mp3", AssetType.sound);
             dou.loader.registerExtension("wav", AssetType.sound);
             dou.loader.registerExtension("ogg", AssetType.sound);
-            dou.loader.registerAnalyzer(AssetType.sheet, new dou2d.SheetAnalyzer());
         }
 
         /**

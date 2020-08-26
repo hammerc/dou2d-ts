@@ -9,6 +9,7 @@ namespace dou2d {
         binary = "binary",
         image = "image",
         sheet = "sheet",
+        font = "font",
         sound = "sound"
     }
 }

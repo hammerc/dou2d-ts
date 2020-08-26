@@ -540,6 +540,7 @@ declare namespace dou2d {
         binary = "binary",
         image = "image",
         sheet = "sheet",
+        font = "font",
         sound = "sound"
     }
 }
@@ -2316,6 +2317,17 @@ declare namespace dou2d {
         load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
         private createSheet;
         release(data: SpriteSheet): boolean;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 位图字体加载器
+     * @author wizardc
+     */
+    class FontAnalyzer implements dou.IAnalyzer {
+        load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
+        private createFont;
+        release(data: BitmapFont): boolean;
     }
 }
 declare namespace dou2d {
@@ -4519,7 +4531,7 @@ declare namespace dou2d {
                 offY: number;
                 sourceW: number;
                 sourceH: number;
-                xadvance: number;
+                xadvance?: number;
             };
         });
         getTexture(name: string): Texture;

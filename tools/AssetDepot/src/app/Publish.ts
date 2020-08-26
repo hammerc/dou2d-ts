@@ -39,7 +39,7 @@ class Publish {
         let newFilePath = path.join(destPath, path.dirname(resource.url), newFileName + ext);
         FileUtil.copyFile(filePath, newFilePath);
 
-        if (resource.type == "sheet") {
+        if (resource.type == "sheet" || resource.type == "font") {
             let sheetData = JSON.parse(await readFileAsync(filePath, { encoding: "utf8" }));
             let imageName = sheetData.file;
             let imagePath = path.join(path.dirname(filePath), imageName);
@@ -75,7 +75,7 @@ class Publish {
         let newFilePath = path.join(destPath, newFileName + ext);
         FileUtil.copyFile(filePath, newFilePath);
 
-        if (resource.type == "sheet") {
+        if (resource.type == "sheet" || resource.type == "font") {
             let sheetData = JSON.parse(await readFileAsync(filePath, { encoding: "utf8" }));
             let imageName = sheetData.file;
             let imagePath = path.join(path.dirname(filePath), imageName);

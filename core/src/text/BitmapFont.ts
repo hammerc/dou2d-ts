@@ -4,10 +4,10 @@ namespace dou2d {
      * @author wizardc
      */
     export class BitmapFont extends SpriteSheet {
-        private _charList: { [key: string]: { x: number, y: number, w: number, h: number, offX: number, offY: number, sourceW: number, sourceH: number, xadvance: number } };
+        private _charList: { [key: string]: { x: number, y: number, w: number, h: number, offX: number, offY: number, sourceW: number, sourceH: number, xadvance?: number } };
         private _firstCharHeight: number = 0;
 
-        public constructor(texture: Texture, config: string | { [key: string]: { x: number, y: number, w: number, h: number, offX: number, offY: number, sourceW: number, sourceH: number, xadvance: number } }) {
+        public constructor(texture: Texture, config: string | { [key: string]: { x: number, y: number, w: number, h: number, offX: number, offY: number, sourceW: number, sourceH: number, xadvance?: number } }) {
             super(texture);
             if (typeof config == "string") {
                 this._charList = JSON.parse(config);

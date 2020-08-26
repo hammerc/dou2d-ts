@@ -7,16 +7,17 @@ const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
 const typeMap: any = {
+    ".txt": "text",
+    ".xml": "text",
     ".jpg": "image",
     ".jpeg": "image",
     ".png": "image",
     ".webp": "image",
     ".json": "json",
+    ".fnt": "font",
     ".mp3": "sound",
     ".wav": "sound",
-    ".ogg": "sound",
-    ".txt": "text",
-    ".xml": "text"
+    ".ogg": "sound"
 };
 
 class Depot {
@@ -44,6 +45,7 @@ class Depot {
             this.processFile(resources, fileUrl, name, ext);
         }
         this.processSheet(resources, resourceDir);
+        this.processFont(resources, resourceDir);
 
         await writeFileAsync(jsonFile, JSON.stringify(resources, undefined, 4), { encoding: "utf8" });
 
@@ -91,6 +93,33 @@ class Depot {
                                 subkeys.push(key);
                             }
                             resource.subkeys = subkeys.join(",");
+                            resources.splice(index, 1);
+                            i--;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private processFont(resources: any[], resourcePath: string): void {
+        for (let i = 0; i < resources.length; i++) {
+            let resource = resources[i];
+            if (resource.type == "font") {
+                let jsonPath = path.join(resourcePath, resource.url);
+                let data: any;
+                try {
+                    data = JSON.parse(fs.readFileSync(jsonPath, { encoding: "utf8" }));
+                }
+                catch (error) {
+                    console.error(`json格式错误：${jsonPath}`);
+                    continue;
+                }
+                if (data.file && data.frames) {
+                    let imagePath = path.join(path.dirname(jsonPath), data.file);
+                    if (fs.existsSync(imagePath)) {
+                        let index = this.findByUrl(resources, this.getUrl(imagePath, resourcePath));
+                        if (index != -1) {
                             resources.splice(index, 1);
                             i--;
                         }

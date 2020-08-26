@@ -1066,11 +1066,13 @@ var dou2d;
             dou.loader.registerExtension("jpeg", "image" /* image */);
             dou.loader.registerExtension("png", "image" /* image */);
             dou.loader.registerExtension("webp", "image" /* image */);
+            dou.loader.registerAnalyzer("sheet" /* sheet */, new dou2d.SheetAnalyzer());
+            dou.loader.registerAnalyzer("font" /* font */, new dou2d.FontAnalyzer());
+            dou.loader.registerExtension("fnt", "font" /* font */);
             dou.loader.registerAnalyzer("sound" /* sound */, new dou.SoundAnalyzer());
             dou.loader.registerExtension("mp3", "sound" /* sound */);
             dou.loader.registerExtension("wav", "sound" /* sound */);
             dou.loader.registerExtension("ogg", "sound" /* sound */);
-            dou.loader.registerAnalyzer("sheet" /* sheet */, new dou2d.SheetAnalyzer());
         }
         /**
          * 加载配置
@@ -5441,6 +5443,45 @@ var dou2d;
         }
     }
     dou2d.SheetAnalyzer = SheetAnalyzer;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 位图字体加载器
+     * @author wizardc
+     */
+    class FontAnalyzer {
+        load(url, callback, thisObj) {
+            let jsonAnalyzer = new dou.JsonAnalyzer();
+            jsonAnalyzer.load(url, (url, data) => {
+                if (data) {
+                    let imageAnalyzer = new dou2d.ImageAnalyzer();
+                    imageAnalyzer.load(dou2d.HtmlUtil.getRelativePath(url, data.file), (url, texture) => {
+                        if (texture) {
+                            callback.call(thisObj, url, this.createFont(data, texture));
+                        }
+                        else {
+                            callback.call(thisObj, url);
+                        }
+                    }, this);
+                }
+                else {
+                    callback.call(thisObj, url);
+                }
+            }, this);
+        }
+        createFont(data, texture) {
+            return new dou2d.BitmapFont(texture, data.frames);
+        }
+        release(data) {
+            if (data) {
+                data.dispose();
+                return true;
+            }
+            return false;
+        }
+    }
+    dou2d.FontAnalyzer = FontAnalyzer;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
