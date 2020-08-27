@@ -20,7 +20,7 @@ gulp.task("Dou", function (cb) {
   content = content.replace(/declare\s+namespace\s+dou([\.a-zA-Z0-9$_]*)\s\{/g, "declare namespace Dou$1 {");
   content = content.replace(/declare\s+module\s+dou([\.a-zA-Z0-9$_]*)\s\{/g, "declare module Dou$1 {");
   content = content.replace(/\s+dou\s*\./g, " Dou.");
-  fs.writeFileSync("bin/Dou.2d.d.ts", content, { encoding: "utf8" });
+  fs.writeFileSync("bin/Dou_2d.d.ts", content, { encoding: "utf8" });
   cb();
 });
 
@@ -33,6 +33,7 @@ gulp.task("uglify", function () {
 
 gulp.task("copy", function () {
   return gulp.src("bin/**/*")
+    .pipe(gulp.dest("dest"))
     .pipe(gulp.dest("../examples/lib"));
 });
 
