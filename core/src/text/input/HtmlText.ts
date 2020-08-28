@@ -9,7 +9,7 @@ namespace dou2d.input {
         private _htmlInput: InputManager;
 
         private _isNeedShow: boolean;
-        private _inputElement: any;
+        private _inputElement: HTMLInputElement | HTMLTextAreaElement;
         private _inputDiv: any;
 
         private _gscaleX: number = 0;
@@ -28,16 +28,14 @@ namespace dou2d.input {
             this._htmlInput = sys.inputManager;
         }
 
-        public show(): void {
+        public show(active: boolean = true): void {
             if (!this._htmlInput.isCurrentStageText(this)) {
                 this._inputElement = this._htmlInput.getInputElement(this);
                 if (!this.textfield.multiline) {
-                    this._inputElement.type = this.textfield.inputType;
+                    (<any>this._inputElement).type = this.textfield.inputType;
                 }
                 else {
-                    if (this._inputElement instanceof HTMLInputElement) {
-                        this._inputElement.type = "text";
-                    }
+                    (<any>this._inputElement).type = "text";
                 }
                 this._inputDiv = this._htmlInput.inputDIV;
             }
@@ -48,6 +46,22 @@ namespace dou2d.input {
             //标记当前文本被选中
             this._isNeedShow = true;
             this.initElement();
+            if (active) {
+                this.activeShowKeyboard();
+            }
+        }
+
+        public activeShowKeyboard(): void {
+            if (this._htmlInput.needShow) {
+                this._isNeedShow = false;
+                this.dispatchEvent("focus");
+                this.executeShow();
+                this._htmlInput.show();
+            }
+            else {
+                this._htmlInput.blurInputElement();
+                this._htmlInput.disposeInputElement();
+            }
         }
 
         private initElement(): void {
@@ -130,13 +144,15 @@ namespace dou2d.input {
             if (this._isNeedShow) {
                 e.stopImmediatePropagation();
                 this._isNeedShow = false;
-                this.executeShow();
                 this.dispatchEvent2D(Event2D.FOCUS_IN);
+                this.executeShow();
             }
         }
 
         private executeShow(): void {
-            this._inputElement.value = this.getText();
+            if (this._inputElement.value !== this.getText()) {
+                this._inputElement.value = this.getText();
+            }
             if (this._inputElement.onblur == null) {
                 this._inputElement.onblur = this.onBlurHandler.bind(this);
             }
@@ -145,7 +161,7 @@ namespace dou2d.input {
             }
             this.resetStageText();
             if (this.textfield.maxChars > 0) {
-                this._inputElement.setAttribute("maxlength", this.textfield.maxChars);
+                this._inputElement.setAttribute("maxlength", this.textfield.maxChars + "");
             }
             else {
                 this._inputElement.removeAttribute("maxlength");

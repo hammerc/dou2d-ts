@@ -39,6 +39,7 @@ namespace dou2d.input {
             this._stageText.addToStage();
             this._stageText.on(Event2D.UPDATE_TEXT, this.updateTextHandler, this);
             this._text.on(TouchEvent.TOUCH_BEGIN, this.onMouseDownHandler, this);
+            this._text.on(TouchEvent.TOUCH_MOVE, this.onMouseMoveHandler, this);
             this._stageText.on(Event2D.FOCUS_OUT, this.blurHandler, this);
             this._stageText.on(Event2D.FOCUS_IN, this.focusHandler, this);
             this._stageTextAdded = true;
@@ -72,7 +73,11 @@ namespace dou2d.input {
             this.onFocus();
         }
 
-        public onFocus(): void {
+        private onMouseMoveHandler(event: TouchEvent) {
+            this._stageText.hide();
+        }
+
+        public onFocus(active: boolean = false): void {
             if (!this._text.$getVisible()) {
                 return;
             }
@@ -84,7 +89,7 @@ namespace dou2d.input {
                 this._tempStage.on(TouchEvent.TOUCH_BEGIN, this.onStageDownHandler, this);
             }, this);
             // 强制更新输入框位置
-            this._stageText.show();
+            this._stageText.show(active);
         }
 
         // 未点中文本
@@ -172,6 +177,7 @@ namespace dou2d.input {
             this._stageText.removeFromStage();
             this._stageText.off(Event2D.UPDATE_TEXT, this.updateTextHandler, this);
             this._text.off(TouchEvent.TOUCH_BEGIN, this.onMouseDownHandler, this);
+            this._text.off(TouchEvent.TOUCH_MOVE, this.onMouseMoveHandler, this);
             this._tempStage.off(TouchEvent.TOUCH_BEGIN, this.onStageDownHandler, this);
             this._stageText.off(Event2D.FOCUS_OUT, this.blurHandler, this);
             this._stageText.off(Event2D.FOCUS_IN, this.focusHandler, this);

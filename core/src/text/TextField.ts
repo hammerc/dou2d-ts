@@ -948,7 +948,7 @@ namespace dou2d {
          */
         public setFocus(): void {
             if (this.type == TextFieldType.input && this._stage) {
-                this._inputController.onFocus();
+                this._inputController.onFocus(true);
             }
         }
 

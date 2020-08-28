@@ -11,12 +11,14 @@ namespace dou2d.input {
         public scaleX: number = 1;
         public scaleY: number = 1;
 
+        public finishUserTyping: Function;
+
         private _stageText: HtmlText;
 
-        private _simpleElement: any;
-        private _multiElement: any;
+        private _simpleElement: HTMLInputElement;
+        private _multiElement: HTMLTextAreaElement;
 
-        private _inputElement: any;
+        private _inputElement: HTMLInputElement | HTMLTextAreaElement;
 
         private _stageDelegateDiv: any;
         private _canvas: any;
@@ -35,6 +37,9 @@ namespace dou2d.input {
             dom.style.top = "0px";
             dom.style.border = "none";
             dom.style.padding = "0";
+            dom.ontouchmove = (e) => {
+                e.preventDefault();
+            };
         }
 
         public initStageDelegateDiv(container: any, canvas: any): any {
@@ -55,29 +60,28 @@ namespace dou2d.input {
                 self.inputDIV.style.top = "-100px";
                 self.inputDIV.style[HtmlUtil.getStyleName("transformOrigin")] = "0% 0% 0px";
                 stageDelegateDiv.appendChild(self.inputDIV);
-                this._canvas.addEventListener("click", function (e) {
-                    if (self.needShow) {
-                        self.needShow = false;
-                        self._stageText.onClickHandler(e);
-                        self.show();
-                    }
-                    else {
-                        if (self._inputElement) {
-                            self.clearInputElement();
-                            self._inputElement.blur();
-                            self._inputElement = null;
-                        }
-                    }
-                });
+                self._canvas.addEventListener("click", this.stageTextClickHandler);
                 self.initInputElement(true);
                 self.initInputElement(false);
+            }
+        }
+
+        private stageTextClickHandler = (e) => {
+            if (this.needShow) {
+                this.needShow = false;
+                this._stageText.onClickHandler(e);
+                this.show();
+            }
+            else {
+                this.blurInputElement();
+                this.disposeInputElement();
             }
         }
 
         private initInputElement(multiline: boolean): void {
             let self = this;
             // 增加 1 个空的 textarea
-            let inputElement: any;
+            let inputElement: HTMLInputElement | HTMLTextAreaElement;
             if (multiline) {
                 inputElement = document.createElement("textarea");
                 inputElement.style["resize"] = "none";
@@ -102,7 +106,7 @@ namespace dou2d.input {
             inputElement.style.overflow = "hidden";
             inputElement.style.wordBreak = "break-all";
             // 隐藏输入框
-            inputElement.style.opacity = 0;
+            inputElement.style.opacity = "0";
             inputElement.oninput = function () {
                 if (self._stageText) {
                     self._stageText.onInput();
@@ -128,7 +132,7 @@ namespace dou2d.input {
             let inputElement = self._inputElement;
             // 隐藏输入框
             callLater(function () {
-                inputElement.style.opacity = 1;
+                inputElement.style.opacity = "1";
             }, self);
         }
 
@@ -151,6 +155,9 @@ namespace dou2d.input {
                 otherElement = self._simpleElement;
             }
             otherElement.style.display = "none";
+            if (this._inputElement && !this.inputDIV.contains(this._inputElement)) {
+                this.inputDIV.appendChild(this._inputElement);
+            }
             return self._inputElement;
         }
 
@@ -160,8 +167,11 @@ namespace dou2d.input {
                     this._inputElement.blur();
                 }
                 this.clearInputElement();
+                if (this._inputElement && this.inputDIV.contains(this._inputElement)) {
+                    this.inputDIV.removeChild(this._inputElement);
+                }
+                this.needShow = false;
             }
-            this.needShow = false;
         }
 
         public clearInputElement(): void {
@@ -174,7 +184,7 @@ namespace dou2d.input {
                 self._inputElement.style.height = "12px";
                 self._inputElement.style.left = "0px";
                 self._inputElement.style.top = "0px";
-                self._inputElement.style.opacity = 0;
+                self._inputElement.style.opacity = "0";
                 let otherElement: any;
                 if (self._simpleElement == self._inputElement) {
                     otherElement = self._multiElement;
@@ -187,12 +197,27 @@ namespace dou2d.input {
                 self.inputDIV.style.top = "-100px";
                 self.inputDIV.style.height = 0 + "px";
                 self.inputDIV.style.width = 0 + "px";
+                self._inputElement.blur();
             }
             if (self._stageText) {
                 self._stageText.onDisconnect();
                 self._stageText = null;
                 this._canvas["userTyping"] = false;
+                if (this.finishUserTyping) {
+                    this.finishUserTyping();
+                }
             }
+        }
+
+        public blurInputElement(): void {
+            if (this._inputElement) {
+                this.clearInputElement();
+                this._inputElement.blur();
+            }
+        }
+
+        public disposeInputElement(): void {
+            this._inputElement = null;
         }
     }
 }
