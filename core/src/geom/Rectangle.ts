@@ -88,7 +88,7 @@ namespace dou2d {
          * 判断是否包含指定的点
          */
         public containsPoint(point: IPoint): boolean {
-            return this.x <= point.x && this.x + this.width > point.x && this.y <= point.y && this.y + this.height > point.y;
+            return this.x <= point.x && this.x + this.width >= point.x && this.y <= point.y && this.y + this.height >= point.y;
         }
 
         /**

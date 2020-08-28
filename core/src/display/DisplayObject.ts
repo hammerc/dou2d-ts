@@ -1265,11 +1265,11 @@ namespace dou2d {
         public $getConcatenatedMatrixAt(root: DisplayObject, matrix: Matrix): void {
             let invertMatrix = root.$getInvertedConcatenatedMatrix();
             // 缩放值为 0 逆矩阵无效
-            if (invertMatrix.a === 0 || invertMatrix.d === 0) {
+            if ((invertMatrix.a === 0 || invertMatrix.d === 0) && (matrix.a !== 0 && matrix.d !== 0)) {
                 let target: DisplayObject = this;
                 let rootLevel = root.$nestLevel;
                 matrix.identity();
-                while (target.$nestLevel > rootLevel) {
+                while (target.$nestLevel >= rootLevel) {
                     let rect = target._scrollRect;
                     if (rect) {
                         let m = dou.recyclable(Matrix);

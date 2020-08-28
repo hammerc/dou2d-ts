@@ -27,6 +27,7 @@ namespace dou2d {
             }
             this.$shaderKey = sourceKeyMap[tempKey];
             this.$uniforms = uniforms;
+            this.onPropertyChange();
         }
 
         /**
