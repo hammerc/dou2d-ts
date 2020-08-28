@@ -572,6 +572,10 @@ namespace dou2d.rendering {
             let uniforms = program.uniforms;
             let isCustomFilter = filter && filter.type === "custom";
             for (let key in uniforms) {
+                // 用于滤镜 buffer 缩放, 忽略
+                if (key == "$filterScale") {
+                    continue;
+                }
                 if (key === "projectionVector") {
                     uniforms[key].setValue({ x: this._projectionX, y: this._projectionY });
                 }
@@ -587,6 +591,18 @@ namespace dou2d.rendering {
                 else {
                     let value = filter.$uniforms[key];
                     if (value !== undefined) {
+                        if ((filter.type == "glow" || filter.type.indexOf("blur") == 0)) {
+                            if ((key == "blurX" || key == "blurY" || key == "dist")) {
+                                value = value * (filter.$uniforms.$filterScale || 1);
+                            }
+                            else if (key == "blur" && value.x != undefined && value.y != undefined) {
+                                let newValue = { x: 0, y: 0 };
+                                newValue.x = value.x * (filter.$uniforms.$filterScale != undefined ? filter.$uniforms.$filterScale : 1);
+                                newValue.y = value.y * (filter.$uniforms.$filterScale != undefined ? filter.$uniforms.$filterScale : 1);
+                                uniforms[key].setValue(newValue);
+                                continue;
+                            }
+                        }
                         uniforms[key].setValue(value);
                     }
                     else {
@@ -713,7 +729,8 @@ namespace dou2d.rendering {
                     let width: number = input.renderTarget.width;
                     let height: number = input.renderTarget.height;
                     output = RenderBuffer.get(width, height);
-                    output.setTransform(1, 0, 0, 1, 0, 0);
+                    const scale = Math.max(DisplayList.canvasScaleFactor, 2);
+                    output.setTransform(scale, 0, 0, scale, 0, 0);
                     output.globalAlpha = 1;
                     this.drawToRenderTarget(filter, input, output);
                     if (input != originInput) {
@@ -749,7 +766,9 @@ namespace dou2d.rendering {
                 let blurYFilter = (<BlurFilter>filter).$blurYFilter;
                 if (blurXFilter.blurX != 0 && blurYFilter.blurY != 0) {
                     temp = RenderBuffer.get(width, height);
+                    const scale = Math.max(DisplayList.canvasScaleFactor, 2);
                     temp.setTransform(1, 0, 0, 1, 0, 0);
+                    temp.transform(scale, 0, 0, scale, 0, 0);
                     temp.globalAlpha = 1;
                     this.drawToRenderTarget((<BlurFilter>filter).$blurXFilter, input, temp);
                     if (input != originInput) {
@@ -764,6 +783,8 @@ namespace dou2d.rendering {
             }
             // 绘制input结果到舞台
             output.saveTransform();
+            const scale = Math.max(DisplayList.canvasScaleFactor, 2);
+            output.transform(1 / scale, 0, 0, 1 / scale, 0, 0);
             output.transform(1, 0, 0, -1, 0, height);
             output.currentTexture = input.renderTarget.texture;
             this._vertexData.cacheArrays(output, 0, 0, width, height, 0, 0, width, height, width, height);

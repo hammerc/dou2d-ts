@@ -230,7 +230,20 @@ namespace dou2d.rendering {
                 }
             }
             // 为显示对象创建一个新的 buffer
-            let displayBuffer = this.createRenderBuffer(displayBoundsWidth, displayBoundsHeight);
+            let scale = Math.max(DisplayList.canvasScaleFactor, 2);
+            for (let filter of filters) {
+                if (filter instanceof GlowFilter || filter instanceof BlurFilter) {
+                    filter.$uniforms.$filterScale = scale;
+                    if (filter.type == "blur") {
+                        let blurFilter = filter as BlurFilter;
+                        blurFilter.$blurXFilter.$uniforms.$filterScale = scale;
+                        blurFilter.$blurYFilter.$uniforms.$filterScale = scale;
+                    }
+                }
+            }
+            let displayBuffer = this.createRenderBuffer(scale * displayBoundsWidth, scale * displayBoundsHeight);
+            displayBuffer.saveTransform();
+            displayBuffer.transform(scale, 0, 0, scale, 0, 0);
             displayBuffer.context.pushBuffer(displayBuffer);
             if (displayObject.$mask) {
                 drawCalls += this.drawWithClip(displayObject, displayBuffer, -displayBoundsX, -displayBoundsY);
@@ -242,6 +255,7 @@ namespace dou2d.rendering {
                 drawCalls += this.drawDisplayObject(displayObject, displayBuffer, -displayBoundsX, -displayBoundsY);
             }
             displayBuffer.context.popBuffer();
+            displayBuffer.restoreTransform();
             // 绘制结果到屏幕
             if (drawCalls > 0) {
                 if (hasBlendMode) {
@@ -800,6 +814,7 @@ namespace dou2d.rendering {
             let buffer = this._renderBufferPool.pop();
             if (buffer) {
                 buffer.resize(width, height);
+                buffer.setTransform(1, 0, 0, 1, 0, 0);
             }
             else {
                 buffer = new RenderBuffer(width, height);
