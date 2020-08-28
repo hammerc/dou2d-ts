@@ -123,6 +123,7 @@
     "src/load/analyzer/ImageAnalyzer.ts",
     "src/load/analyzer/SheetAnalyzer.ts",
     "src/load/analyzer/FontAnalyzer.ts",
+    "src/load/analyzer/TTFAnalyzer.ts",
 
     "src/particle/ParticleSystem.ts",
     "src/particle/ParticleRegion.ts",
@@ -176,6 +177,7 @@
     "src/text/BitmapFont.ts",
     "src/text/BitmapText.ts",
     "src/text/HtmlTextParser.ts",
+    "src/text/Font.ts",
 
     "src/touch/TouchHandler.ts",
     "src/touch/TouchHandlerImpl.ts",

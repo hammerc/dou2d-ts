@@ -520,7 +520,7 @@ var dou;
             request.open(url, dou.HttpMethod.GET);
             request.send();
         }
-        release(data) {
+        release(url, data) {
             return true;
         }
     }
@@ -591,7 +591,7 @@ var dou;
             });
             sound.load(url);
         }
-        release(data) {
+        release(url, data) {
             if (data) {
                 data.close();
                 return true;
@@ -821,7 +821,7 @@ var dou;
                     return false;
                 }
                 let data = this._cacheDataMap[url];
-                let success = analyzer.release(data);
+                let success = analyzer.release(url, data);
                 if (success) {
                     delete this._cacheTypeMap[url];
                     delete this._cacheDataMap[url];

@@ -67,6 +67,8 @@
 
     Dou.ImageAnalyzer = dou2d.ImageAnalyzer;
     Dou.SheetAnalyzer = dou2d.SheetAnalyzer;
+    Dou.FontAnalyzer = dou2d.FontAnalyzer;
+    Dou.TTFAnalyzer = dou2d.TTFAnalyzer;
 
     Dou.GravityParticle = dou2d.GravityParticle;
     Dou.GravityParticleSystem = dou2d.GravityParticleSystem;
@@ -108,6 +110,8 @@
     Dou.BitmapText = dou2d.BitmapText;
     Dou.HtmlTextParser = dou2d.HtmlTextParser;
     Dou.TextField = dou2d.TextField;
+    Dou.registerFontMapping = dou2d.registerFontMapping;
+    Dou.sys.fontResMap = dou2d.sys.fontResMap;
 
     Dou.touch.TouchHandler = dou2d.touch.TouchHandler;
     Dou.touch.TouchHandlerImpl = dou2d.touch.TouchHandlerImpl;

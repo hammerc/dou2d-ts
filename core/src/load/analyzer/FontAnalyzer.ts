@@ -28,7 +28,7 @@ namespace dou2d {
             return new BitmapFont(texture, data.frames);
         }
 
-        public release(data: BitmapFont): boolean {
+        public release(url: string, data: BitmapFont): boolean {
             if (data) {
                 data.dispose();
                 return true;

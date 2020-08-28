@@ -745,7 +745,7 @@ var dou2d;
          * 判断是否包含指定的点
          */
         containsPoint(point) {
-            return this.x <= point.x && this.x + this.width > point.x && this.y <= point.y && this.y + this.height > point.y;
+            return this.x <= point.x && this.x + this.width >= point.x && this.y <= point.y && this.y + this.height >= point.y;
         }
         /**
          * 判断是否包含指定的矩形
@@ -1069,6 +1069,8 @@ var dou2d;
             dou.loader.registerAnalyzer("sheet" /* sheet */, new dou2d.SheetAnalyzer());
             dou.loader.registerAnalyzer("font" /* font */, new dou2d.FontAnalyzer());
             dou.loader.registerExtension("fnt", "font" /* font */);
+            dou.loader.registerAnalyzer("ttf" /* ttf */, new dou2d.TTFAnalyzer());
+            dou.loader.registerExtension("ttf", "ttf" /* ttf */);
             dou.loader.registerAnalyzer("sound" /* sound */, new dou.SoundAnalyzer());
             dou.loader.registerExtension("mp3", "sound" /* sound */);
             dou.loader.registerExtension("wav", "sound" /* sound */);
@@ -1148,6 +1150,16 @@ var dou2d;
         }
         getRealPath(item) {
             return (item.root || "") + item.url;
+        }
+        /**
+         * 获取实际的资源地址
+         */
+        getUrl(source) {
+            let item = this.getItem(source);
+            if (!item) {
+                return null;
+            }
+            return this.getRealPath(item);
         }
         /**
          * 加载资源
@@ -2388,11 +2400,11 @@ var dou2d;
         $getConcatenatedMatrixAt(root, matrix) {
             let invertMatrix = root.$getInvertedConcatenatedMatrix();
             // 缩放值为 0 逆矩阵无效
-            if (invertMatrix.a === 0 || invertMatrix.d === 0) {
+            if ((invertMatrix.a === 0 || invertMatrix.d === 0) && (matrix.a !== 0 && matrix.d !== 0)) {
                 let target = this;
                 let rootLevel = root.$nestLevel;
                 matrix.identity();
-                while (target.$nestLevel > rootLevel) {
+                while (target.$nestLevel >= rootLevel) {
                     let rect = target._scrollRect;
                     if (rect) {
                         let m = dou.recyclable(dou2d.Matrix);
@@ -5131,6 +5143,7 @@ var dou2d;
             }
             this.$shaderKey = sourceKeyMap[tempKey];
             this.$uniforms = uniforms;
+            this.onPropertyChange();
         }
         /**
          * 滤镜的内边距
@@ -5431,7 +5444,7 @@ var dou2d;
             texture.$setBitmapData(bitmapData);
             return texture;
         }
-        release(data) {
+        release(url, data) {
             if (data) {
                 data.dispose();
                 return true;
@@ -5476,7 +5489,7 @@ var dou2d;
             }
             return sheet;
         }
-        release(data) {
+        release(url, data) {
             if (data) {
                 data.dispose();
                 return true;
@@ -5515,7 +5528,7 @@ var dou2d;
         createFont(data, texture) {
             return new dou2d.BitmapFont(texture, data.frames);
         }
-        release(data) {
+        release(url, data) {
             if (data) {
                 data.dispose();
                 return true;
@@ -5524,6 +5537,31 @@ var dou2d;
         }
     }
     dou2d.FontAnalyzer = FontAnalyzer;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * TrueTypeFont 字体加载器
+     * @author wizardc
+     */
+    class TTFAnalyzer {
+        load(url, callback, thisObj) {
+            let bytesAnalyzer = new dou.BytesAnalyzer();
+            bytesAnalyzer.load(url, (url, data) => {
+                if (data) {
+                    dou2d.sys.fontResMap[url] = data.rawBuffer;
+                }
+                else {
+                    callback.call(thisObj, url);
+                }
+            }, this);
+        }
+        release(url, data) {
+            delete dou2d.sys.fontResMap[url];
+            return true;
+        }
+    }
+    dou2d.TTFAnalyzer = TTFAnalyzer;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
@@ -7728,6 +7766,10 @@ var dou2d;
                 let uniforms = program.uniforms;
                 let isCustomFilter = filter && filter.type === "custom";
                 for (let key in uniforms) {
+                    // 用于滤镜 buffer 缩放, 忽略
+                    if (key == "$filterScale") {
+                        continue;
+                    }
                     if (key === "projectionVector") {
                         uniforms[key].setValue({ x: this._projectionX, y: this._projectionY });
                     }
@@ -7743,6 +7785,18 @@ var dou2d;
                     else {
                         let value = filter.$uniforms[key];
                         if (value !== undefined) {
+                            if ((filter.type == "glow" || filter.type.indexOf("blur") == 0)) {
+                                if ((key == "blurX" || key == "blurY" || key == "dist")) {
+                                    value = value * (filter.$uniforms.$filterScale || 1);
+                                }
+                                else if (key == "blur" && value.x != undefined && value.y != undefined) {
+                                    let newValue = { x: 0, y: 0 };
+                                    newValue.x = value.x * (filter.$uniforms.$filterScale != undefined ? filter.$uniforms.$filterScale : 1);
+                                    newValue.y = value.y * (filter.$uniforms.$filterScale != undefined ? filter.$uniforms.$filterScale : 1);
+                                    uniforms[key].setValue(newValue);
+                                    continue;
+                                }
+                            }
                             uniforms[key].setValue(value);
                         }
                         else {
@@ -7863,7 +7917,8 @@ var dou2d;
                         let width = input.renderTarget.width;
                         let height = input.renderTarget.height;
                         output = rendering.RenderBuffer.get(width, height);
-                        output.setTransform(1, 0, 0, 1, 0, 0);
+                        const scale = Math.max(rendering.DisplayList.canvasScaleFactor, 2);
+                        output.setTransform(scale, 0, 0, scale, 0, 0);
                         output.globalAlpha = 1;
                         this.drawToRenderTarget(filter, input, output);
                         if (input != originInput) {
@@ -7898,7 +7953,9 @@ var dou2d;
                     let blurYFilter = filter.$blurYFilter;
                     if (blurXFilter.blurX != 0 && blurYFilter.blurY != 0) {
                         temp = rendering.RenderBuffer.get(width, height);
+                        const scale = Math.max(rendering.DisplayList.canvasScaleFactor, 2);
                         temp.setTransform(1, 0, 0, 1, 0, 0);
+                        temp.transform(scale, 0, 0, scale, 0, 0);
                         temp.globalAlpha = 1;
                         this.drawToRenderTarget(filter.$blurXFilter, input, temp);
                         if (input != originInput) {
@@ -7913,6 +7970,8 @@ var dou2d;
                 }
                 // 绘制input结果到舞台
                 output.saveTransform();
+                const scale = Math.max(rendering.DisplayList.canvasScaleFactor, 2);
+                output.transform(1 / scale, 0, 0, 1 / scale, 0, 0);
                 output.transform(1, 0, 0, -1, 0, height);
                 output.currentTexture = input.renderTarget.texture;
                 this._vertexData.cacheArrays(output, 0, 0, width, height, 0, 0, width, height, width, height);
@@ -8982,7 +9041,20 @@ var dou2d;
                     }
                 }
                 // 为显示对象创建一个新的 buffer
-                let displayBuffer = this.createRenderBuffer(displayBoundsWidth, displayBoundsHeight);
+                let scale = Math.max(rendering.DisplayList.canvasScaleFactor, 2);
+                for (let filter of filters) {
+                    if (filter instanceof dou2d.GlowFilter || filter instanceof dou2d.BlurFilter) {
+                        filter.$uniforms.$filterScale = scale;
+                        if (filter.type == "blur") {
+                            let blurFilter = filter;
+                            blurFilter.$blurXFilter.$uniforms.$filterScale = scale;
+                            blurFilter.$blurYFilter.$uniforms.$filterScale = scale;
+                        }
+                    }
+                }
+                let displayBuffer = this.createRenderBuffer(scale * displayBoundsWidth, scale * displayBoundsHeight);
+                displayBuffer.saveTransform();
+                displayBuffer.transform(scale, 0, 0, scale, 0, 0);
                 displayBuffer.context.pushBuffer(displayBuffer);
                 if (displayObject.$mask) {
                     drawCalls += this.drawWithClip(displayObject, displayBuffer, -displayBoundsX, -displayBoundsY);
@@ -8994,6 +9066,7 @@ var dou2d;
                     drawCalls += this.drawDisplayObject(displayObject, displayBuffer, -displayBoundsX, -displayBoundsY);
                 }
                 displayBuffer.context.popBuffer();
+                displayBuffer.restoreTransform();
                 // 绘制结果到屏幕
                 if (drawCalls > 0) {
                     if (hasBlendMode) {
@@ -9543,6 +9616,7 @@ var dou2d;
                 let buffer = this._renderBufferPool.pop();
                 if (buffer) {
                     buffer.resize(width, height);
+                    buffer.setTransform(1, 0, 0, 1, 0, 0);
                 }
                 else {
                     buffer = new rendering.RenderBuffer(width, height);
@@ -10014,16 +10088,14 @@ var dou2d;
             addToStage() {
                 this._htmlInput = dou2d.sys.inputManager;
             }
-            show() {
+            show(active = true) {
                 if (!this._htmlInput.isCurrentStageText(this)) {
                     this._inputElement = this._htmlInput.getInputElement(this);
                     if (!this.textfield.multiline) {
                         this._inputElement.type = this.textfield.inputType;
                     }
                     else {
-                        if (this._inputElement instanceof HTMLInputElement) {
-                            this._inputElement.type = "text";
-                        }
+                        this._inputElement.type = "text";
                     }
                     this._inputDiv = this._htmlInput.inputDIV;
                 }
@@ -10034,6 +10106,21 @@ var dou2d;
                 //标记当前文本被选中
                 this._isNeedShow = true;
                 this.initElement();
+                if (active) {
+                    this.activeShowKeyboard();
+                }
+            }
+            activeShowKeyboard() {
+                if (this._htmlInput.needShow) {
+                    this._isNeedShow = false;
+                    this.dispatchEvent("focus");
+                    this.executeShow();
+                    this._htmlInput.show();
+                }
+                else {
+                    this._htmlInput.blurInputElement();
+                    this._htmlInput.disposeInputElement();
+                }
             }
             initElement() {
                 let point = this.textfield.localToGlobal(0, 0);
@@ -10107,12 +10194,14 @@ var dou2d;
                 if (this._isNeedShow) {
                     e.stopImmediatePropagation();
                     this._isNeedShow = false;
-                    this.executeShow();
                     this.dispatchEvent2D(dou2d.Event2D.FOCUS_IN);
+                    this.executeShow();
                 }
             }
             executeShow() {
-                this._inputElement.value = this.getText();
+                if (this._inputElement.value !== this.getText()) {
+                    this._inputElement.value = this.getText();
+                }
                 if (this._inputElement.onblur == null) {
                     this._inputElement.onblur = this.onBlurHandler.bind(this);
                 }
@@ -10121,7 +10210,7 @@ var dou2d;
                 }
                 this.resetStageText();
                 if (this.textfield.maxChars > 0) {
-                    this._inputElement.setAttribute("maxlength", this.textfield.maxChars);
+                    this._inputElement.setAttribute("maxlength", this.textfield.maxChars + "");
                 }
                 else {
                     this._inputElement.removeAttribute("maxlength");
@@ -10275,6 +10364,7 @@ var dou2d;
                 this._stageText.addToStage();
                 this._stageText.on(dou2d.Event2D.UPDATE_TEXT, this.updateTextHandler, this);
                 this._text.on(dou2d.TouchEvent.TOUCH_BEGIN, this.onMouseDownHandler, this);
+                this._text.on(dou2d.TouchEvent.TOUCH_MOVE, this.onMouseMoveHandler, this);
                 this._stageText.on(dou2d.Event2D.FOCUS_OUT, this.blurHandler, this);
                 this._stageText.on(dou2d.Event2D.FOCUS_IN, this.focusHandler, this);
                 this._stageTextAdded = true;
@@ -10304,7 +10394,10 @@ var dou2d;
             onMouseDownHandler(event) {
                 this.onFocus();
             }
-            onFocus() {
+            onMouseMoveHandler(event) {
+                this._stageText.hide();
+            }
+            onFocus(active = false) {
                 if (!this._text.$getVisible()) {
                     return;
                 }
@@ -10316,7 +10409,7 @@ var dou2d;
                     this._tempStage.on(dou2d.TouchEvent.TOUCH_BEGIN, this.onStageDownHandler, this);
                 }, this);
                 // 强制更新输入框位置
-                this._stageText.show();
+                this._stageText.show(active);
             }
             // 未点中文本
             onStageDownHandler(event) {
@@ -10396,6 +10489,7 @@ var dou2d;
                 this._stageText.removeFromStage();
                 this._stageText.off(dou2d.Event2D.UPDATE_TEXT, this.updateTextHandler, this);
                 this._text.off(dou2d.TouchEvent.TOUCH_BEGIN, this.onMouseDownHandler, this);
+                this._text.off(dou2d.TouchEvent.TOUCH_MOVE, this.onMouseMoveHandler, this);
                 this._tempStage.off(dou2d.TouchEvent.TOUCH_BEGIN, this.onStageDownHandler, this);
                 this._stageText.off(dou2d.Event2D.FOCUS_OUT, this.blurHandler, this);
                 this._stageText.off(dou2d.Event2D.FOCUS_IN, this.focusHandler, this);
@@ -10418,6 +10512,17 @@ var dou2d;
                 this.needShow = false;
                 this.scaleX = 1;
                 this.scaleY = 1;
+                this.stageTextClickHandler = (e) => {
+                    if (this.needShow) {
+                        this.needShow = false;
+                        this._stageText.onClickHandler(e);
+                        this.show();
+                    }
+                    else {
+                        this.blurInputElement();
+                        this.disposeInputElement();
+                    }
+                };
             }
             isInputOn() {
                 return this._stageText != null;
@@ -10431,6 +10536,9 @@ var dou2d;
                 dom.style.top = "0px";
                 dom.style.border = "none";
                 dom.style.padding = "0";
+                dom.ontouchmove = (e) => {
+                    e.preventDefault();
+                };
             }
             initStageDelegateDiv(container, canvas) {
                 this._canvas = canvas;
@@ -10450,20 +10558,7 @@ var dou2d;
                     self.inputDIV.style.top = "-100px";
                     self.inputDIV.style[dou2d.HtmlUtil.getStyleName("transformOrigin")] = "0% 0% 0px";
                     stageDelegateDiv.appendChild(self.inputDIV);
-                    this._canvas.addEventListener("click", function (e) {
-                        if (self.needShow) {
-                            self.needShow = false;
-                            self._stageText.onClickHandler(e);
-                            self.show();
-                        }
-                        else {
-                            if (self._inputElement) {
-                                self.clearInputElement();
-                                self._inputElement.blur();
-                                self._inputElement = null;
-                            }
-                        }
-                    });
+                    self._canvas.addEventListener("click", this.stageTextClickHandler);
                     self.initInputElement(true);
                     self.initInputElement(false);
                 }
@@ -10496,7 +10591,7 @@ var dou2d;
                 inputElement.style.overflow = "hidden";
                 inputElement.style.wordBreak = "break-all";
                 // 隐藏输入框
-                inputElement.style.opacity = 0;
+                inputElement.style.opacity = "0";
                 inputElement.oninput = function () {
                     if (self._stageText) {
                         self._stageText.onInput();
@@ -10520,7 +10615,7 @@ var dou2d;
                 let inputElement = self._inputElement;
                 // 隐藏输入框
                 dou2d.callLater(function () {
-                    inputElement.style.opacity = 1;
+                    inputElement.style.opacity = "1";
                 }, self);
             }
             getInputElement(stageText) {
@@ -10542,6 +10637,9 @@ var dou2d;
                     otherElement = self._simpleElement;
                 }
                 otherElement.style.display = "none";
+                if (this._inputElement && !this.inputDIV.contains(this._inputElement)) {
+                    this.inputDIV.appendChild(this._inputElement);
+                }
                 return self._inputElement;
             }
             disconnectStageText(stageText) {
@@ -10550,8 +10648,11 @@ var dou2d;
                         this._inputElement.blur();
                     }
                     this.clearInputElement();
+                    if (this._inputElement && this.inputDIV.contains(this._inputElement)) {
+                        this.inputDIV.removeChild(this._inputElement);
+                    }
+                    this.needShow = false;
                 }
-                this.needShow = false;
             }
             clearInputElement() {
                 let self = this;
@@ -10563,7 +10664,7 @@ var dou2d;
                     self._inputElement.style.height = "12px";
                     self._inputElement.style.left = "0px";
                     self._inputElement.style.top = "0px";
-                    self._inputElement.style.opacity = 0;
+                    self._inputElement.style.opacity = "0";
                     let otherElement;
                     if (self._simpleElement == self._inputElement) {
                         otherElement = self._multiElement;
@@ -10576,12 +10677,25 @@ var dou2d;
                     self.inputDIV.style.top = "-100px";
                     self.inputDIV.style.height = 0 + "px";
                     self.inputDIV.style.width = 0 + "px";
+                    self._inputElement.blur();
                 }
                 if (self._stageText) {
                     self._stageText.onDisconnect();
                     self._stageText = null;
                     this._canvas["userTyping"] = false;
+                    if (this.finishUserTyping) {
+                        this.finishUserTyping();
+                    }
                 }
+            }
+            blurInputElement() {
+                if (this._inputElement) {
+                    this.clearInputElement();
+                    this._inputElement.blur();
+                }
+            }
+            disposeInputElement() {
+                this._inputElement = null;
             }
         }
         input.InputManager = InputManager;
@@ -11418,7 +11532,7 @@ var dou2d;
          */
         setFocus() {
             if (this.type == 1 /* input */ && this._stage) {
-                this._inputController.onFocus();
+                this._inputController.onFocus(true);
             }
         }
         /**
@@ -12565,6 +12679,58 @@ var dou2d;
             return value;
         }
     })(HtmlTextParser = dou2d.HtmlTextParser || (dou2d.HtmlTextParser = {}));
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
+     * 注册字体
+     * * **注意调用该方法前需要提前加载完成字体文件**
+     * @param name 字体名称, 设置到 fontFamily 属性上
+     * @param path 字体文件的完整路径
+     */
+    function registerFontMapping(name, path) {
+        if (window.FontFace) {
+            return loadFontByFontFace(name, path);
+        }
+        else {
+            return loadFontByWebStyle(name, path);
+        }
+    }
+    dou2d.registerFontMapping = registerFontMapping;
+    function loadFontByFontFace(name, path) {
+        let fontResCache = sys.fontResMap;
+        if (!fontResCache[path]) {
+            if (DEBUG) {
+                console.warn(`TTF字体"${path}"没有加载`);
+            }
+            return;
+        }
+        let resCache = fontResCache[path];
+        let fontFace = new window.FontFace(name, resCache);
+        document.fonts.add(fontFace);
+        fontFace.load().catch((err) => {
+            console.error(`TTF字体加载错误: ${err}`);
+        });
+    }
+    ;
+    function loadFontByWebStyle(name, path) {
+        let styleElement = document.createElement("style");
+        styleElement.type = "text/css";
+        styleElement.textContent = `
+            @font-face
+            {
+                font-family: "${name}";
+                src: url("${path}");
+            }`;
+        styleElement.onerror = (err) => {
+            console.error(`TTF字体加载错误: ${err}`);
+        };
+        document.body.appendChild(styleElement);
+    }
+    let sys;
+    (function (sys) {
+        sys.fontResMap = {};
+    })(sys = dou2d.sys || (dou2d.sys = {}));
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
@@ -14098,6 +14264,8 @@ var dou2d;
     Dou.Rectangle = dou2d.Rectangle;
     Dou.ImageAnalyzer = dou2d.ImageAnalyzer;
     Dou.SheetAnalyzer = dou2d.SheetAnalyzer;
+    Dou.FontAnalyzer = dou2d.FontAnalyzer;
+    Dou.TTFAnalyzer = dou2d.TTFAnalyzer;
     Dou.GravityParticle = dou2d.GravityParticle;
     Dou.GravityParticleSystem = dou2d.GravityParticleSystem;
     Dou.Particle = dou2d.Particle;
@@ -14134,6 +14302,8 @@ var dou2d;
     Dou.BitmapText = dou2d.BitmapText;
     Dou.HtmlTextParser = dou2d.HtmlTextParser;
     Dou.TextField = dou2d.TextField;
+    Dou.registerFontMapping = dou2d.registerFontMapping;
+    Dou.sys.fontResMap = dou2d.sys.fontResMap;
     Dou.touch.TouchHandler = dou2d.touch.TouchHandler;
     Dou.touch.TouchHandlerImpl = dou2d.touch.TouchHandlerImpl;
     Dou.Base64Util = dou2d.Base64Util;

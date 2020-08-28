@@ -34,7 +34,7 @@ namespace dou2d {
             return sheet;
         }
 
-        public release(data: SpriteSheet): boolean {
+        public release(url: string, data: SpriteSheet): boolean {
             if (data) {
                 data.dispose();
                 return true;

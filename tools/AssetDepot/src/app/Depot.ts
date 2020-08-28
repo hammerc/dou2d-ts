@@ -15,6 +15,7 @@ const typeMap: any = {
     ".webp": "image",
     ".json": "json",
     ".fnt": "font",
+    ".ttf": "ttf",
     ".mp3": "sound",
     ".wav": "sound",
     ".ogg": "sound"

@@ -23,7 +23,7 @@ namespace dou2d {
             return texture;
         }
 
-        public release(data: Texture): boolean {
+        public release(url: string, data: Texture): boolean {
             if (data) {
                 data.dispose();
                 return true;

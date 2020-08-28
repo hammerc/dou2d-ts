@@ -37,6 +37,8 @@ namespace dou2d {
             dou.loader.registerAnalyzer(AssetType.sheet, new dou2d.SheetAnalyzer());
             dou.loader.registerAnalyzer(AssetType.font, new dou2d.FontAnalyzer());
             dou.loader.registerExtension("fnt", AssetType.font);
+            dou.loader.registerAnalyzer(AssetType.ttf, new dou2d.TTFAnalyzer());
+            dou.loader.registerExtension("ttf", AssetType.ttf);
             dou.loader.registerAnalyzer(AssetType.sound, new dou.SoundAnalyzer());
             dou.loader.registerExtension("mp3", AssetType.sound);
             dou.loader.registerExtension("wav", AssetType.sound);
@@ -123,6 +125,17 @@ namespace dou2d {
 
         private getRealPath(item: ConfigItem): string {
             return (item.root || "") + item.url;
+        }
+
+        /**
+         * 获取实际的资源地址
+         */
+        public getUrl(source: string): string {
+            let item = this.getItem(source);
+            if (!item) {
+                return null;
+            }
+            return this.getRealPath(item);
         }
 
         /**

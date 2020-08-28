@@ -10,6 +10,7 @@ namespace dou2d {
         image = "image",
         sheet = "sheet",
         font = "font",
+        ttf = "ttf",
         sound = "sound"
     }
 }

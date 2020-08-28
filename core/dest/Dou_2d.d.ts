@@ -467,6 +467,10 @@ declare namespace Dou {
         private getItem;
         private getRealPath;
         /**
+         * 获取实际的资源地址
+         */
+        getUrl(source: string): string;
+        /**
          * 加载资源
          */
         loadRes(source: string, priority?: number, callBack?: (data: any, source: string) => void, thisObject?: any): void;
@@ -541,6 +545,7 @@ declare namespace Dou {
         image = "image",
         sheet = "sheet",
         font = "font",
+        ttf = "ttf",
         sound = "sound"
     }
 }
@@ -2332,7 +2337,7 @@ declare namespace Dou {
     class ImageAnalyzer implements Dou.IAnalyzer {
         load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
         private createTexture;
-        release(data: Texture): boolean;
+        release(url: string, data: Texture): boolean;
     }
 }
 declare namespace Dou {
@@ -2343,7 +2348,7 @@ declare namespace Dou {
     class SheetAnalyzer implements Dou.IAnalyzer {
         load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
         private createSheet;
-        release(data: SpriteSheet): boolean;
+        release(url: string, data: SpriteSheet): boolean;
     }
 }
 declare namespace Dou {
@@ -2354,7 +2359,17 @@ declare namespace Dou {
     class FontAnalyzer implements Dou.IAnalyzer {
         load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
         private createFont;
-        release(data: BitmapFont): boolean;
+        release(url: string, data: BitmapFont): boolean;
+    }
+}
+declare namespace Dou {
+    /**
+     * TrueTypeFont 字体加载器
+     * @author wizardc
+     */
+    class TTFAnalyzer implements Dou.IAnalyzer {
+        load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
+        release(url: string, data: Dou.ByteArray): boolean;
     }
 }
 declare namespace Dou {
@@ -4073,7 +4088,8 @@ declare namespace Dou.input {
         private _styleInfoes;
         setTextField(textfield: TextField): boolean;
         addToStage(): void;
-        show(): void;
+        show(active?: boolean): void;
+        activeShowKeyboard(): void;
         private initElement;
         setText(value: string): boolean;
         getText(): string;
@@ -4116,7 +4132,8 @@ declare namespace Dou.input {
         private focusHandler;
         private blurHandler;
         private onMouseDownHandler;
-        onFocus(): void;
+        private onMouseMoveHandler;
+        onFocus(active?: boolean): void;
         private onStageDownHandler;
         private updateTextHandler;
         private resetText;
@@ -4137,6 +4154,7 @@ declare namespace Dou.input {
         needShow: boolean;
         scaleX: number;
         scaleY: number;
+        finishUserTyping: Function;
         private _stageText;
         private _simpleElement;
         private _multiElement;
@@ -4147,12 +4165,15 @@ declare namespace Dou.input {
         isCurrentStageText(stageText: any): boolean;
         private initValue;
         initStageDelegateDiv(container: any, canvas: any): any;
+        private stageTextClickHandler;
         private initInputElement;
         updateSize(): void;
         show(): void;
         getInputElement(stageText: HtmlText): any;
         disconnectStageText(stageText: HtmlText): void;
         clearInputElement(): void;
+        blurInputElement(): void;
+        disposeInputElement(): void;
     }
 }
 declare namespace Dou {
@@ -4675,6 +4696,20 @@ declare namespace Dou {
          * 解析 HTML 格式文本
          */
         function parse(htmltext: string): ITextElement[];
+    }
+}
+declare namespace Dou {
+    /**
+     * 注册字体
+     * * **注意调用该方法前需要提前加载完成字体文件**
+     * @param name 字体名称, 设置到 fontFamily 属性上
+     * @param path 字体文件的完整路径
+     */
+    function registerFontMapping(name: string, path: string): void;
+    namespace sys {
+        let fontResMap: {
+            [name: string]: ArrayBuffer;
+        };
     }
 }
 declare namespace Dou.touch {

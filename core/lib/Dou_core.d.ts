@@ -226,7 +226,7 @@ declare namespace Dou {
      */
     interface IAnalyzer {
         load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
-        release(data: any): boolean;
+        release(url: string, data: any): boolean;
     }
 }
 declare namespace Dou {
@@ -238,7 +238,7 @@ declare namespace Dou {
         protected abstract getResponseType(): HttpResponseType;
         protected abstract dataAnalyze(data: any): any;
         load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
-        release(data: any): boolean;
+        release(url: string, data: any): boolean;
     }
 }
 declare namespace Dou {
@@ -278,7 +278,7 @@ declare namespace Dou {
      */
     class SoundAnalyzer implements IAnalyzer {
         load(url: string, callback: (url: string, data: any) => void, thisObj: any): void;
-        release(data: Sound): boolean;
+        release(url: string, data: Sound): boolean;
     }
 }
 declare namespace Dou {
