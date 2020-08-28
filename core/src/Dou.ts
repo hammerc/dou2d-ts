@@ -49,6 +49,7 @@
     Dou.DragEvent = dou2d.DragEvent;
     Dou.Event2D = dou2d.Event2D;
     Dou.TouchEvent = dou2d.TouchEvent;
+    Dou.TimerEvent = dou2d.TimerEvent;
 
     Dou.BlurFilter = dou2d.BlurFilter;
     Dou.filter.BlurXFilter = dou2d.filter.BlurXFilter;
@@ -135,6 +136,7 @@
     Dou.sys.clearTimeout = dou2d.sys.clearTimeout;
     Dou.TextFieldUtil = dou2d.TextFieldUtil;
     Dou.Time = dou2d.Time;
+    Dou.Timer = dou2d.Timer;
     Dou.sys.deltaTime = dou2d.sys.deltaTime;
     Dou.sys.fixedDeltaTime = dou2d.sys.fixedDeltaTime;
     Dou.sys.fixedPassedTime = dou2d.sys.fixedPassedTime;

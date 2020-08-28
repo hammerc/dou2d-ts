@@ -114,6 +114,7 @@ namespace dou2d {
         private onStageMove(event: TouchEvent): void {
             this._dragTarget.x = event.stageX + this._offsetX;
             this._dragTarget.y = event.stageY + this._offsetY;
+            event.updateAfterEvent();
         }
 
         private onStageEnd(event: TouchEvent): void {

@@ -98,6 +98,13 @@ namespace dou2d {
             localPoint.recycle();
         }
 
+        /**
+         * 请求忽略帧率立即刷新显示列表
+         */
+        public updateAfterEvent(): void {
+            sys.ticker.requestImmediateUpdate();
+        }
+
         public onRecycle(): void {
             super.onRecycle();
             this._touchPointID = NaN;

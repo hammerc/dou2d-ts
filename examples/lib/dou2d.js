@@ -4592,6 +4592,7 @@ var dou2d;
         onStageMove(event) {
             this._dragTarget.x = event.stageX + this._offsetX;
             this._dragTarget.y = event.stageY + this._offsetY;
+            event.updateAfterEvent();
         }
         onStageEnd(event) {
             if (this._dragging) {
@@ -4751,6 +4752,12 @@ var dou2d;
             this._localY = localPoint.y;
             localPoint.recycle();
         }
+        /**
+         * 请求忽略帧率立即刷新显示列表
+         */
+        updateAfterEvent() {
+            dou2d.sys.ticker.requestImmediateUpdate();
+        }
         onRecycle() {
             super.onRecycle();
             this._touchPointID = NaN;
@@ -4769,6 +4776,41 @@ var dou2d;
     TouchEvent.TOUCH_TAP = "touchTap";
     TouchEvent.TOUCH_RELEASE_OUTSIDE = "touchReleaseOutside";
     dou2d.TouchEvent = TouchEvent;
+})(dou2d || (dou2d = {}));
+(function () {
+    Object.defineProperties(dou.EventDispatcher.prototype, {
+        dispatchTimerEvent: {
+            value: function (type, cancelable) {
+                let event = dou.recyclable(dou2d.TimerEvent);
+                event.$initTimerEvent(type, cancelable);
+                let result = this.dispatch(event);
+                event.recycle();
+                return result;
+            },
+            enumerable: false
+        }
+    });
+})();
+var dou2d;
+(function (dou2d) {
+    /**
+     * 计时器事件
+     * @author wizardc
+     */
+    class TimerEvent extends dou.Event {
+        $initTimerEvent(type, cancelable) {
+            this.$initEvent(type, null, cancelable);
+        }
+        /**
+         * 请求忽略帧率立即刷新显示列表
+         */
+        updateAfterEvent() {
+            dou2d.sys.ticker.requestImmediateUpdate();
+        }
+    }
+    TimerEvent.TIMER = "timer";
+    TimerEvent.TIMER_COMPLETE = "timerComplete";
+    dou2d.TimerEvent = TimerEvent;
 })(dou2d || (dou2d = {}));
 (function () {
     Object.defineProperties(dou.EventDispatcher.prototype, {
@@ -13620,6 +13662,110 @@ var dou2d;
 var dou2d;
 (function (dou2d) {
     /**
+     * 计时器
+     * @author wizardc
+     */
+    class Timer extends dou.EventDispatcher {
+        constructor(delay, repeatCount) {
+            super();
+            this._currentCount = 0;
+            this._running = false;
+            this.delay = delay;
+            this._repeatCount = +repeatCount | 0;
+        }
+        /**
+         * 计时器间的延迟
+         */
+        set delay(value) {
+            if (value < 1) {
+                value = 1;
+            }
+            if (this._delay == value) {
+                return;
+            }
+            this._delay = value;
+            this._lastCount = this._updateInterval = Math.round(60 * value);
+        }
+        get delay() {
+            return this._delay;
+        }
+        /**
+         * 执行总次数
+         */
+        get repeatCount() {
+            return this._repeatCount;
+        }
+        /**
+         * 当前执行的次数
+         */
+        get currentCount() {
+            return this._currentCount;
+        }
+        /**
+         * 当前是否正在执行
+         */
+        get running() {
+            return this._running;
+        }
+        /**
+         * 启动计时器
+         */
+        start() {
+            if (this._running) {
+                return;
+            }
+            this._lastCount = this._updateInterval;
+            this._lastTimeStamp = dou.getTimer();
+            dou2d.sys.ticker.startTick(this.update, this);
+            this._running = true;
+        }
+        update(timeStamp) {
+            let deltaTime = timeStamp - this._lastTimeStamp;
+            if (deltaTime >= this._delay) {
+                this._lastCount = this._updateInterval;
+            }
+            else {
+                this._lastCount -= 1000;
+                if (this._lastCount > 0) {
+                    return false;
+                }
+                this._lastCount += this._updateInterval;
+            }
+            this._lastTimeStamp = timeStamp;
+            this._currentCount++;
+            let complete = (this._repeatCount > 0 && this._currentCount >= this._repeatCount);
+            if (this._repeatCount == 0 || this._currentCount <= this._repeatCount) {
+                this.dispatchTimerEvent(dou2d.TimerEvent.TIMER);
+            }
+            if (complete) {
+                this.stop();
+                this.dispatchTimerEvent(dou2d.TimerEvent.TIMER_COMPLETE);
+            }
+            return false;
+        }
+        /**
+         * 停止计时器
+         */
+        stop() {
+            if (!this._running) {
+                return;
+            }
+            dou2d.sys.ticker.stopTick(this.update, this);
+            this._running = false;
+        }
+        /**
+         * 停止计时器, 并重置执行次数
+         */
+        reset() {
+            this.stop();
+            this._currentCount = 0;
+        }
+    }
+    dou2d.Timer = Timer;
+})(dou2d || (dou2d = {}));
+var dou2d;
+(function (dou2d) {
+    /**
      * 贝塞尔工具类
      * @author wizardc
      */
@@ -13937,6 +14083,7 @@ var dou2d;
     Dou.DragEvent = dou2d.DragEvent;
     Dou.Event2D = dou2d.Event2D;
     Dou.TouchEvent = dou2d.TouchEvent;
+    Dou.TimerEvent = dou2d.TimerEvent;
     Dou.BlurFilter = dou2d.BlurFilter;
     Dou.filter.BlurXFilter = dou2d.filter.BlurXFilter;
     Dou.filter.BlurYFilter = dou2d.filter.BlurYFilter;
@@ -14013,6 +14160,7 @@ var dou2d;
     Dou.sys.clearTimeout = dou2d.sys.clearTimeout;
     Dou.TextFieldUtil = dou2d.TextFieldUtil;
     Dou.Time = dou2d.Time;
+    Dou.Timer = dou2d.Timer;
     Dou.sys.deltaTime = dou2d.sys.deltaTime;
     Dou.sys.fixedDeltaTime = dou2d.sys.fixedDeltaTime;
     Dou.sys.fixedPassedTime = dou2d.sys.fixedPassedTime;

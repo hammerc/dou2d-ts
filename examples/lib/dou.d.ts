@@ -71,6 +71,7 @@ declare namespace dou {
         protected _frameRate: number;
         protected _frameCount: number;
         protected _lastCount: number;
+        protected _immediateUpdate: boolean;
         protected _lastTimeStamp: number;
         protected _paused: boolean;
         constructor();
@@ -85,6 +86,10 @@ declare namespace dou {
          */
         get paused(): boolean;
         protected setFrameRate(value: number): void;
+        /**
+         * 请求立即刷新
+         */
+        requestImmediateUpdate(): void;
         /**
          * 暂停计时器
          */

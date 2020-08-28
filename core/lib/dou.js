@@ -169,6 +169,7 @@ var dou;
      */
     class TickerBase {
         constructor() {
+            this._immediateUpdate = false;
             this._lastTimeStamp = 0;
             this._paused = false;
             TickerBase.$startTime = Date.now();
@@ -205,6 +206,12 @@ var dou;
             this._frameRate = 1;
         }
         /**
+         * 请求立即刷新
+         */
+        requestImmediateUpdate() {
+            this._immediateUpdate = true;
+        }
+        /**
          * 暂停计时器
          */
         pause() {
@@ -223,9 +230,15 @@ var dou;
             if (this._paused) {
                 return;
             }
+            let immediateUpdate = this._immediateUpdate;
+            this._immediateUpdate = false;
+            let frameComplete = false;
             this._lastCount++;
             if (this._lastCount >= this._frameCount) {
                 this._lastCount = 0;
+                frameComplete = true;
+            }
+            if (immediateUpdate || frameComplete) {
                 let now = dou.getTimer();
                 let interval = now - this._lastTimeStamp;
                 this._lastTimeStamp = now;

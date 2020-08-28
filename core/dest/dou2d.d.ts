@@ -2012,7 +2012,34 @@ declare namespace dou2d {
         $initTouchEvent(type: string, stageX: number, stageY: number, touchPointID?: number, touchDown?: boolean, bubbles?: boolean, cancelable?: boolean): void;
         $setTarget(target: dou.IEventDispatcher): void;
         private getLocalPosition;
+        /**
+         * 请求忽略帧率立即刷新显示列表
+         */
+        updateAfterEvent(): void;
         onRecycle(): void;
+    }
+}
+declare module dou {
+    interface EventDispatcher {
+        /**
+         * 抛出计时器事件
+         */
+        dispatchTimerEvent(type: string, cancelable?: boolean): boolean;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 计时器事件
+     * @author wizardc
+     */
+    class TimerEvent extends dou.Event {
+        static TIMER: string;
+        static TIMER_COMPLETE: string;
+        $initTimerEvent(type: string, cancelable?: boolean): void;
+        /**
+         * 请求忽略帧率立即刷新显示列表
+         */
+        updateAfterEvent(): void;
     }
 }
 declare module dou {
@@ -4974,6 +5001,52 @@ declare namespace dou2d {
         let deltaTime: number;
         let fixedDeltaTime: number;
         let fixedPassedTime: number;
+    }
+}
+declare namespace dou2d {
+    /**
+     * 计时器
+     * @author wizardc
+     */
+    class Timer extends dou.EventDispatcher {
+        private _delay;
+        private _repeatCount;
+        private _currentCount;
+        private _running;
+        private _updateInterval;
+        private _lastCount;
+        private _lastTimeStamp;
+        constructor(delay: number, repeatCount?: number);
+        /**
+         * 计时器间的延迟
+         */
+        set delay(value: number);
+        get delay(): number;
+        /**
+         * 执行总次数
+         */
+        get repeatCount(): number;
+        /**
+         * 当前执行的次数
+         */
+        get currentCount(): number;
+        /**
+         * 当前是否正在执行
+         */
+        get running(): boolean;
+        /**
+         * 启动计时器
+         */
+        start(): void;
+        private update;
+        /**
+         * 停止计时器
+         */
+        stop(): void;
+        /**
+         * 停止计时器, 并重置执行次数
+         */
+        reset(): void;
     }
 }
 declare namespace dou2d {

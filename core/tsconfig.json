@@ -109,6 +109,7 @@
 
     "src/event/Event2D.ts",
     "src/event/TouchEvent.ts",
+    "src/event/TimerEvent.ts",
     "src/event/DragEvent.ts",
 
     "src/filters/Filter.ts",
@@ -191,6 +192,7 @@
     "src/utils/TextFieldUtil.ts",
     "src/utils/UUID.ts",
     "src/utils/Time.ts",
+    "src/utils/Timer.ts",
     "src/utils/BezierUtil.ts",
 
     "src/debug/Stat.ts",
