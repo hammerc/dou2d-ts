@@ -31,7 +31,6 @@ namespace dou2d {
         public static TOUCH_BEGIN: string = "touchBegin";
         public static TOUCH_MOVE: string = "touchMove";
         public static TOUCH_END: string = "touchEnd";
-        public static TOUCH_CANCEL: string = "touchCancel";
         public static TOUCH_TAP: string = "touchTap";
         public static TOUCH_RELEASE_OUTSIDE: string = "touchReleaseOutside";
 

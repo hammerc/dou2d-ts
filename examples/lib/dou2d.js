@@ -904,9 +904,15 @@ var dou2d;
             }
             broadcastTick(passedTime) {
                 let list = this._tickList;
+                let immediateUpdate = false;
                 for (let i = 0, len = list.length; i < len; i++) {
                     let tick = list[i];
-                    tick.method.call(tick.thisObj, passedTime);
+                    if (tick.method.call(tick.thisObj, passedTime)) {
+                        immediateUpdate = true;
+                    }
+                }
+                if (immediateUpdate) {
+                    this.requestImmediateUpdate();
                 }
             }
             broadcastRender() {
@@ -4784,7 +4790,6 @@ var dou2d;
     TouchEvent.TOUCH_BEGIN = "touchBegin";
     TouchEvent.TOUCH_MOVE = "touchMove";
     TouchEvent.TOUCH_END = "touchEnd";
-    TouchEvent.TOUCH_CANCEL = "touchCancel";
     TouchEvent.TOUCH_TAP = "touchTap";
     TouchEvent.TOUCH_RELEASE_OUTSIDE = "touchReleaseOutside";
     dou2d.TouchEvent = TouchEvent;

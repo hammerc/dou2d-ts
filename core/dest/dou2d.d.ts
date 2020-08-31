@@ -379,6 +379,10 @@ declare namespace dou2d {
 }
 declare namespace dou2d.sys {
     /**
+     * 心跳计时器回调, 返回 true 表示立即刷新显示列表
+     */
+    type TickCallBack = (passedTime: number) => boolean;
+    /**
      * 心跳计时器
      * @author wizardc
      */
@@ -388,13 +392,13 @@ declare namespace dou2d.sys {
         /**
          * 添加自定义心跳计时器
          */
-        startTick(method: (passedTime: number) => void, thisObj: any): void;
+        startTick(method: TickCallBack, thisObj: any): void;
         private getTickIndex;
         private concatTick;
         /**
          * 移除自定义心跳计时器
          */
-        stopTick(method: (passedTime: number) => void, thisObj: any): void;
+        stopTick(method: TickCallBack, thisObj: any): void;
         updateLogic(passedTime: number): void;
         private broadcastDelay;
         private broadcastTick;
@@ -1998,7 +2002,6 @@ declare namespace dou2d {
         static TOUCH_BEGIN: string;
         static TOUCH_MOVE: string;
         static TOUCH_END: string;
-        static TOUCH_CANCEL: string;
         static TOUCH_TAP: string;
         static TOUCH_RELEASE_OUTSIDE: string;
         private _touchPointID;

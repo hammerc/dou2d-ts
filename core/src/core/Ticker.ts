@@ -1,10 +1,15 @@
 namespace dou2d.sys {
     /**
+     * 心跳计时器回调, 返回 true 表示立即刷新显示列表
+     */
+    export type TickCallBack = (passedTime: number) => boolean;
+
+    /**
      * 心跳计时器
      * @author wizardc
      */
     export class Ticker extends dou.TickerBase {
-        private _tickList: { method: (passedTime: number) => void, thisObj: any }[];
+        private _tickList: { method: TickCallBack, thisObj: any }[];
 
         public constructor() {
             super();
@@ -14,7 +19,7 @@ namespace dou2d.sys {
         /**
          * 添加自定义心跳计时器
          */
-        public startTick(method: (passedTime: number) => void, thisObj: any): void {
+        public startTick(method: TickCallBack, thisObj: any): void {
             let index = this.getTickIndex(method, thisObj);
             if (index == -1) {
                 this.concatTick();
@@ -22,7 +27,7 @@ namespace dou2d.sys {
             }
         }
 
-        private getTickIndex(method: (passedTime: number) => void, thisObj: any): number {
+        private getTickIndex(method: TickCallBack, thisObj: any): number {
             let list = this._tickList;
             for (let i = 0, len = list.length; i < len; i++) {
                 let tick = list[i];
@@ -40,7 +45,7 @@ namespace dou2d.sys {
         /**
          * 移除自定义心跳计时器
          */
-        public stopTick(method: (passedTime: number) => void, thisObj: any): void {
+        public stopTick(method: TickCallBack, thisObj: any): void {
             let index = this.getTickIndex(method, thisObj);
             if (index != -1) {
                 this.concatTick();
@@ -74,9 +79,15 @@ namespace dou2d.sys {
 
         private broadcastTick(passedTime: number): void {
             let list = this._tickList;
+            let immediateUpdate = false;
             for (let i = 0, len = list.length; i < len; i++) {
                 let tick = list[i];
-                tick.method.call(tick.thisObj, passedTime);
+                if (tick.method.call(tick.thisObj, passedTime)) {
+                    immediateUpdate = true;
+                }
+            }
+            if (immediateUpdate) {
+                this.requestImmediateUpdate();
             }
         }
 
