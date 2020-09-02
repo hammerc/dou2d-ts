@@ -9,6 +9,7 @@ namespace dou2d {
             bytesAnalyzer.load(url, (url, data: dou.ByteArray) => {
                 if (data) {
                     sys.fontResMap[url] = data.rawBuffer;
+                    callback.call(thisObj, url, data);
                 }
                 else {
                     callback.call(thisObj, url);

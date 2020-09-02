@@ -1,15 +1,15 @@
 namespace examples {
-    export class CustomFilterTest extends dou2d.DisplayObjectContainer {
+    export class CustomFilterTest extends Dou.DisplayObjectContainer {
         public constructor() {
             super();
 
-            this.once(dou2d.Event2D.ADDED_TO_STAGE, this.onAdded, this);
+            this.once(Dou.Event2D.ADDED_TO_STAGE, this.onAdded, this);
         }
 
-        private async onAdded(event: dou2d.Event2D): Promise<void> {
-            let texture: dou2d.Texture = await dou.loader.loadAsync("resource/img/wicker.jpg");
+        private async onAdded(event: Dou.Event2D): Promise<void> {
+            let texture: Dou.Texture = await Dou.loader.loadAsync("resource/img/wicker.jpg");
 
-            let bitmap = new dou2d.Bitmap(texture);
+            let bitmap = new Dou.Bitmap(texture);
             bitmap.x = 100;
             bitmap.y = 100;
             this.addChild(bitmap);
@@ -104,7 +104,7 @@ namespace examples {
                 "}"
             ].join("\n");
 
-            let customFilter1 = new dou2d.CustomFilter(
+            let customFilter1 = new Dou.CustomFilter(
                 vertexSrc,
                 fragmentSrc1,
                 {
@@ -112,7 +112,7 @@ namespace examples {
                 }
             );
 
-            let customFilter2 = new dou2d.CustomFilter(
+            let customFilter2 = new Dou.CustomFilter(
                 vertexSrc,
                 fragmentSrc2,
                 {
@@ -120,7 +120,7 @@ namespace examples {
                 }
             );
 
-            let customFilter3 = new dou2d.CustomFilter(
+            let customFilter3 = new Dou.CustomFilter(
                 vertexSrc,
                 fragmentSrc3,
                 {
@@ -130,7 +130,7 @@ namespace examples {
                 }
             );
 
-            let customFilter4 = new dou2d.CustomFilter(
+            let customFilter4 = new Dou.CustomFilter(
                 vertexSrc,
                 fragmentSrc4,
                 {
@@ -142,7 +142,7 @@ namespace examples {
             bitmap.filters = [customFilter1];
 
             let state = 0;
-            this.stage.on(dou2d.TouchEvent.TOUCH_TAP, () => {
+            this.stage.on(Dou.TouchEvent.TOUCH_TAP, () => {
                 state++;
                 if (state > 3) {
                     state = 0;
@@ -158,7 +158,7 @@ namespace examples {
                 }
             }, this);
 
-            this.on(dou2d.Event2D.ENTER_FRAME, () => {
+            this.on(Dou.Event2D.ENTER_FRAME, () => {
                 customFilter1.uniforms.customUniform += 0.1;
                 if (customFilter1.uniforms.customUniform > Math.PI * 2) {
                     customFilter1.uniforms.customUniform = 0.0;

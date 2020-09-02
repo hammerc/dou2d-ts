@@ -5555,6 +5555,7 @@ var dou2d;
             bytesAnalyzer.load(url, (url, data) => {
                 if (data) {
                     dou2d.sys.fontResMap[url] = data.rawBuffer;
+                    callback.call(thisObj, url, data);
                 }
                 else {
                     callback.call(thisObj, url);
@@ -12695,10 +12696,10 @@ var dou2d;
      */
     function registerFontMapping(name, path) {
         if (window.FontFace) {
-            return loadFontByFontFace(name, path);
+            loadFontByFontFace(name, path);
         }
         else {
-            return loadFontByWebStyle(name, path);
+            loadFontByWebStyle(name, path);
         }
     }
     dou2d.registerFontMapping = registerFontMapping;
@@ -14210,6 +14211,11 @@ var dou2d;
     dou2d.Engine = Engine;
 })(dou2d || (dou2d = {}));
 (function (Dou) {
+    Dou.sys = Dou.sys || {};
+    Dou.filter = Dou.filter || {};
+    Dou.rendering = Dou.rendering || {};
+    Dou.input = Dou.input || {};
+    Dou.touch = Dou.touch || {};
     Dou.AssetManager = dou2d.AssetManager;
     Dou.asset = dou2d.asset;
     Dou.sys.glContext = dou2d.sys.glContext;
@@ -14341,4 +14347,5 @@ var dou2d;
     Dou.sys.fixedPassedTime = dou2d.sys.fixedPassedTime;
     Dou.UUID = dou2d.UUID;
     Dou.WebGLUtil = dou2d.WebGLUtil;
+    Dou.Engine = dou2d.Engine;
 })(window.Dou || (window.Dou = {}));

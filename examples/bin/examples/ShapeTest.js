@@ -1,12 +1,12 @@
 var examples;
 (function (examples) {
-    class ShapeTest extends dou2d.DisplayObjectContainer {
+    class ShapeTest extends Dou.DisplayObjectContainer {
         constructor() {
             super();
-            this.once(dou2d.Event2D.ADDED_TO_STAGE, this.onAdded, this);
+            this.once(Dou.Event2D.ADDED_TO_STAGE, this.onAdded, this);
         }
         onAdded(event) {
-            let shape = new dou2d.Shape();
+            let shape = new Dou.Shape();
             shape.graphics.beginFill(0xffffff, 1);
             shape.graphics.drawRect(0, 0, 100, 100);
             shape.graphics.endFill();

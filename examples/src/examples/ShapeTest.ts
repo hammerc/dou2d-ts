@@ -1,13 +1,13 @@
 namespace examples {
-    export class ShapeTest extends dou2d.DisplayObjectContainer {
+    export class ShapeTest extends Dou.DisplayObjectContainer {
         public constructor() {
             super();
 
-            this.once(dou2d.Event2D.ADDED_TO_STAGE, this.onAdded, this);
+            this.once(Dou.Event2D.ADDED_TO_STAGE, this.onAdded, this);
         }
 
-        private onAdded(event: dou2d.Event2D): void {
-            let shape = new dou2d.Shape();
+        private onAdded(event: Dou.Event2D): void {
+            let shape = new Dou.Shape();
             shape.graphics.beginFill(0xffffff, 1);
             shape.graphics.drawRect(0, 0, 100, 100);
             shape.graphics.endFill();

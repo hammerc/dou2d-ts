@@ -58,7 +58,6 @@ interface Date {
      */
     format(template: string): string;
 }
-declare type globalEvent = Event;
 declare namespace Dou {
     /**
      * 心跳计时器基类

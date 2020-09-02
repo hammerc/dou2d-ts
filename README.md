@@ -17,35 +17,23 @@ WebGL 2D 引擎
 
 ## 开始上手
 
-1. 在编写代码之前请引入位于**examples/lib**文件夹中的**dou.js**和**dou2d.js**两个文件：
+1. 在编写代码之前请引入位于**core/dest**文件夹中的所有文件，同时需要引入**doucore**项目下的**core/dest**文件夹中的所有文件：
 
 ```html
 <script type="text/javascript" src="examples/lib/dou.js"></script>
 <script type="text/javascript" src="examples/lib/dou2d.js"></script>
 ```
 
-2. ~~需要外部加载资源时，请注册加载类型解析器：~~
-
-**注：这一步已集成到 AssetManager 类中自动注册，无需再编写下面代码。**
+2. 编写根显示容器类：
 
 ```javascript
-// 注册贴图解析器并绑定对应的文件后缀名
-dou.loader.registerAnalyzer("image", new dou2d.ImageAnalyzer());
-dou.loader.registerExtension("jpg", "image");
-dou.loader.registerExtension("jpeg", "image");
-dou.loader.registerExtension("png", "image");
-```
-
-3. 编写根显示容器类：
-
-```javascript
-class ShapeTest extends dou2d.DisplayObjectContainer {
+class ShapeTest extends Dou.DisplayObjectContainer {
     constructor() {
         super();
-        this.once(dou2d.Event2D.ADDED_TO_STAGE, this.onAdded, this);
+        this.once(Dou.Event2D.ADDED_TO_STAGE, this.onAdded, this);
     }
     onAdded(event) {
-        let shape = new dou2d.Shape();
+        let shape = new Dou.Shape();
         shape.graphics.beginFill(0xffffff, 1);
         shape.graphics.drawRect(0, 0, 100, 100);
         shape.graphics.endFill();
@@ -59,7 +47,7 @@ class ShapeTest extends dou2d.DisplayObjectContainer {
 4. 启动引擎：
 
 ```javascript
-new dou2d.Engine(ShapeTest);
+new Dou.Engine(ShapeTest);
 ```
 
 ## 引擎示例
@@ -81,3 +69,5 @@ new dou2d.Engine(ShapeTest);
 * [粒子效果](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=ParticleTest)
 
     *注：点击滑动屏幕改变粒子发射位置*
+
+* [TTF字体](https://hammerc.github.io/dou2d-ts/examples/index.html?demo=TTFTest)

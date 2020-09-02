@@ -9,25 +9,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 var examples;
 (function (examples) {
-    class ParticleTest extends Dou.DisplayObjectContainer {
+    class TTFTest extends Dou.DisplayObjectContainer {
         constructor() {
             super();
             this.once(Dou.Event2D.ADDED_TO_STAGE, this.onAdded, this);
         }
         onAdded(event) {
             return __awaiter(this, void 0, void 0, function* () {
-                let json = yield Dou.loader.loadAsync("resource/particle/particle.json");
-                let texture = yield Dou.loader.loadAsync("resource/particle/particle.png");
-                let particle = new Dou.GravityParticleSystem(texture, json);
-                // particle.blendMode = Dou.BlendMode.add;
-                this.addChild(particle);
-                particle.start();
-                this.stage.on(Dou.TouchEvent.TOUCH_MOVE, (event) => {
-                    particle.emitterX = event.localX;
-                    particle.emitterY = event.localY;
-                }, this);
+                yield Dou.loader.loadAsync("resource/ttf/myFont.ttf");
+                Dou.registerFontMapping("MyFont", "resource/ttf/myFont.ttf");
+                let textFiled = new Dou.TextField();
+                textFiled.fontFamily = "MyFont";
+                textFiled.text = "你好，Dou2D！";
+                textFiled.x = 100;
+                textFiled.y = 100;
+                this.addChild(textFiled);
             });
         }
     }
-    examples.ParticleTest = ParticleTest;
+    examples.TTFTest = TTFTest;
 })(examples || (examples = {}));

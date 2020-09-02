@@ -3143,6 +3143,7 @@ var dou;
     dou.superSetter = superSetter;
 })(dou || (dou = {}));
 (function (Dou) {
+    Dou.impl = Dou.impl || {};
     Dou.TickerBase = dou.TickerBase;
     Dou.Event = dou.Event;
     Dou.EventDispatcher = dou.EventDispatcher;

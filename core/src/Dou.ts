@@ -1,5 +1,11 @@
 (function (Dou) {
 
+    Dou.sys = Dou.sys || {};
+    Dou.filter = Dou.filter || {};
+    Dou.rendering = Dou.rendering || {};
+    Dou.input = Dou.input || {};
+    Dou.touch = Dou.touch || {};
+
     Dou.AssetManager = dou2d.AssetManager;
     Dou.asset = dou2d.asset;
 
@@ -146,5 +152,7 @@
     Dou.sys.fixedPassedTime = dou2d.sys.fixedPassedTime;
     Dou.UUID = dou2d.UUID;
     Dou.WebGLUtil = dou2d.WebGLUtil;
+
+    Dou.Engine = dou2d.Engine;
 
 })((<any>window).Dou || ((<any>window).Dou = {}));

@@ -7,10 +7,10 @@ namespace dou2d {
      */
     export function registerFontMapping(name: string, path: string): void {
         if ((<any>window).FontFace) {
-            return loadFontByFontFace(name, path);
+            loadFontByFontFace(name, path);
         }
         else {
-            return loadFontByWebStyle(name, path);
+            loadFontByWebStyle(name, path);
         }
     }
 

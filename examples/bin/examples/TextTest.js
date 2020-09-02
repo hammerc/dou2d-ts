@@ -1,17 +1,17 @@
 var examples;
 (function (examples) {
-    class TextTest extends dou2d.DisplayObjectContainer {
+    class TextTest extends Dou.DisplayObjectContainer {
         constructor() {
             super();
-            this.once(dou2d.Event2D.ADDED_TO_STAGE, this.onAdded, this);
+            this.once(Dou.Event2D.ADDED_TO_STAGE, this.onAdded, this);
         }
         onAdded(event) {
-            let textFiled = new dou2d.TextField();
+            let textFiled = new Dou.TextField();
             textFiled.text = "你好，Dou2D！";
             textFiled.x = 100;
             textFiled.y = 100;
             this.addChild(textFiled);
-            let input = new dou2d.TextField();
+            let input = new Dou.TextField();
             input.type = 1 /* input */;
             input.text = "请输入";
             input.x = 100;

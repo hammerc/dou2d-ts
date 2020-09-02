@@ -1,26 +1,26 @@
 namespace examples {
-    export class FilterTest extends dou2d.DisplayObjectContainer {
+    export class FilterTest extends Dou.DisplayObjectContainer {
         public constructor() {
             super();
 
-            this.once(dou2d.Event2D.ADDED_TO_STAGE, this.onAdded, this);
+            this.once(Dou.Event2D.ADDED_TO_STAGE, this.onAdded, this);
         }
 
-        private async onAdded(event: dou2d.Event2D): Promise<void> {
-            let texture: dou2d.Texture = await dou.loader.loadAsync("resource/img/wicker.jpg");
+        private async onAdded(event: Dou.Event2D): Promise<void> {
+            let texture: Dou.Texture = await Dou.loader.loadAsync("resource/img/wicker.jpg");
 
-            let colorMatrixFilter = new dou2d.ColorMatrixFilter([
+            let colorMatrixFilter = new Dou.ColorMatrixFilter([
                 0.3, 0.6, 0, 0, 0,
                 0.3, 0.6, 0, 0, 0,
                 0.3, 0.6, 0, 0, 0,
                 0, 0, 0, 1, 0
             ]);
 
-            let blurFilter = new dou2d.BlurFilter(8, 8);
+            let blurFilter = new Dou.BlurFilter(8, 8);
 
-            let glowFilter = new dou2d.GlowFilter(0xffff00, 1, 32, 32);
+            let glowFilter = new Dou.GlowFilter(0xffff00, 1, 32, 32);
 
-            let dropShadowFilter = new dou2d.DropShadowFilter(32, 45, 0xffff00, 1, 32, 32);
+            let dropShadowFilter = new Dou.DropShadowFilter(32, 45, 0xffff00, 1, 32, 32);
 
             let bitmap1 = this.createBitmap(this, texture, 50, 50);
             bitmap1.filters = [colorMatrixFilter];
@@ -38,8 +38,8 @@ namespace examples {
             bitmap5.filters = [colorMatrixFilter, blurFilter];
         }
 
-        private createBitmap(container: dou2d.DisplayObjectContainer, texture: dou2d.Texture, x: number, y: number): dou2d.Bitmap {
-            let bitmap = new dou2d.Bitmap(texture);
+        private createBitmap(container: Dou.DisplayObjectContainer, texture: Dou.Texture, x: number, y: number): Dou.Bitmap {
+            let bitmap = new Dou.Bitmap(texture);
             bitmap.x = x;
             bitmap.y = y;
             bitmap.scaleX = bitmap.scaleY = 0.5;

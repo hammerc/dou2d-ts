@@ -9,23 +9,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 var examples;
 (function (examples) {
-    class FilterTest extends dou2d.DisplayObjectContainer {
+    class FilterTest extends Dou.DisplayObjectContainer {
         constructor() {
             super();
-            this.once(dou2d.Event2D.ADDED_TO_STAGE, this.onAdded, this);
+            this.once(Dou.Event2D.ADDED_TO_STAGE, this.onAdded, this);
         }
         onAdded(event) {
             return __awaiter(this, void 0, void 0, function* () {
-                let texture = yield dou.loader.loadAsync("resource/img/wicker.jpg");
-                let colorMatrixFilter = new dou2d.ColorMatrixFilter([
+                let texture = yield Dou.loader.loadAsync("resource/img/wicker.jpg");
+                let colorMatrixFilter = new Dou.ColorMatrixFilter([
                     0.3, 0.6, 0, 0, 0,
                     0.3, 0.6, 0, 0, 0,
                     0.3, 0.6, 0, 0, 0,
                     0, 0, 0, 1, 0
                 ]);
-                let blurFilter = new dou2d.BlurFilter(8, 8);
-                let glowFilter = new dou2d.GlowFilter(0xffff00, 1, 32, 32);
-                let dropShadowFilter = new dou2d.DropShadowFilter(32, 45, 0xffff00, 1, 32, 32);
+                let blurFilter = new Dou.BlurFilter(8, 8);
+                let glowFilter = new Dou.GlowFilter(0xffff00, 1, 32, 32);
+                let dropShadowFilter = new Dou.DropShadowFilter(32, 45, 0xffff00, 1, 32, 32);
                 let bitmap1 = this.createBitmap(this, texture, 50, 50);
                 bitmap1.filters = [colorMatrixFilter];
                 let bitmap2 = this.createBitmap(this, texture, 250, 50);
@@ -39,7 +39,7 @@ var examples;
             });
         }
         createBitmap(container, texture, x, y) {
-            let bitmap = new dou2d.Bitmap(texture);
+            let bitmap = new Dou.Bitmap(texture);
             bitmap.x = x;
             bitmap.y = y;
             bitmap.scaleX = bitmap.scaleY = 0.5;

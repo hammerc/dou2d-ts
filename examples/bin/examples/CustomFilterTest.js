@@ -9,15 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 var examples;
 (function (examples) {
-    class CustomFilterTest extends dou2d.DisplayObjectContainer {
+    class CustomFilterTest extends Dou.DisplayObjectContainer {
         constructor() {
             super();
-            this.once(dou2d.Event2D.ADDED_TO_STAGE, this.onAdded, this);
+            this.once(Dou.Event2D.ADDED_TO_STAGE, this.onAdded, this);
         }
         onAdded(event) {
             return __awaiter(this, void 0, void 0, function* () {
-                let texture = yield dou.loader.loadAsync("resource/img/wicker.jpg");
-                let bitmap = new dou2d.Bitmap(texture);
+                let texture = yield Dou.loader.loadAsync("resource/img/wicker.jpg");
+                let bitmap = new Dou.Bitmap(texture);
                 bitmap.x = 100;
                 bitmap.y = 100;
                 this.addChild(bitmap);
@@ -104,24 +104,24 @@ var examples;
                     "  }",
                     "}"
                 ].join("\n");
-                let customFilter1 = new dou2d.CustomFilter(vertexSrc, fragmentSrc1, {
+                let customFilter1 = new Dou.CustomFilter(vertexSrc, fragmentSrc1, {
                     customUniform: 0
                 });
-                let customFilter2 = new dou2d.CustomFilter(vertexSrc, fragmentSrc2, {
+                let customFilter2 = new Dou.CustomFilter(vertexSrc, fragmentSrc2, {
                     time: 0
                 });
-                let customFilter3 = new dou2d.CustomFilter(vertexSrc, fragmentSrc3, {
+                let customFilter3 = new Dou.CustomFilter(vertexSrc, fragmentSrc3, {
                     center: { x: 0.5, y: 0.5 },
                     params: { x: 10, y: 0.8, z: 0.1 },
                     time: 0
                 });
-                let customFilter4 = new dou2d.CustomFilter(vertexSrc, fragmentSrc4, {
+                let customFilter4 = new Dou.CustomFilter(vertexSrc, fragmentSrc4, {
                     lineWidth: 0.1,
                     offset: 0
                 });
                 bitmap.filters = [customFilter1];
                 let state = 0;
-                this.stage.on(dou2d.TouchEvent.TOUCH_TAP, () => {
+                this.stage.on(Dou.TouchEvent.TOUCH_TAP, () => {
                     state++;
                     if (state > 3) {
                         state = 0;
@@ -139,7 +139,7 @@ var examples;
                         bitmap.filters = [customFilter4];
                     }
                 }, this);
-                this.on(dou2d.Event2D.ENTER_FRAME, () => {
+                this.on(Dou.Event2D.ENTER_FRAME, () => {
                     customFilter1.uniforms.customUniform += 0.1;
                     if (customFilter1.uniforms.customUniform > Math.PI * 2) {
                         customFilter1.uniforms.customUniform = 0.0;
