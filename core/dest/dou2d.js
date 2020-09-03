@@ -14066,14 +14066,14 @@ var dou2d;
                 document.body.appendChild(div);
             }
             this._container = div;
-            let options = this._options = this.readOptions(rootClass, runOptions);
             dou2d.sys.stage = new dou2d.Stage(this);
-            dou2d.sys.screenAdapter = options.screenAdapter;
             dou2d.sys.renderer = new dou2d.rendering.Renderer();
             let renderBuffer = new dou2d.rendering.RenderBuffer(undefined, undefined, true);
             dou2d.sys.canvas = renderBuffer.surface;
             this.attachCanvas(this._container, dou2d.sys.canvas);
             dou2d.sys.context2D = dou2d.HtmlUtil.get2DContext(dou2d.HtmlUtil.createCanvas(2, 2));
+            let options = this._options = this.readOptions(rootClass, runOptions);
+            dou2d.sys.screenAdapter = options.screenAdapter;
             this._touchHandler = new dou2d.touch.TouchHandler(dou2d.sys.stage, dou2d.sys.canvas);
             dou2d.sys.inputManager = new dou2d.input.InputManager();
             dou2d.sys.inputManager.initStageDelegateDiv(this._container, dou2d.sys.canvas);
@@ -14109,7 +14109,7 @@ var dou2d;
                 frameRate: runOptions.frameRate || 60,
                 antialias: runOptions.antialias || false,
                 screenAdapter: runOptions.screenAdapter || new dou2d.DefaultScreenAdapter(),
-                textureScaleFactor: runOptions.canvasScaleFactor ? runOptions.canvasScaleFactor(dou2d.sys.canvas.getContext("2d")) : 1
+                textureScaleFactor: runOptions.canvasScaleFactor ? runOptions.canvasScaleFactor(dou2d.sys.context2D) : 1
             };
         }
         attachCanvas(container, canvas) {

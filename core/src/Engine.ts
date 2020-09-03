@@ -41,11 +41,8 @@ namespace dou2d {
             }
             this._container = div;
 
-            let options = this._options = this.readOptions(rootClass, runOptions);
-
             sys.stage = new Stage(this);
 
-            sys.screenAdapter = options.screenAdapter;
             sys.renderer = new rendering.Renderer();
 
             let renderBuffer = new rendering.RenderBuffer(undefined, undefined, true);
@@ -54,6 +51,9 @@ namespace dou2d {
             this.attachCanvas(this._container, sys.canvas);
 
             sys.context2D = HtmlUtil.get2DContext(HtmlUtil.createCanvas(2, 2));
+
+            let options = this._options = this.readOptions(rootClass, runOptions);
+            sys.screenAdapter = options.screenAdapter;
 
             this._touchHandler = new touch.TouchHandler(sys.stage, sys.canvas);
             sys.inputManager = new input.InputManager();
@@ -97,7 +97,7 @@ namespace dou2d {
                 frameRate: runOptions.frameRate || 60,
                 antialias: runOptions.antialias || false,
                 screenAdapter: runOptions.screenAdapter || new DefaultScreenAdapter(),
-                textureScaleFactor: runOptions.canvasScaleFactor ? runOptions.canvasScaleFactor(sys.canvas.getContext("2d")) : 1
+                textureScaleFactor: runOptions.canvasScaleFactor ? runOptions.canvasScaleFactor(sys.context2D) : 1
             };
         }
 
