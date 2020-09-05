@@ -25,10 +25,10 @@ namespace dou2d {
          * 舞台的帧速率
          */
         public set frameRate(value: number) {
-            sys.ticker.frameRate = value;
+            $2d.ticker.frameRate = value;
         }
         public get frameRate(): number {
-            return sys.ticker.frameRate;
+            return $2d.ticker.frameRate;
         }
 
         /**
@@ -77,10 +77,10 @@ namespace dou2d {
          * 绘制纹理的缩放比率
          */
         public set textureScaleFactor(value: number) {
-            sys.textureScaleFactor = value;
+            $2d.textureScaleFactor = value;
         }
         public get textureScaleFactor(): number {
-            return sys.textureScaleFactor;
+            return $2d.textureScaleFactor;
         }
 
         /**
@@ -113,7 +113,7 @@ namespace dou2d {
          * 调用该方法后, 在显示列表下次呈现时, 会向每个已注册侦听 Event.RENDER 事件的显示对象发送一个 Event.RENDER 事件
          */
         public invalidate(): void {
-            sys.invalidateRenderFlag = true;
+            $2d.invalidateRenderFlag = true;
         }
     }
 

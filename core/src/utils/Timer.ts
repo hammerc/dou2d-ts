@@ -68,7 +68,7 @@ namespace dou2d {
             }
             this._lastCount = this._updateInterval;
             this._lastTimeStamp = dou.getTimer();
-            sys.ticker.startTick(this.update, this);
+            $2d.ticker.startTick(this.update, this);
             this._running = true;
         }
 
@@ -104,7 +104,7 @@ namespace dou2d {
             if (!this._running) {
                 return;
             }
-            sys.ticker.stopTick(this.update, this);
+            $2d.ticker.stopTick(this.update, this);
             this._running = false;
         }
 

@@ -25,7 +25,7 @@ namespace dou2d.input {
         }
 
         public addToStage(): void {
-            this._htmlInput = sys.inputManager;
+            this._htmlInput = $2d.inputManager;
         }
 
         public show(active: boolean = true): void {

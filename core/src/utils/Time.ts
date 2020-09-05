@@ -15,21 +15,21 @@ namespace dou2d {
          * 上一帧到这一帧经过的时间
          */
         public static get deltaTime(): number {
-            return sys.deltaTime;
+            return $2d.deltaTime;
         }
 
         /**
          * 固定频率刷新时间间隔, 默认值为 50 毫秒
          */
         public static set fixedDeltaTime(value: number) {
-            sys.fixedDeltaTime = value;
+            $2d.fixedDeltaTime = value;
         }
         public static get fixedDeltaTime(): number {
-            return sys.fixedDeltaTime;
+            return $2d.fixedDeltaTime;
         }
     }
 
-    export namespace sys {
+    export namespace $2d {
         export let deltaTime: number = 0;
         export let fixedDeltaTime: number = 50;
         export let fixedPassedTime: number = 0;

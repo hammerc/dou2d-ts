@@ -83,7 +83,7 @@ namespace dou2d.rendering {
             }
             let buffer = this.renderBuffer;
             buffer.clear();
-            drawCalls = sys.renderer.render(this.root, buffer, this._offsetMatrix);
+            drawCalls = $2d.renderer.render(this.root, buffer, this._offsetMatrix);
             // 对非舞台画布要保存渲染节点
             if (!this._isStage) {
                 let surface = buffer.surface;

@@ -24,9 +24,9 @@ namespace dou2d {
             this._label.stroke = 1;
             this.addChild(this._label);
 
-            sys.stat.setListener(this.receive, this);
+            $2d.stat.setListener(this.receive, this);
 
-            sys.stage.addChild(this);
+            $2d.stage.addChild(this);
         }
 
         private receive(logicTime: number, renderTime: number, drawCalls: number): void {
@@ -35,7 +35,7 @@ namespace dou2d {
             this._drawCalls += drawCalls;
             this._logicTime += logicTime;
             this._renderTime += renderTime;
-            if (this._frame == sys.stage.frameRate) {
+            if (this._frame == $2d.stage.frameRate) {
                 let passedTime = this._time * 0.001;
                 let fps = (this._frame / passedTime).toFixed(1);
                 let draw = Math.ceil(this._drawCalls / this._frame);

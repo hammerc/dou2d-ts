@@ -56,43 +56,43 @@ var dou2d;
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
-    var sys;
-    (function (sys) {
+    var $2d;
+    (function ($2d) {
         /**
          * 贴图缩放系数
          * * 为了解决图片和字体发虚所引入的机制, 它底层实现的原理是创建更大的画布去绘制
          * * 之所以出现发虚这个问题, 是因为普通屏幕的 1 个像素点就是 1 个物理像素点, 而高清屏的 1 个像素点是 4 个物理像素点, 仅高清手机屏会出现该问题
          */
-        sys.textureScaleFactor = 1;
+        $2d.textureScaleFactor = 1;
         /**
          * 进入帧回调对象列表
          */
-        sys.enterFrameCallBackList = [];
+        $2d.enterFrameCallBackList = [];
         /**
          * 仅一次进入帧回调对象列表
          */
-        sys.enterFrameOnceCallBackList = [];
+        $2d.enterFrameOnceCallBackList = [];
         /**
          * 固定频率进入帧回调对象列表
          */
-        sys.fixedEnterFrameCallBackList = [];
+        $2d.fixedEnterFrameCallBackList = [];
         /**
          * 仅一次固定频率进入帧回调对象列表
          */
-        sys.fixedEnterFrameOnceCallBackList = [];
+        $2d.fixedEnterFrameOnceCallBackList = [];
         /**
          * 是否派发 Event.RENDER 事件
          */
-        sys.invalidateRenderFlag = false;
+        $2d.invalidateRenderFlag = false;
         /**
          * 渲染回调对象列表
          */
-        sys.renderCallBackList = [];
+        $2d.renderCallBackList = [];
         /**
          * 仅一次渲染回调对象列表
          */
-        sys.renderOnceCallBackList = [];
-    })(sys = dou2d.sys || (dou2d.sys = {}));
+        $2d.renderOnceCallBackList = [];
+    })($2d = dou2d.$2d || (dou2d.$2d = {}));
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
@@ -882,7 +882,7 @@ var dou2d;
                 }
             }
             updateLogic(passedTime) {
-                sys.deltaTime = passedTime;
+                dou2d.$2d.deltaTime = passedTime;
                 let logicCost, renderCost;
                 logicCost = dou2d.Time.time;
                 dou.Tween.tick(passedTime, false);
@@ -890,12 +890,12 @@ var dou2d;
                 this.broadcastTick(passedTime);
                 this.broadcastRender();
                 renderCost = dou2d.Time.time;
-                let drawCalls = sys.player.render(passedTime);
+                let drawCalls = dou2d.$2d.player.render(passedTime);
                 renderCost = dou2d.Time.time - renderCost;
                 this.broadcastEnterFrame();
                 this.broadcastFixedEnterFrame(passedTime);
                 logicCost = dou2d.Time.time - logicCost - renderCost;
-                sys.stat.onFrame(logicCost, renderCost, drawCalls);
+                dou2d.$2d.stat.onFrame(logicCost, renderCost, drawCalls);
             }
             broadcastDelay(passedTime) {
                 sys.updateCallLater();
@@ -916,17 +916,17 @@ var dou2d;
                 }
             }
             broadcastRender() {
-                if (sys.invalidateRenderFlag) {
-                    sys.invalidateRenderFlag = false;
-                    if (sys.renderCallBackList.length > 0) {
-                        let list = sys.renderCallBackList.concat();
+                if (dou2d.$2d.invalidateRenderFlag) {
+                    dou2d.$2d.invalidateRenderFlag = false;
+                    if (dou2d.$2d.renderCallBackList.length > 0) {
+                        let list = dou2d.$2d.renderCallBackList.concat();
                         for (let display of list) {
                             display.dispatchEvent(dou2d.Event2D.RENDER);
                         }
                     }
-                    if (sys.renderOnceCallBackList.length > 0) {
-                        let list = sys.renderOnceCallBackList;
-                        sys.renderOnceCallBackList = [];
+                    if (dou2d.$2d.renderOnceCallBackList.length > 0) {
+                        let list = dou2d.$2d.renderOnceCallBackList;
+                        dou2d.$2d.renderOnceCallBackList = [];
                         for (let display of list) {
                             display.dispatchEvent(dou2d.Event2D.RENDER);
                         }
@@ -934,36 +934,36 @@ var dou2d;
                 }
             }
             broadcastEnterFrame() {
-                if (sys.enterFrameCallBackList.length > 0) {
-                    let list = sys.enterFrameCallBackList.concat();
+                if (dou2d.$2d.enterFrameCallBackList.length > 0) {
+                    let list = dou2d.$2d.enterFrameCallBackList.concat();
                     for (let display of list) {
                         display.dispatchEvent(dou2d.Event2D.ENTER_FRAME);
                     }
                 }
-                if (sys.enterFrameOnceCallBackList.length > 0) {
-                    let list = sys.enterFrameOnceCallBackList;
-                    sys.enterFrameOnceCallBackList = [];
+                if (dou2d.$2d.enterFrameOnceCallBackList.length > 0) {
+                    let list = dou2d.$2d.enterFrameOnceCallBackList;
+                    dou2d.$2d.enterFrameOnceCallBackList = [];
                     for (let display of list) {
                         display.dispatchEvent(dou2d.Event2D.ENTER_FRAME);
                     }
                 }
             }
             broadcastFixedEnterFrame(passedTime) {
-                sys.fixedPassedTime += passedTime;
-                let times = ~~(sys.fixedPassedTime / sys.fixedDeltaTime);
+                dou2d.$2d.fixedPassedTime += passedTime;
+                let times = ~~(dou2d.$2d.fixedPassedTime / dou2d.$2d.fixedDeltaTime);
                 if (times > 0) {
-                    sys.fixedPassedTime %= sys.fixedDeltaTime;
-                    if (sys.fixedEnterFrameCallBackList.length > 0) {
-                        let list = sys.fixedEnterFrameCallBackList.concat();
+                    dou2d.$2d.fixedPassedTime %= dou2d.$2d.fixedDeltaTime;
+                    if (dou2d.$2d.fixedEnterFrameCallBackList.length > 0) {
+                        let list = dou2d.$2d.fixedEnterFrameCallBackList.concat();
                         for (let display of list) {
                             for (let i = 0; i < times; i++) {
                                 display.dispatchEvent(dou2d.Event2D.FIXED_ENTER_FRAME);
                             }
                         }
                     }
-                    if (sys.fixedEnterFrameOnceCallBackList.length > 0) {
-                        let list = sys.fixedEnterFrameOnceCallBackList;
-                        sys.fixedEnterFrameOnceCallBackList = [];
+                    if (dou2d.$2d.fixedEnterFrameOnceCallBackList.length > 0) {
+                        let list = dou2d.$2d.fixedEnterFrameOnceCallBackList;
+                        dou2d.$2d.fixedEnterFrameOnceCallBackList = [];
                         for (let display of list) {
                             for (let i = 0; i < times; i++) {
                                 display.dispatchEvent(dou2d.Event2D.FIXED_ENTER_FRAME);
@@ -2510,11 +2510,11 @@ var dou2d;
                     }
                 }
                 else {
-                    let buffer = dou2d.sys.hitTestBuffer;
+                    let buffer = dou2d.$2d.hitTestBuffer;
                     buffer.resize(3, 3);
                     let matrix = dou.recyclable(dou2d.Matrix);
                     matrix.translate(1 - localX, 1 - localY);
-                    dou2d.sys.renderer.render(this, buffer, matrix);
+                    dou2d.$2d.renderer.render(this, buffer, matrix);
                     matrix.recycle();
                     try {
                         data = buffer.getPixels(1, 1);
@@ -2539,13 +2539,13 @@ var dou2d;
             if (type == dou2d.Event2D.ENTER_FRAME || type == dou2d.Event2D.FIXED_ENTER_FRAME || type == dou2d.Event2D.RENDER) {
                 let list;
                 if (type == dou2d.Event2D.ENTER_FRAME) {
-                    list = once ? dou2d.sys.enterFrameOnceCallBackList : dou2d.sys.enterFrameCallBackList;
+                    list = once ? dou2d.$2d.enterFrameOnceCallBackList : dou2d.$2d.enterFrameCallBackList;
                 }
                 else if (type == dou2d.Event2D.FIXED_ENTER_FRAME) {
-                    list = once ? dou2d.sys.fixedEnterFrameOnceCallBackList : dou2d.sys.fixedEnterFrameCallBackList;
+                    list = once ? dou2d.$2d.fixedEnterFrameOnceCallBackList : dou2d.$2d.fixedEnterFrameCallBackList;
                 }
                 else {
-                    list = once ? dou2d.sys.renderOnceCallBackList : dou2d.sys.renderCallBackList;
+                    list = once ? dou2d.$2d.renderOnceCallBackList : dou2d.$2d.renderCallBackList;
                 }
                 list.pushUnique(this);
             }
@@ -2598,16 +2598,16 @@ var dou2d;
                 let list;
                 let listOnce;
                 if (type == dou2d.Event2D.ENTER_FRAME) {
-                    list = dou2d.sys.enterFrameCallBackList;
-                    listOnce = dou2d.sys.enterFrameOnceCallBackList;
+                    list = dou2d.$2d.enterFrameCallBackList;
+                    listOnce = dou2d.$2d.enterFrameOnceCallBackList;
                 }
                 else if (type == dou2d.Event2D.FIXED_ENTER_FRAME) {
-                    list = dou2d.sys.fixedEnterFrameCallBackList;
-                    listOnce = dou2d.sys.fixedEnterFrameOnceCallBackList;
+                    list = dou2d.$2d.fixedEnterFrameCallBackList;
+                    listOnce = dou2d.$2d.fixedEnterFrameOnceCallBackList;
                 }
                 else {
-                    list = dou2d.sys.renderCallBackList;
-                    listOnce = dou2d.sys.renderOnceCallBackList;
+                    list = dou2d.$2d.renderCallBackList;
+                    listOnce = dou2d.$2d.renderOnceCallBackList;
                 }
                 list.remove(this);
                 listOnce.remove(this);
@@ -3158,10 +3158,10 @@ var dou2d;
          * 舞台的帧速率
          */
         set frameRate(value) {
-            dou2d.sys.ticker.frameRate = value;
+            dou2d.$2d.ticker.frameRate = value;
         }
         get frameRate() {
-            return dou2d.sys.ticker.frameRate;
+            return dou2d.$2d.ticker.frameRate;
         }
         /**
          * 舞台的当前宽度
@@ -3205,10 +3205,10 @@ var dou2d;
          * 绘制纹理的缩放比率
          */
         set textureScaleFactor(value) {
-            dou2d.sys.textureScaleFactor = value;
+            dou2d.$2d.textureScaleFactor = value;
         }
         get textureScaleFactor() {
-            return dou2d.sys.textureScaleFactor;
+            return dou2d.$2d.textureScaleFactor;
         }
         /**
          * 屏幕可以同时触摸的数量
@@ -3237,7 +3237,7 @@ var dou2d;
          * 调用该方法后, 在显示列表下次呈现时, 会向每个已注册侦听 Event.RENDER 事件的显示对象发送一个 Event.RENDER 事件
          */
         invalidate() {
-            dou2d.sys.invalidateRenderFlag = true;
+            dou2d.$2d.invalidateRenderFlag = true;
         }
     }
     dou2d.Stage = Stage;
@@ -4312,7 +4312,7 @@ var dou2d;
             return this._textureWidth;
         }
         $getScaleBitmapWidth() {
-            return this.bitmapWidth * dou2d.sys.textureScaleFactor;
+            return this.bitmapWidth * dou2d.$2d.textureScaleFactor;
         }
         /**
          * 纹理高度，只读属性，不可以设置
@@ -4324,7 +4324,7 @@ var dou2d;
             return this._textureHeight;
         }
         $getScaleBitmapHeight() {
-            return this.bitmapHeight * dou2d.sys.textureScaleFactor;
+            return this.bitmapHeight * dou2d.$2d.textureScaleFactor;
         }
         set bitmapData(value) {
             this.$setBitmapData(value);
@@ -4334,7 +4334,7 @@ var dou2d;
         }
         $setBitmapData(value) {
             this._bitmapData = value;
-            let scale = dou2d.sys.textureScaleFactor;
+            let scale = dou2d.$2d.textureScaleFactor;
             let w = value.width * scale;
             let h = value.height * scale;
             this.$initData(0, 0, w, h, 0, 0, w, h, value.width, value.height);
@@ -4343,7 +4343,7 @@ var dou2d;
             return this._bitmapData;
         }
         $initData(bitmapX, bitmapY, bitmapWidth, bitmapHeight, offsetX, offsetY, textureWidth, textureHeight, sourceWidth, sourceHeight, rotated = false) {
-            let scale = dou2d.sys.textureScaleFactor;
+            let scale = dou2d.$2d.textureScaleFactor;
             this.bitmapX = bitmapX / scale;
             this.bitmapY = bitmapY / scale;
             this.bitmapWidth = bitmapWidth / scale;
@@ -4471,7 +4471,7 @@ var dou2d;
             if (bounds.width == 0 || bounds.height == 0) {
                 return false;
             }
-            scale /= dou2d.sys.textureScaleFactor;
+            scale /= dou2d.$2d.textureScaleFactor;
             let width = (bounds.x + bounds.width) * scale;
             let height = (bounds.y + bounds.height) * scale;
             if (clipBounds) {
@@ -4491,7 +4491,7 @@ var dou2d;
             if (clipBounds) {
                 matrix.translate(-clipBounds.x, -clipBounds.y);
             }
-            dou2d.sys.renderer.render(displayObject, renderBuffer, matrix);
+            dou2d.$2d.renderer.render(displayObject, renderBuffer, matrix);
             matrix.recycle();
             // 设置纹理参数
             this.$initData(0, 0, width, height, 0, 0, width, height, width, height);
@@ -4500,7 +4500,7 @@ var dou2d;
         getPixel32(x, y) {
             let data;
             if (this.$renderBuffer) {
-                let scale = dou2d.sys.textureScaleFactor;
+                let scale = dou2d.$2d.textureScaleFactor;
                 x = Math.round(x / scale);
                 y = Math.round(y / scale);
                 data = this.$renderBuffer.getPixels(x, y, 1, 1);
@@ -4523,7 +4523,7 @@ var dou2d;
     class DragManager {
         constructor() {
             this._dragging = false;
-            dou2d.sys.stage.on(dou2d.TouchEvent.TOUCH_MOVE, this.stageMoveHandler, this);
+            dou2d.$2d.stage.on(dou2d.TouchEvent.TOUCH_MOVE, this.stageMoveHandler, this);
         }
         static get instance() {
             return DragManager._instance || (DragManager._instance = new DragManager());
@@ -4598,11 +4598,11 @@ var dou2d;
                 this._dragTarget.touchChildren = false;
             }
             this._dragTarget.alpha = imageAlpha;
-            dou2d.sys.stage.addChild(this._dragTarget);
+            dou2d.$2d.stage.addChild(this._dragTarget);
             this._offsetX = xOffset;
             this._offsetY = yOffset;
-            dou2d.sys.stage.on(dou2d.TouchEvent.TOUCH_MOVE, this.onStageMove, this);
-            dou2d.sys.stage.on(dou2d.TouchEvent.TOUCH_END, this.onStageEnd, this);
+            dou2d.$2d.stage.on(dou2d.TouchEvent.TOUCH_MOVE, this.onStageMove, this);
+            dou2d.$2d.stage.on(dou2d.TouchEvent.TOUCH_END, this.onStageEnd, this);
             this.onStageMove(touchEvent);
             this._originDrag.dispatchDragEvent(dou2d.DragEvent.DRAG_START, this._dragData);
             return this._dragTarget;
@@ -4622,9 +4622,9 @@ var dou2d;
             }
         }
         endDrag() {
-            dou2d.sys.stage.off(dou2d.TouchEvent.TOUCH_MOVE, this.onStageMove, this);
-            dou2d.sys.stage.off(dou2d.TouchEvent.TOUCH_END, this.onStageEnd, this);
-            dou2d.sys.stage.removeChild(this._dragTarget);
+            dou2d.$2d.stage.off(dou2d.TouchEvent.TOUCH_MOVE, this.onStageMove, this);
+            dou2d.$2d.stage.off(dou2d.TouchEvent.TOUCH_END, this.onStageEnd, this);
+            dou2d.$2d.stage.removeChild(this._dragTarget);
             this._dragTarget = undefined;
             this._originDrag = undefined;
         }
@@ -4774,7 +4774,7 @@ var dou2d;
          * 请求忽略帧率立即刷新显示列表
          */
         updateAfterEvent() {
-            dou2d.sys.ticker.requestImmediateUpdate();
+            dou2d.$2d.ticker.requestImmediateUpdate();
         }
         onRecycle() {
             super.onRecycle();
@@ -4822,7 +4822,7 @@ var dou2d;
          * 请求忽略帧率立即刷新显示列表
          */
         updateAfterEvent() {
-            dou2d.sys.ticker.requestImmediateUpdate();
+            dou2d.$2d.ticker.requestImmediateUpdate();
         }
     }
     TimerEvent.TIMER = "timer";
@@ -5554,7 +5554,7 @@ var dou2d;
             let bytesAnalyzer = new dou.BytesAnalyzer();
             bytesAnalyzer.load(url, (url, data) => {
                 if (data) {
-                    dou2d.sys.fontResMap[url] = data.rawBuffer;
+                    dou2d.$2d.fontResMap[url] = data.rawBuffer;
                     callback.call(thisObj, url, data);
                 }
                 else {
@@ -5563,7 +5563,7 @@ var dou2d;
             }, this);
         }
         release(url, data) {
-            delete dou2d.sys.fontResMap[url];
+            delete dou2d.$2d.fontResMap[url];
             return true;
         }
     }
@@ -5633,7 +5633,7 @@ var dou2d;
         start(duration = -1) {
             if (this._emissionRate != 0) {
                 this._emissionTime = duration;
-                dou2d.sys.ticker.startTick(this.update, this);
+                dou2d.$2d.ticker.startTick(this.update, this);
             }
         }
         update(passedTime) {
@@ -5667,7 +5667,7 @@ var dou2d;
             }
             this.$renderDirty = true;
             if (this._numParticles == 0 && this._emissionTime == 0) {
-                dou2d.sys.ticker.stopTick(this.update, this);
+                dou2d.$2d.ticker.stopTick(this.update, this);
                 this.dispatchEvent(dou.Event.COMPLETE);
             }
             return false;
@@ -5705,7 +5705,7 @@ var dou2d;
             this._emissionTime = 0;
             if (clear) {
                 this.clear();
-                dou2d.sys.ticker.stopTick(this.update, this);
+                dou2d.$2d.ticker.stopTick(this.update, this);
             }
         }
         $measureContentBounds(bounds) {
@@ -6156,7 +6156,7 @@ var dou2d;
                 if (!image) {
                     return;
                 }
-                let scale = dou2d.sys.textureScaleFactor;
+                let scale = dou2d.$2d.textureScaleFactor;
                 node.smoothing = smoothing;
                 node.image = image;
                 node.imageWidth = sourceWidth;
@@ -6250,14 +6250,14 @@ var dou2d;
                 node.imageHeight = sourceHeight;
                 let imageWidth = bitmapWidth;
                 let imageHeight = bitmapHeight;
-                destW = destW - (textureWidth - bitmapWidth * dou2d.sys.textureScaleFactor);
-                destH = destH - (textureHeight - bitmapHeight * dou2d.sys.textureScaleFactor);
+                destW = destW - (textureWidth - bitmapWidth * dou2d.$2d.textureScaleFactor);
+                destH = destH - (textureHeight - bitmapHeight * dou2d.$2d.textureScaleFactor);
                 let targetW0 = scale9Grid.x - offsetX;
                 let targetH0 = scale9Grid.y - offsetY;
-                let sourceW0 = targetW0 / dou2d.sys.textureScaleFactor;
-                let sourceH0 = targetH0 / dou2d.sys.textureScaleFactor;
-                let sourceW1 = scale9Grid.width / dou2d.sys.textureScaleFactor;
-                let sourceH1 = scale9Grid.height / dou2d.sys.textureScaleFactor;
+                let sourceW0 = targetW0 / dou2d.$2d.textureScaleFactor;
+                let sourceH0 = targetH0 / dou2d.$2d.textureScaleFactor;
+                let sourceW1 = scale9Grid.width / dou2d.$2d.textureScaleFactor;
+                let sourceH1 = scale9Grid.height / dou2d.$2d.textureScaleFactor;
                 // 防止空心的情况出现
                 if (sourceH1 == 0) {
                     sourceH1 = 1;
@@ -6279,9 +6279,9 @@ var dou2d;
                 let sourceY1 = sourceY0 + sourceH0;
                 let sourceY2 = sourceY1 + sourceH1;
                 let sourceH2 = imageHeight - sourceH0 - sourceH1;
-                let targetW2 = sourceW2 * dou2d.sys.textureScaleFactor;
-                let targetH2 = sourceH2 * dou2d.sys.textureScaleFactor;
-                if ((sourceW0 + sourceW2) * dou2d.sys.textureScaleFactor > destW || (sourceH0 + sourceH2) * dou2d.sys.textureScaleFactor > destH) {
+                let targetW2 = sourceW2 * dou2d.$2d.textureScaleFactor;
+                let targetH2 = sourceH2 * dou2d.$2d.textureScaleFactor;
+                if ((sourceW0 + sourceW2) * dou2d.$2d.textureScaleFactor > destW || (sourceH0 + sourceH2) * dou2d.$2d.textureScaleFactor > destH) {
                     node.drawImage(bitmapX, bitmapY, bitmapWidth, bitmapHeight, offsetX, offsetY, destW, destH);
                     return;
                 }
@@ -8538,7 +8538,7 @@ var dou2d;
                 }
                 let buffer = this.renderBuffer;
                 buffer.clear();
-                drawCalls = dou2d.sys.renderer.render(this.root, buffer, this._offsetMatrix);
+                drawCalls = dou2d.$2d.renderer.render(this.root, buffer, this._offsetMatrix);
                 // 对非舞台画布要保存渲染节点
                 if (!this._isStage) {
                     let surface = buffer.surface;
@@ -10092,7 +10092,7 @@ var dou2d;
                 return true;
             }
             addToStage() {
-                this._htmlInput = dou2d.sys.inputManager;
+                this._htmlInput = dou2d.$2d.inputManager;
             }
             show(active = true) {
                 if (!this._htmlInput.isCurrentStageText(this)) {
@@ -12704,7 +12704,7 @@ var dou2d;
     }
     dou2d.registerFontMapping = registerFontMapping;
     function loadFontByFontFace(name, path) {
-        let fontResCache = sys.fontResMap;
+        let fontResCache = $2d.fontResMap;
         if (!fontResCache[path]) {
             if (DEBUG) {
                 console.warn(`TTF字体"${path}"没有加载`);
@@ -12733,10 +12733,10 @@ var dou2d;
         };
         document.body.appendChild(styleElement);
     }
-    let sys;
-    (function (sys) {
-        sys.fontResMap = {};
-    })(sys = dou2d.sys || (dou2d.sys = {}));
+    let $2d;
+    (function ($2d) {
+        $2d.fontResMap = {};
+    })($2d = dou2d.$2d || (dou2d.$2d = {}));
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
@@ -13281,8 +13281,8 @@ var dou2d;
             }
             font += (fontSize || 12) + "px ";
             font += (fontFamily || "Arial");
-            dou2d.sys.context2D.font = font;
-            return measureTextWidth(dou2d.sys.context2D, text);
+            dou2d.$2d.context2D.font = font;
+            return measureTextWidth(dou2d.$2d.context2D, text);
         }
         HtmlUtil.measureText = measureText;
         /**
@@ -13811,25 +13811,25 @@ var dou2d;
          * 上一帧到这一帧经过的时间
          */
         static get deltaTime() {
-            return sys.deltaTime;
+            return $2d.deltaTime;
         }
         /**
          * 固定频率刷新时间间隔, 默认值为 50 毫秒
          */
         static set fixedDeltaTime(value) {
-            sys.fixedDeltaTime = value;
+            $2d.fixedDeltaTime = value;
         }
         static get fixedDeltaTime() {
-            return sys.fixedDeltaTime;
+            return $2d.fixedDeltaTime;
         }
     }
     dou2d.Time = Time;
-    let sys;
-    (function (sys) {
-        sys.deltaTime = 0;
-        sys.fixedDeltaTime = 50;
-        sys.fixedPassedTime = 0;
-    })(sys = dou2d.sys || (dou2d.sys = {}));
+    let $2d;
+    (function ($2d) {
+        $2d.deltaTime = 0;
+        $2d.fixedDeltaTime = 50;
+        $2d.fixedPassedTime = 0;
+    })($2d = dou2d.$2d || (dou2d.$2d = {}));
 })(dou2d || (dou2d = {}));
 var dou2d;
 (function (dou2d) {
@@ -13888,7 +13888,7 @@ var dou2d;
             }
             this._lastCount = this._updateInterval;
             this._lastTimeStamp = dou.getTimer();
-            dou2d.sys.ticker.startTick(this.update, this);
+            dou2d.$2d.ticker.startTick(this.update, this);
             this._running = true;
         }
         update(timeStamp) {
@@ -13922,7 +13922,7 @@ var dou2d;
             if (!this._running) {
                 return;
             }
-            dou2d.sys.ticker.stopTick(this.update, this);
+            dou2d.$2d.ticker.stopTick(this.update, this);
             this._running = false;
         }
         /**
@@ -14014,8 +14014,8 @@ var dou2d;
             this._label.strokeColor = 0x000000;
             this._label.stroke = 1;
             this.addChild(this._label);
-            dou2d.sys.stat.setListener(this.receive, this);
-            dou2d.sys.stage.addChild(this);
+            dou2d.$2d.stat.setListener(this.receive, this);
+            dou2d.$2d.stage.addChild(this);
         }
         receive(logicTime, renderTime, drawCalls) {
             this._time += dou2d.Time.deltaTime;
@@ -14023,7 +14023,7 @@ var dou2d;
             this._drawCalls += drawCalls;
             this._logicTime += logicTime;
             this._renderTime += renderTime;
-            if (this._frame == dou2d.sys.stage.frameRate) {
+            if (this._frame == dou2d.$2d.stage.frameRate) {
                 let passedTime = this._time * 0.001;
                 let fps = (this._frame / passedTime).toFixed(1);
                 let draw = Math.ceil(this._drawCalls / this._frame);
@@ -14066,34 +14066,34 @@ var dou2d;
                 document.body.appendChild(div);
             }
             this._container = div;
-            dou2d.sys.stage = new dou2d.Stage(this);
-            dou2d.sys.renderer = new dou2d.rendering.Renderer();
+            dou2d.$2d.stage = new dou2d.Stage(this);
+            dou2d.$2d.renderer = new dou2d.rendering.Renderer();
             let renderBuffer = new dou2d.rendering.RenderBuffer(undefined, undefined, true);
-            dou2d.sys.canvas = renderBuffer.surface;
-            this.attachCanvas(this._container, dou2d.sys.canvas);
-            dou2d.sys.context2D = dou2d.HtmlUtil.get2DContext(dou2d.HtmlUtil.createCanvas(2, 2));
+            dou2d.$2d.canvas = renderBuffer.surface;
+            this.attachCanvas(this._container, dou2d.$2d.canvas);
+            dou2d.$2d.context2D = dou2d.HtmlUtil.get2DContext(dou2d.HtmlUtil.createCanvas(2, 2));
             let options = this._options = this.readOptions(rootClass, runOptions);
-            dou2d.sys.screenAdapter = options.screenAdapter;
-            this._touchHandler = new dou2d.touch.TouchHandler(dou2d.sys.stage, dou2d.sys.canvas);
-            dou2d.sys.inputManager = new dou2d.input.InputManager();
-            dou2d.sys.inputManager.initStageDelegateDiv(this._container, dou2d.sys.canvas);
+            dou2d.$2d.screenAdapter = options.screenAdapter;
+            this._touchHandler = new dou2d.touch.TouchHandler(dou2d.$2d.stage, dou2d.$2d.canvas);
+            dou2d.$2d.inputManager = new dou2d.input.InputManager();
+            dou2d.$2d.inputManager.initStageDelegateDiv(this._container, dou2d.$2d.canvas);
             dou2d.asset.$init();
-            dou2d.sys.player = new dou2d.sys.Player(renderBuffer, dou2d.sys.stage, options.rootClass);
-            dou2d.sys.player.start();
-            dou2d.sys.ticker = new dou2d.sys.Ticker();
+            dou2d.$2d.player = new dou2d.sys.Player(renderBuffer, dou2d.$2d.stage, options.rootClass);
+            dou2d.$2d.player.start();
+            dou2d.$2d.ticker = new dou2d.sys.Ticker();
             this.startTicker();
-            dou2d.sys.stage.scaleMode = options.scaleMode;
-            dou2d.sys.stage.orientation = options.orientation;
-            dou2d.sys.stage.maxTouches = options.maxTouches;
-            dou2d.sys.stage.frameRate = options.frameRate;
-            dou2d.sys.stage.textureScaleFactor = options.textureScaleFactor;
+            dou2d.$2d.stage.scaleMode = options.scaleMode;
+            dou2d.$2d.stage.orientation = options.orientation;
+            dou2d.$2d.stage.maxTouches = options.maxTouches;
+            dou2d.$2d.stage.frameRate = options.frameRate;
+            dou2d.$2d.stage.textureScaleFactor = options.textureScaleFactor;
             this.updateScreenSize();
             window.addEventListener("resize", () => {
                 window.setTimeout(() => {
                     this.updateScreenSize();
                 }, 300);
             });
-            dou2d.sys.stat = new dou2d.sys.Stat();
+            dou2d.$2d.stat = new dou2d.sys.Stat();
         }
         readOptions(rootClass, runOptions) {
             if (!runOptions) {
@@ -14109,7 +14109,7 @@ var dou2d;
                 frameRate: runOptions.frameRate || 60,
                 antialias: runOptions.antialias || false,
                 screenAdapter: runOptions.screenAdapter || new dou2d.DefaultScreenAdapter(),
-                textureScaleFactor: runOptions.canvasScaleFactor ? runOptions.canvasScaleFactor(dou2d.sys.context2D) : 1
+                textureScaleFactor: runOptions.canvasScaleFactor ? runOptions.canvasScaleFactor(dou2d.$2d.context2D) : 1
             };
         }
         attachCanvas(container, canvas) {
@@ -14128,7 +14128,7 @@ var dou2d;
         startTicker() {
             requestAnimationFrame(onTick);
             function onTick() {
-                dou2d.sys.ticker.update();
+                dou2d.$2d.ticker.update();
                 requestAnimationFrame(onTick);
             }
         }
@@ -14139,7 +14139,7 @@ var dou2d;
             this.updateScreenSize();
         }
         updateScreenSize() {
-            let canvas = dou2d.sys.canvas;
+            let canvas = dou2d.$2d.canvas;
             let option = this._options;
             let screenRect = this._container.getBoundingClientRect();
             let top = 0;
@@ -14153,7 +14153,7 @@ var dou2d;
                 top = -screenRect.top;
             }
             let shouldRotate = false;
-            let orientation = dou2d.sys.stage.orientation;
+            let orientation = dou2d.$2d.stage.orientation;
             if (orientation != "auto" /* auto */) {
                 shouldRotate = orientation != "portrait" /* portrait */ && boundingClientHeight > boundingClientWidth || orientation == "portrait" /* portrait */ && boundingClientWidth > boundingClientHeight;
             }
@@ -14161,7 +14161,7 @@ var dou2d;
             let screenHeight = shouldRotate ? boundingClientWidth : boundingClientHeight;
             dou2d.Capabilities.boundingClientWidth = screenWidth;
             dou2d.Capabilities.boundingClientHeight = screenHeight;
-            let stageSize = dou2d.sys.screenAdapter.calculateStageSize(dou2d.sys.stage.scaleMode, screenWidth, screenHeight, option.contentWidth, option.contentHeight);
+            let stageSize = dou2d.$2d.screenAdapter.calculateStageSize(dou2d.$2d.stage.scaleMode, screenWidth, screenHeight, option.contentWidth, option.contentHeight);
             let stageWidth = stageSize.stageWidth;
             let stageHeight = stageSize.stageHeight;
             let displayWidth = stageSize.displayWidth;
@@ -14201,8 +14201,8 @@ var dou2d;
             canvas.style[dou2d.HtmlUtil.getStyleName("transform")] = transform;
             dou2d.rendering.DisplayList.setCanvasScale(canvasScaleX, canvasScaleY);
             this._touchHandler.updateScaleMode(scalex, scaley, rotation);
-            dou2d.sys.inputManager.updateSize();
-            dou2d.sys.player.updateStageSize(stageWidth, stageHeight);
+            dou2d.$2d.inputManager.updateSize();
+            dou2d.$2d.player.updateStageSize(stageWidth, stageHeight);
         }
         updateMaxTouches(maxTouches) {
             this._touchHandler.updateMaxTouches();
@@ -14218,29 +14218,12 @@ var dou2d;
     Dou.touch = Dou.touch || {};
     Dou.AssetManager = dou2d.AssetManager;
     Dou.asset = dou2d.asset;
+    Dou.$2d = dou2d.$2d;
     Dou.sys.glContext = dou2d.sys.glContext;
     Dou.sys.unpackPremultiplyAlphaWebgl = dou2d.sys.unpackPremultiplyAlphaWebgl;
     Dou.sys.engineDefaultEmptyTexture = dou2d.sys.engineDefaultEmptyTexture;
     Dou.sys.smoothing = dou2d.sys.smoothing;
     Dou.sys.markCannotUse = dou2d.sys.markCannotUse;
-    Dou.sys.canvas = dou2d.sys.canvas;
-    Dou.sys.ticker = dou2d.sys.ticker;
-    Dou.sys.player = dou2d.sys.player;
-    Dou.sys.stage = dou2d.sys.stage;
-    Dou.sys.screenAdapter = dou2d.sys.screenAdapter;
-    Dou.sys.context2D = dou2d.sys.context2D;
-    Dou.sys.renderer = dou2d.sys.renderer;
-    Dou.sys.hitTestBuffer = dou2d.sys.hitTestBuffer;
-    Dou.sys.textureScaleFactor = dou2d.sys.textureScaleFactor;
-    Dou.sys.inputManager = dou2d.sys.inputManager;
-    Dou.sys.stat = dou2d.sys.stat;
-    Dou.sys.enterFrameCallBackList = dou2d.sys.enterFrameCallBackList;
-    Dou.sys.enterFrameOnceCallBackList = dou2d.sys.enterFrameOnceCallBackList;
-    Dou.sys.fixedEnterFrameCallBackList = dou2d.sys.fixedEnterFrameCallBackList;
-    Dou.sys.fixedEnterFrameOnceCallBackList = dou2d.sys.fixedEnterFrameOnceCallBackList;
-    Dou.sys.invalidateRenderFlag = dou2d.sys.invalidateRenderFlag;
-    Dou.sys.renderCallBackList = dou2d.sys.renderCallBackList;
-    Dou.sys.renderOnceCallBackList = dou2d.sys.renderOnceCallBackList;
     Dou.sys.Player = dou2d.sys.Player;
     Dou.sys.Ticker = dou2d.sys.Ticker;
     Dou.sys.Stat = dou2d.sys.Stat;
@@ -14314,7 +14297,6 @@ var dou2d;
     Dou.HtmlTextParser = dou2d.HtmlTextParser;
     Dou.TextField = dou2d.TextField;
     Dou.registerFontMapping = dou2d.registerFontMapping;
-    Dou.sys.fontResMap = dou2d.sys.fontResMap;
     Dou.touch.TouchHandler = dou2d.touch.TouchHandler;
     Dou.touch.TouchHandlerImpl = dou2d.touch.TouchHandlerImpl;
     Dou.Base64Util = dou2d.Base64Util;
@@ -14342,9 +14324,6 @@ var dou2d;
     Dou.TextFieldUtil = dou2d.TextFieldUtil;
     Dou.Time = dou2d.Time;
     Dou.Timer = dou2d.Timer;
-    Dou.sys.deltaTime = dou2d.sys.deltaTime;
-    Dou.sys.fixedDeltaTime = dou2d.sys.fixedDeltaTime;
-    Dou.sys.fixedPassedTime = dou2d.sys.fixedPassedTime;
     Dou.UUID = dou2d.UUID;
     Dou.WebGLUtil = dou2d.WebGLUtil;
     Dou.Engine = dou2d.Engine;

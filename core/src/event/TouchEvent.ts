@@ -101,7 +101,7 @@ namespace dou2d {
          * 请求忽略帧率立即刷新显示列表
          */
         public updateAfterEvent(): void {
-            sys.ticker.requestImmediateUpdate();
+            $2d.ticker.requestImmediateUpdate();
         }
 
         public onRecycle(): void {

@@ -8,7 +8,7 @@ namespace dou2d {
             let bytesAnalyzer = new dou.BytesAnalyzer();
             bytesAnalyzer.load(url, (url, data: dou.ByteArray) => {
                 if (data) {
-                    sys.fontResMap[url] = data.rawBuffer;
+                    $2d.fontResMap[url] = data.rawBuffer;
                     callback.call(thisObj, url, data);
                 }
                 else {
@@ -18,7 +18,7 @@ namespace dou2d {
         }
 
         public release(url: string, data: dou.ByteArray): boolean {
-            delete sys.fontResMap[url];
+            delete $2d.fontResMap[url];
             return true;
         }
     }

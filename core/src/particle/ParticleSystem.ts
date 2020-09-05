@@ -91,7 +91,7 @@ namespace dou2d {
         public start(duration: number = -1): void {
             if (this._emissionRate != 0) {
                 this._emissionTime = duration;
-                sys.ticker.startTick(this.update, this);
+                $2d.ticker.startTick(this.update, this);
             }
         }
 
@@ -126,7 +126,7 @@ namespace dou2d {
             }
             this.$renderDirty = true;
             if (this._numParticles == 0 && this._emissionTime == 0) {
-                sys.ticker.stopTick(this.update, this);
+                $2d.ticker.stopTick(this.update, this);
                 this.dispatchEvent(dou.Event.COMPLETE);
             }
             return false;
@@ -172,7 +172,7 @@ namespace dou2d {
             this._emissionTime = 0;
             if (clear) {
                 this.clear();
-                sys.ticker.stopTick(this.update, this);
+                $2d.ticker.stopTick(this.update, this);
             }
         }
 

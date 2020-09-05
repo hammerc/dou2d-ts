@@ -1372,11 +1372,11 @@ namespace dou2d {
                     }
                 }
                 else {
-                    let buffer = sys.hitTestBuffer;
+                    let buffer = $2d.hitTestBuffer;
                     buffer.resize(3, 3);
                     let matrix = dou.recyclable(Matrix);
                     matrix.translate(1 - localX, 1 - localY);
-                    sys.renderer.render(this, buffer, matrix);
+                    $2d.renderer.render(this, buffer, matrix);
                     matrix.recycle();
                     try {
                         data = buffer.getPixels(1, 1);
@@ -1403,13 +1403,13 @@ namespace dou2d {
             if (type == Event2D.ENTER_FRAME || type == Event2D.FIXED_ENTER_FRAME || type == Event2D.RENDER) {
                 let list: DisplayObject[];
                 if (type == Event2D.ENTER_FRAME) {
-                    list = once ? sys.enterFrameOnceCallBackList : sys.enterFrameCallBackList;
+                    list = once ? $2d.enterFrameOnceCallBackList : $2d.enterFrameCallBackList;
                 }
                 else if (type == Event2D.FIXED_ENTER_FRAME) {
-                    list = once ? sys.fixedEnterFrameOnceCallBackList : sys.fixedEnterFrameCallBackList;
+                    list = once ? $2d.fixedEnterFrameOnceCallBackList : $2d.fixedEnterFrameCallBackList;
                 }
                 else {
-                    list = once ? sys.renderOnceCallBackList : sys.renderCallBackList;
+                    list = once ? $2d.renderOnceCallBackList : $2d.renderCallBackList;
                 }
                 list.pushUnique(this);
             }
@@ -1467,16 +1467,16 @@ namespace dou2d {
                 let list: DisplayObject[];
                 let listOnce: DisplayObject[];
                 if (type == Event2D.ENTER_FRAME) {
-                    list = sys.enterFrameCallBackList;
-                    listOnce = sys.enterFrameOnceCallBackList;
+                    list = $2d.enterFrameCallBackList;
+                    listOnce = $2d.enterFrameOnceCallBackList;
                 }
                 else if (type == Event2D.FIXED_ENTER_FRAME) {
-                    list = sys.fixedEnterFrameCallBackList;
-                    listOnce = sys.fixedEnterFrameOnceCallBackList;
+                    list = $2d.fixedEnterFrameCallBackList;
+                    listOnce = $2d.fixedEnterFrameOnceCallBackList;
                 }
                 else {
-                    list = sys.renderCallBackList;
-                    listOnce = sys.renderOnceCallBackList;
+                    list = $2d.renderCallBackList;
+                    listOnce = $2d.renderOnceCallBackList;
                 }
                 list.remove(this);
                 listOnce.remove(this);

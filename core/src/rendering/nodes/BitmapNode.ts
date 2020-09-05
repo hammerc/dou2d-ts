@@ -14,14 +14,14 @@ namespace dou2d.rendering {
             node.imageHeight = sourceHeight;
             let imageWidth = bitmapWidth;
             let imageHeight = bitmapHeight;
-            destW = destW - (textureWidth - bitmapWidth * sys.textureScaleFactor);
-            destH = destH - (textureHeight - bitmapHeight * sys.textureScaleFactor);
+            destW = destW - (textureWidth - bitmapWidth * $2d.textureScaleFactor);
+            destH = destH - (textureHeight - bitmapHeight * $2d.textureScaleFactor);
             let targetW0 = scale9Grid.x - offsetX;
             let targetH0 = scale9Grid.y - offsetY;
-            let sourceW0 = targetW0 / sys.textureScaleFactor;
-            let sourceH0 = targetH0 / sys.textureScaleFactor;
-            let sourceW1 = scale9Grid.width / sys.textureScaleFactor;
-            let sourceH1 = scale9Grid.height / sys.textureScaleFactor;
+            let sourceW0 = targetW0 / $2d.textureScaleFactor;
+            let sourceH0 = targetH0 / $2d.textureScaleFactor;
+            let sourceW1 = scale9Grid.width / $2d.textureScaleFactor;
+            let sourceH1 = scale9Grid.height / $2d.textureScaleFactor;
             // 防止空心的情况出现
             if (sourceH1 == 0) {
                 sourceH1 = 1;
@@ -43,9 +43,9 @@ namespace dou2d.rendering {
             let sourceY1 = sourceY0 + sourceH0;
             let sourceY2 = sourceY1 + sourceH1;
             let sourceH2 = imageHeight - sourceH0 - sourceH1;
-            let targetW2 = sourceW2 * sys.textureScaleFactor;
-            let targetH2 = sourceH2 * sys.textureScaleFactor;
-            if ((sourceW0 + sourceW2) * sys.textureScaleFactor > destW || (sourceH0 + sourceH2) * sys.textureScaleFactor > destH) {
+            let targetW2 = sourceW2 * $2d.textureScaleFactor;
+            let targetH2 = sourceH2 * $2d.textureScaleFactor;
+            if ((sourceW0 + sourceW2) * $2d.textureScaleFactor > destW || (sourceH0 + sourceH2) * $2d.textureScaleFactor > destH) {
                 node.drawImage(bitmapX, bitmapY, bitmapWidth, bitmapHeight, offsetX, offsetY, destW, destH);
                 return;
             }

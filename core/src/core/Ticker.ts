@@ -54,7 +54,7 @@ namespace dou2d.sys {
         }
 
         public updateLogic(passedTime: number): void {
-            sys.deltaTime = passedTime;
+            $2d.deltaTime = passedTime;
 
             let logicCost: number, renderCost: number;
             logicCost = Time.time;
@@ -63,12 +63,12 @@ namespace dou2d.sys {
             this.broadcastTick(passedTime);
             this.broadcastRender();
             renderCost = Time.time;
-            let drawCalls = player.render(passedTime);
+            let drawCalls = $2d.player.render(passedTime);
             renderCost = Time.time - renderCost;
             this.broadcastEnterFrame();
             this.broadcastFixedEnterFrame(passedTime);
             logicCost = Time.time - logicCost - renderCost;
-            stat.onFrame(logicCost, renderCost, drawCalls);
+            $2d.stat.onFrame(logicCost, renderCost, drawCalls);
         }
 
         private broadcastDelay(passedTime: number): void {
@@ -92,17 +92,17 @@ namespace dou2d.sys {
         }
 
         private broadcastRender(): void {
-            if (invalidateRenderFlag) {
-                invalidateRenderFlag = false;
-                if (renderCallBackList.length > 0) {
-                    let list = renderCallBackList.concat();
+            if ($2d.invalidateRenderFlag) {
+                $2d.invalidateRenderFlag = false;
+                if ($2d.renderCallBackList.length > 0) {
+                    let list = $2d.renderCallBackList.concat();
                     for (let display of list) {
                         display.dispatchEvent(Event2D.RENDER);
                     }
                 }
-                if (renderOnceCallBackList.length > 0) {
-                    let list = renderOnceCallBackList;
-                    renderOnceCallBackList = [];
+                if ($2d.renderOnceCallBackList.length > 0) {
+                    let list = $2d.renderOnceCallBackList;
+                    $2d.renderOnceCallBackList = [];
                     for (let display of list) {
                         display.dispatchEvent(Event2D.RENDER);
                     }
@@ -111,15 +111,15 @@ namespace dou2d.sys {
         }
 
         private broadcastEnterFrame(): void {
-            if (enterFrameCallBackList.length > 0) {
-                let list = enterFrameCallBackList.concat();
+            if ($2d.enterFrameCallBackList.length > 0) {
+                let list = $2d.enterFrameCallBackList.concat();
                 for (let display of list) {
                     display.dispatchEvent(Event2D.ENTER_FRAME);
                 }
             }
-            if (enterFrameOnceCallBackList.length > 0) {
-                let list = enterFrameOnceCallBackList;
-                enterFrameOnceCallBackList = [];
+            if ($2d.enterFrameOnceCallBackList.length > 0) {
+                let list = $2d.enterFrameOnceCallBackList;
+                $2d.enterFrameOnceCallBackList = [];
                 for (let display of list) {
                     display.dispatchEvent(Event2D.ENTER_FRAME);
                 }
@@ -127,21 +127,21 @@ namespace dou2d.sys {
         }
 
         private broadcastFixedEnterFrame(passedTime: number): void {
-            sys.fixedPassedTime += passedTime;
-            let times = ~~(sys.fixedPassedTime / sys.fixedDeltaTime);
+            $2d.fixedPassedTime += passedTime;
+            let times = ~~($2d.fixedPassedTime / $2d.fixedDeltaTime);
             if (times > 0) {
-                sys.fixedPassedTime %= sys.fixedDeltaTime;
-                if (fixedEnterFrameCallBackList.length > 0) {
-                    let list = fixedEnterFrameCallBackList.concat();
+                $2d.fixedPassedTime %= $2d.fixedDeltaTime;
+                if ($2d.fixedEnterFrameCallBackList.length > 0) {
+                    let list = $2d.fixedEnterFrameCallBackList.concat();
                     for (let display of list) {
                         for (let i = 0; i < times; i++) {
                             display.dispatchEvent(Event2D.FIXED_ENTER_FRAME);
                         }
                     }
                 }
-                if (fixedEnterFrameOnceCallBackList.length > 0) {
-                    let list = fixedEnterFrameOnceCallBackList;
-                    fixedEnterFrameOnceCallBackList = [];
+                if ($2d.fixedEnterFrameOnceCallBackList.length > 0) {
+                    let list = $2d.fixedEnterFrameOnceCallBackList;
+                    $2d.fixedEnterFrameOnceCallBackList = [];
                     for (let display of list) {
                         for (let i = 0; i < times; i++) {
                             display.dispatchEvent(Event2D.FIXED_ENTER_FRAME);

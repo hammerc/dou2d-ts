@@ -15,7 +15,7 @@ namespace dou2d {
     }
 
     function loadFontByFontFace(name: string, path: string): void {
-        let fontResCache = sys.fontResMap;
+        let fontResCache = $2d.fontResMap;
         if (!fontResCache[path]) {
             if (DEBUG) {
                 console.warn(`TTF字体"${path}"没有加载`);
@@ -45,7 +45,7 @@ namespace dou2d {
         document.body.appendChild(styleElement);
     }
 
-    export namespace sys {
+    export namespace $2d {
         export let fontResMap: { [name: string]: ArrayBuffer } = {};
     }
 }

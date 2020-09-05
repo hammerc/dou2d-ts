@@ -22,7 +22,7 @@ declare namespace dou2d.sys {
      */
     function markCannotUse(instance: any, property: string, defaultValue: any): void;
 }
-declare namespace dou2d.sys {
+declare namespace dou2d.$2d {
     /**
      * 画布
      */
@@ -30,11 +30,11 @@ declare namespace dou2d.sys {
     /**
      * 心跳计时器
      */
-    let ticker: Ticker;
+    let ticker: sys.Ticker;
     /**
      * 播放器
      */
-    let player: Player;
+    let player: sys.Player;
     /**
      * 舞台
      */
@@ -68,7 +68,7 @@ declare namespace dou2d.sys {
     /**
      * 性能统计
      */
-    let stat: Stat;
+    let stat: sys.Stat;
     /**
      * 进入帧回调对象列表
      */
@@ -4709,7 +4709,7 @@ declare namespace dou2d {
      * @param path 字体文件的完整路径
      */
     function registerFontMapping(name: string, path: string): void;
-    namespace sys {
+    namespace $2d {
         let fontResMap: {
             [name: string]: ArrayBuffer;
         };
@@ -5035,7 +5035,7 @@ declare namespace dou2d {
         static set fixedDeltaTime(value: number);
         static get fixedDeltaTime(): number;
     }
-    namespace sys {
+    namespace $2d {
         let deltaTime: number;
         let fixedDeltaTime: number;
         let fixedPassedTime: number;

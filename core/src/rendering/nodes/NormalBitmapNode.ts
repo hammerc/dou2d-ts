@@ -8,7 +8,7 @@ namespace dou2d.rendering {
             if (!image) {
                 return;
             }
-            let scale = sys.textureScaleFactor;
+            let scale = $2d.textureScaleFactor;
             node.smoothing = smoothing;
             node.image = image;
             node.imageWidth = sourceWidth;

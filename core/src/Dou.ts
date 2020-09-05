@@ -9,29 +9,13 @@
     Dou.AssetManager = dou2d.AssetManager;
     Dou.asset = dou2d.asset;
 
+    Dou.$2d = dou2d.$2d;
+
     Dou.sys.glContext = dou2d.sys.glContext;
     Dou.sys.unpackPremultiplyAlphaWebgl = dou2d.sys.unpackPremultiplyAlphaWebgl;
     Dou.sys.engineDefaultEmptyTexture = dou2d.sys.engineDefaultEmptyTexture;
     Dou.sys.smoothing = dou2d.sys.smoothing;
     Dou.sys.markCannotUse = dou2d.sys.markCannotUse;
-    Dou.sys.canvas = dou2d.sys.canvas;
-    Dou.sys.ticker = dou2d.sys.ticker;
-    Dou.sys.player = dou2d.sys.player;
-    Dou.sys.stage = dou2d.sys.stage;
-    Dou.sys.screenAdapter = dou2d.sys.screenAdapter;
-    Dou.sys.context2D = dou2d.sys.context2D;
-    Dou.sys.renderer = dou2d.sys.renderer;
-    Dou.sys.hitTestBuffer = dou2d.sys.hitTestBuffer;
-    Dou.sys.textureScaleFactor = dou2d.sys.textureScaleFactor;
-    Dou.sys.inputManager = dou2d.sys.inputManager;
-    Dou.sys.stat = dou2d.sys.stat;
-    Dou.sys.enterFrameCallBackList = dou2d.sys.enterFrameCallBackList;
-    Dou.sys.enterFrameOnceCallBackList = dou2d.sys.enterFrameOnceCallBackList;
-    Dou.sys.fixedEnterFrameCallBackList = dou2d.sys.fixedEnterFrameCallBackList;
-    Dou.sys.fixedEnterFrameOnceCallBackList = dou2d.sys.fixedEnterFrameOnceCallBackList;
-    Dou.sys.invalidateRenderFlag = dou2d.sys.invalidateRenderFlag;
-    Dou.sys.renderCallBackList = dou2d.sys.renderCallBackList;
-    Dou.sys.renderOnceCallBackList = dou2d.sys.renderOnceCallBackList;
     Dou.sys.Player = dou2d.sys.Player;
     Dou.sys.Ticker = dou2d.sys.Ticker;
 
@@ -117,7 +101,6 @@
     Dou.HtmlTextParser = dou2d.HtmlTextParser;
     Dou.TextField = dou2d.TextField;
     Dou.registerFontMapping = dou2d.registerFontMapping;
-    Dou.sys.fontResMap = dou2d.sys.fontResMap;
 
     Dou.touch.TouchHandler = dou2d.touch.TouchHandler;
     Dou.touch.TouchHandlerImpl = dou2d.touch.TouchHandlerImpl;
@@ -147,9 +130,6 @@
     Dou.TextFieldUtil = dou2d.TextFieldUtil;
     Dou.Time = dou2d.Time;
     Dou.Timer = dou2d.Timer;
-    Dou.sys.deltaTime = dou2d.sys.deltaTime;
-    Dou.sys.fixedDeltaTime = dou2d.sys.fixedDeltaTime;
-    Dou.sys.fixedPassedTime = dou2d.sys.fixedPassedTime;
     Dou.UUID = dou2d.UUID;
     Dou.WebGLUtil = dou2d.WebGLUtil;
 

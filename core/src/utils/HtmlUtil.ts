@@ -86,8 +86,8 @@ namespace dou2d {
             }
             font += (fontSize || 12) + "px ";
             font += (fontFamily || "Arial");
-            sys.context2D.font = font;
-            return measureTextWidth(sys.context2D, text);
+            $2d.context2D.font = font;
+            return measureTextWidth($2d.context2D, text);
         }
 
         /**

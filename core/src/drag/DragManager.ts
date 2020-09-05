@@ -22,7 +22,7 @@ namespace dou2d {
         private _offsetY: number;
 
         private constructor() {
-            sys.stage.on(TouchEvent.TOUCH_MOVE, this.stageMoveHandler, this);
+            $2d.stage.on(TouchEvent.TOUCH_MOVE, this.stageMoveHandler, this);
         }
 
         public get dragging(): boolean {
@@ -101,11 +101,11 @@ namespace dou2d {
                 this._dragTarget.touchChildren = false;
             }
             this._dragTarget.alpha = imageAlpha;
-            sys.stage.addChild(this._dragTarget);
+            $2d.stage.addChild(this._dragTarget);
             this._offsetX = xOffset;
             this._offsetY = yOffset;
-            sys.stage.on(TouchEvent.TOUCH_MOVE, this.onStageMove, this);
-            sys.stage.on(TouchEvent.TOUCH_END, this.onStageEnd, this);
+            $2d.stage.on(TouchEvent.TOUCH_MOVE, this.onStageMove, this);
+            $2d.stage.on(TouchEvent.TOUCH_END, this.onStageEnd, this);
             this.onStageMove(touchEvent);
             this._originDrag.dispatchDragEvent(DragEvent.DRAG_START, this._dragData);
             return this._dragTarget;
@@ -128,9 +128,9 @@ namespace dou2d {
         }
 
         private endDrag(): void {
-            sys.stage.off(TouchEvent.TOUCH_MOVE, this.onStageMove, this);
-            sys.stage.off(TouchEvent.TOUCH_END, this.onStageEnd, this);
-            sys.stage.removeChild(this._dragTarget);
+            $2d.stage.off(TouchEvent.TOUCH_MOVE, this.onStageMove, this);
+            $2d.stage.off(TouchEvent.TOUCH_END, this.onStageEnd, this);
+            $2d.stage.removeChild(this._dragTarget);
             this._dragTarget = undefined;
             this._originDrag = undefined;
         }

@@ -1,4 +1,4 @@
-namespace dou2d.sys {
+namespace dou2d.$2d {
     /**
      * 画布
      */
@@ -7,12 +7,12 @@ namespace dou2d.sys {
     /**
      * 心跳计时器
      */
-    export let ticker: Ticker;
+    export let ticker: sys.Ticker;
 
     /**
      * 播放器
      */
-    export let player: Player;
+    export let player: sys.Player;
 
     /**
      * 舞台
@@ -54,7 +54,7 @@ namespace dou2d.sys {
     /**
      * 性能统计
      */
-    export let stat: Stat;
+    export let stat: sys.Stat;
 
     /**
      * 进入帧回调对象列表
