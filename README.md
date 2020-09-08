@@ -44,7 +44,7 @@ class ShapeTest extends Dou.DisplayObjectContainer {
 }
 ```
 
-4. 启动引擎：
+3. 启动引擎：
 
 ```javascript
 new Dou.Engine(ShapeTest);

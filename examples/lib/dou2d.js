@@ -7645,6 +7645,7 @@ var dou2d;
                 }
                 let gl = this.context;
                 let program;
+                let buffer;
                 let filter = data.filter;
                 switch (data.type) {
                     case 0 /* texture */:
@@ -7712,7 +7713,7 @@ var dou2d;
                         this.activateBuffer(data.buffer, data.width, data.height);
                         break;
                     case 8 /* enableScissor */:
-                        let buffer = this.activatedBuffer;
+                        buffer = this.activatedBuffer;
                         if (buffer) {
                             if (buffer.renderTarget) {
                                 buffer.renderTarget.enabledStencil();

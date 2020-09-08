@@ -337,7 +337,6 @@ var dou;
                 }
                 list.length = currentIndex;
             }
-            event.$setTarget(null);
             return !event.$isDefaultPrevented();
         }
         off(type, listener, thisObj) {

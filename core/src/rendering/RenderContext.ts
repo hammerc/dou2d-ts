@@ -443,6 +443,7 @@ namespace dou2d.rendering {
             }
             let gl = this.context;
             let program: Program;
+            let buffer: RenderBuffer;
             let filter = data.filter;
             switch (data.type) {
                 case DrawableType.texture:
@@ -510,7 +511,7 @@ namespace dou2d.rendering {
                     this.activateBuffer(data.buffer, data.width, data.height);
                     break;
                 case DrawableType.enableScissor:
-                    let buffer = this.activatedBuffer;
+                    buffer = this.activatedBuffer;
                     if (buffer) {
                         if (buffer.renderTarget) {
                             buffer.renderTarget.enabledStencil();
