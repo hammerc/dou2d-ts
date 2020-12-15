@@ -243,6 +243,7 @@ var dou;
                 let interval = now - this._lastTimeStamp;
                 this._lastTimeStamp = now;
                 this.updateLogic(interval);
+                dou.Coroutine.$update();
             }
         }
     }
@@ -3150,6 +3151,117 @@ var dou;
     }
     dou.superSetter = superSetter;
 })(dou || (dou = {}));
+var dou;
+(function (dou) {
+    /**
+     * 协程
+     * @author wizardc
+     */
+    let Coroutine;
+    (function (Coroutine) {
+        let _coroutineID = 0;
+        let _coroutineList = [];
+        /**
+         * 启动一个协程
+         * @returns 该协程的 id, -1 表示该协程启动即执行结束
+         */
+        function start(method, thisObj, ...args) {
+            let generator = method.call(thisObj, ...args);
+            let result = generator.next();
+            if (result.done) {
+                return -1;
+            }
+            generator.__id = _coroutineID;
+            let info = dou.recyclable(CoroutineInfo);
+            info.id = _coroutineID;
+            info.generator = generator;
+            _coroutineList.push(info);
+            return _coroutineID++;
+        }
+        Coroutine.start = start;
+        /**
+         * 判断指定协程是否还在执行中
+         */
+        function exist(id) {
+            for (let info of _coroutineList) {
+                if (info.id == id) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        Coroutine.exist = exist;
+        /**
+         * 恢复协程
+         */
+        function resume(generator) {
+            let id = generator.__id;
+            if (exist(id)) {
+                return id;
+            }
+            generator.__id = _coroutineID;
+            let info = dou.recyclable(CoroutineInfo);
+            info.id = _coroutineID;
+            info.generator = generator;
+            _coroutineList.push(info);
+            return _coroutineID++;
+        }
+        Coroutine.resume = resume;
+        /**
+         * 移除协程
+         */
+        function remove(id) {
+            for (let i = 0, len = _coroutineList.length; i < len; i++) {
+                let info = _coroutineList[i];
+                if (info.id == id) {
+                    _coroutineList[i] = null;
+                    let generator = info.generator;
+                    info.recycle();
+                    return generator;
+                }
+            }
+            return null;
+        }
+        Coroutine.remove = remove;
+        function $update() {
+            let list = _coroutineList;
+            if (list.length == 0) {
+                return;
+            }
+            let currentIndex = 0;
+            for (var i = 0, len = list.length; i < len; i++) {
+                let info = list[i];
+                if (info) {
+                    let result = info.generator.next();
+                    if (result.done) {
+                        info.recycle();
+                        list[i] = null;
+                    }
+                    else {
+                        if (currentIndex != i) {
+                            list[currentIndex] = info;
+                            list[i] = null;
+                        }
+                        currentIndex++;
+                    }
+                }
+            }
+            if (currentIndex != i) {
+                length = list.length;
+                while (i < length) {
+                    list[currentIndex++] = list[i++];
+                }
+                list.length = currentIndex;
+            }
+        }
+        Coroutine.$update = $update;
+    })(Coroutine = dou.Coroutine || (dou.Coroutine = {}));
+    class CoroutineInfo {
+        onRecycle() {
+            this.id = this.generator = null;
+        }
+    }
+})(dou || (dou = {}));
 (function (Dou) {
     Dou.impl = Dou.impl || {};
     Dou.TickerBase = dou.TickerBase;
@@ -3179,6 +3291,7 @@ var dou;
     Dou.Tween = dou.Tween;
     Dou.BitUtil = dou.BitUtil;
     Dou.ByteArray = dou.ByteArray;
+    Dou.Coroutine = dou.Coroutine;
     Dou.getTimer = dou.getTimer;
     Dou.HttpUtil = dou.HttpUtil;
     Dou.ObjectPool = dou.ObjectPool;

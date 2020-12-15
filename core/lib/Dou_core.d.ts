@@ -1073,3 +1073,29 @@ declare namespace Dou {
      */
     function superSetter(currentClass: any, thisObj: any, type: string, ...values: any[]): any;
 }
+declare namespace Dou {
+    /**
+     * 协程
+     * @author wizardc
+     */
+    namespace Coroutine {
+        /**
+         * 启动一个协程
+         * @returns 该协程的 id, -1 表示该协程启动即执行结束
+         */
+        function start(method: Function, thisObj?: any, ...args: any[]): number;
+        /**
+         * 判断指定协程是否还在执行中
+         */
+        function exist(id: number): boolean;
+        /**
+         * 恢复协程
+         */
+        function resume(generator: Generator): number;
+        /**
+         * 移除协程
+         */
+        function remove(id: number): Generator;
+        function $update(): void;
+    }
+}
